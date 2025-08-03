@@ -39,11 +39,60 @@
 
 <body>
     <header class="header" data-element="header">
-        <svg class="hide header__svg-filters"></svg>
-        <h1 class="header__title" title="Title">Chess</h1>
+        <!-- SVG filter for the video (ambient mode) -->
+        <svg width="0" height="0">
+            <filter id="blur-and-scale" y="-50%" x="-50%" width="200%" height="200%">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="50" result="blurred" />
+                <feColorMatrix type="saturate" in="blurred" values="10" />
+                <feComposite in="SourceGraphic" operator="over" />
+            </filter>
+        </svg>
+        <h1 class="header__title" title="Title">Youtube Timestamp helper</h1>
     </header>
 
     <main class="index" data-element="index">
+        <section class="video__container">
+            <video class="video">
+                <source src="" type="video/mp4" />
+            </video>
+
+        </section>
+        <aside class="video-timestamps">
+            <ul class="video-timestamps__list">
+
+                <!-- 
+                
++--------------------------------------------------+
+| [ 🖼 Thumb img]    Title: "Chapter 1: Intro"     |
+|                  Start: 0:00   (editable field)  |
+|                  End:   1:23   (auto-calculated) |
+|                 ✖ Remove                         |
++--------------------------------------------------+
+
+                -->
+                <li class="video-timestamps__item">
+                    <img src="" alt="" />
+
+                    <label class="video-timestamps__label">
+                        Title:
+                        <input type="text" />
+                    </label>
+
+                    <label class="video-timestamps__label">
+                        Start:
+                        <input type="text" />
+                    </label>
+
+                    <label class="video-timestamps__label">
+                        End:
+                        <input type="text" />
+                    </label>
+
+                    <button type="button">Remove</button>
+
+                </li>
+            </ul>
+        </aside>
     </main>
     <footer class="footer" data-element="footer">
         <p class="footer__paragraph">

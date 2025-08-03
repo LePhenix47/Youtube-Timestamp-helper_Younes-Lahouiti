@@ -1,7 +1,7 @@
 {
-  "name": "chess",
+  "name": "youtube-timestamp-helper",
   "version": "1.0.0",
-  "description": "vite + typescript + sass + template including CI/CD pipeline",
+  "description": "It's a tool that allows Youtubers to easily add timestamps to their videos without the fucking headache of manually adding them.",
   "main": "dist/index.js",
   "type": "module",
   "scripts": {

@@ -8,7 +8,7 @@ export default defineConfig({
     host: "0.0.0.0", // Allows access to your local IP address
     open: true, // Optional: Opens the browser automatically
   },
-  base: "/Vite-template/",
+  base: "/Youtube-Timestamp-helper_Younes-Lahouiti/",
   css: {
     postcss: {
       plugins: [autoprefixer()],
