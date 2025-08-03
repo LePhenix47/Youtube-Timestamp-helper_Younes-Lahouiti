@@ -1,0 +1,53 @@
+@use "../utils/" as *;
+
+/* 
+    Hides the element and all its descendants from view
+ */
+.hide {
+    display: none !important;
+}
+
+/**
+ * Visually hide an element, but leave it available for screen readers
+
+ https://github.com/h5bp/html5-boilerplate/blob/master/dist/css/main.css
+
+ http://snook.ca/archives/html_and_css/hiding-content-for-accessibility
+
+ */
+.screen-readers-only {
+    border: 0;
+    clip: rect(0 0 0 0);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    white-space: nowrap;
+    width: 1px;
+}
+
+
+/**
+ * Extends the .screen-reader class to allow the element to be focusable when navigated to via the keyboard
+ * @link https://github.com/h5bp/html5-boilerplate/blob/master/dist/css/main.css
+ * @link https://www.drupal.org/node/897638
+ */
+.screen-reader-focusable {
+    &:is(:active, :hover) {
+        clip: auto;
+        height: auto;
+        margin: 0;
+        overflow: visible;
+        position: static;
+        white-space: normal;
+        width: auto;
+    }
+}
+
+/* 
+    Disables pointer (click on desktop and tap on mobile) events for the element and its descendants 
+*/
+.no-pointer-events {
+    pointer-events: none;
+}

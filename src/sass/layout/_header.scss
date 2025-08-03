@@ -1,0 +1,10 @@
+@use "../utils/" as *;
+
+.header {
+
+    padding: 20px;
+
+    &__title {
+        text-align: center;
+    }
+}

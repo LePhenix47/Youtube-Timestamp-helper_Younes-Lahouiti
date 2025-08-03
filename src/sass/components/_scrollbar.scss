@@ -1,0 +1,63 @@
+@use "../utils/" as *;
+
+@layer scrollbar {
+    * {
+        --_scrollbar-track-bg: transparent;
+
+        --_scrollbar-bg: var(--scrollbar-track-bg-color);
+        --_scrollbar-border-radius: 100vmax;
+        --_scrollbar-width: 10px;
+        --_scrollbar-moz-width: thin;
+        --_scrollbar-margin-block: 0px;
+
+        --_scrollbar-thumb-border: 3px solid var(--bg-primary);
+
+        --_scrollbar-thumb-bg: var(--scrollbar-thumb-bg-color);
+        --_scrollbar-thumb-bg-hover: var(--scrollbar-thumb-bg-color);
+        --_scrollbar-thumb-bg-active: var(--scrollbar-thumb-bg-color);
+
+        &::-webkit-scrollbar {
+            background-color: var(--_scrollbar-bg);
+            border-radius: var(--_scrollbar-border-radius);
+
+            width: var(--_scrollbar-width);
+            margin-block: var(--_scrollbar-margin-block);
+        }
+
+        &::-webkit-scrollbar-track {
+            margin-block: var(--_scrollbar-margin-block);
+
+            background-color: var(--_scrollbar-track-bg);
+        }
+
+        &::-webkit-scrollbar-thumb {
+            background-color: var(--_scrollbar-thumb-bg);
+            border: var(--_scrollbar-thumb-border);
+            border-radius: var(--_scrollbar-border-radius);
+
+            &:hover {
+                background-color: var(--_scrollbar-thumb-bg-hover);
+            }
+
+            &:active {
+                background-color: var(--_scrollbar-thumb-bg-active);
+            }
+
+        }
+
+        &::-webkit-scrollbar-corner {
+            background-color: transparent;
+
+            border-top: none;
+            border-left: none;
+        }
+    }
+
+    // FIX: Move the Firefox scrollbar styling inside this selector
+    @supports (scrollbar-color: var(--_scrollbar-thumb-bg) var(--_scrollbar-bg)) {
+        * {
+            scrollbar-width: var(--_scrollbar-moz-width);
+            scrollbar-color: var(--_scrollbar-thumb-bg) var(--_scrollbar-bg);
+        }
+    }
+}

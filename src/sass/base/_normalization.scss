@@ -1,0 +1,550 @@
+@use "../utils/" as *;
+
+@layer normalization {
+
+    //Removes ANY animation if the user has the reduced motion option enabled in their device
+    @media (prefers-reduced-motion: reduce) {
+
+        *,
+        :before,
+        ::after {
+            -webkit-animation: none !important;
+            animation: none !important;
+
+            transition: none !important;
+        }
+    }
+
+    /* 
+     *  This selector targets input, textarea and select elements that are 
+     *  autofilled by the browser whether they are focused or not.
+     *
+     * NOTE: You cannot override neither the background nor the color when the input is autofilled
+     * Thus we have to resort to hacks to bypass that by using a box-shadow + -webkit-text-fill-color
+     * See: https://developer.mozilla.org/en-US/docs/Web/CSS/:autofill
+     */
+    :is(input, textarea, select):is( :-moz-autofill,
+        :-webkit-autofill,
+        :autofill):is(:focus, :not(:focus)) {
+        box-shadow: 0 0 0px 100vmax var(--bg-primary) inset;
+        -webkit-text-fill-color: var(--color-primary);
+        caret-color: var(--color-primary) !important;
+    }
+
+    *,
+    ::before,
+    ::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    *::-moz-selection {
+        background-color: var(--bg-primary);
+        color: var(--color-primary);
+    }
+
+    *::selection {
+        background-color: var(--color-primary);
+        color: var(--bg-primary);
+    }
+
+    html {
+        scroll-behavior: smooth;
+        scroll-padding-top: 50%;
+
+        color-scheme: dark light;
+        scrollbar-gutter: stable;
+
+        touch-action: manipulation;
+    }
+
+
+    html:has(:modal) {
+        overflow: hidden;
+
+        & .header {
+            opacity: 0;
+        }
+    }
+
+    body {
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        min-height: 100svh;
+
+        min-height: 100svh;
+        overflow-x: hidden;
+        background-color: var(--bg-primary);
+        color: var(--color-primary);
+
+        transition:
+            background-color 350ms ease-in-out,
+            filter 350ms ease-in-out,
+            color 350ms ease-in-out,
+        ;
+    }
+
+    :is(ul, ol) {
+        list-style-type: none;
+    }
+
+    /*
+! ⚠ We make the border transparent so that if the user has a high contrast text mode enable the border will still appear for them
+ Good for accessibility
+*/
+    button {
+        border-color: transparent;
+        background-color: transparent;
+
+        font-family: inherit;
+
+        color: var(--color-primary);
+
+        &:hover {
+            cursor: pointer;
+
+            &:disabled {
+                cursor: not-allowed;
+            }
+        }
+
+    }
+
+
+    input {
+        font-family: inherit;
+        border-color: transparent;
+
+        &:focus {
+            border-color: transparent;
+            outline: transparent;
+        }
+    }
+
+    textarea {
+        font-family: inherit;
+        border-color: transparent;
+
+        &:focus {
+            border-color: transparent;
+            outline: transparent;
+        }
+    }
+
+    a {
+        text-decoration: none;
+        color: inherit;
+
+        &:visited {
+            color: currentColor;
+        }
+    }
+
+    label {
+        &:hover {
+            cursor: pointer;
+        }
+    }
+
+    fieldset {
+        border-color: transparent;
+    }
+
+    legend {
+        position: static;
+    }
+
+    dialog {
+        position: fixed;
+        border: transparent;
+        margin: 0;
+        padding: 0;
+        z-index: 0;
+        @include absolute-center;
+    }
+
+    select {
+        border: transparent;
+        font-family: inherit;
+
+        &:hover {
+            cursor: pointer;
+        }
+    }
+
+    option {
+        font-family: inherit;
+    }
+
+    //Makes empty text blocks elements disappear
+    :empty:is(p, h1, h2, h3, h4,
+        h5, h6, span) {
+        display: none;
+    }
+
+    img,
+    picture,
+    svg {
+        display: block;
+
+        max-width: 100%;
+    }
+
+    //Advanced input reset
+    input {
+        --_caret-color: currentColor;
+        caret-color: var(--_caret-color);
+
+        &[type="text"] {
+            &:hover {
+                cursor: text;
+            }
+        }
+
+        &[type="checkbox"] {
+            --_color: initial;
+            --_appearance: auto;
+            --_moz-appearance: initial;
+
+            accent-color: var(--_color);
+            appearance: var(--_appearance);
+            -moz-appearance: var(--_moz-appearance);
+        }
+
+        &[type="radio"] {
+            --_color: initial;
+            --_appearance: auto;
+            --_moz-appearance: initial;
+
+            accent-color: var(--_color);
+            appearance: var(--_appearance);
+            -moz-appearance: var(--_moz-appearance);
+        }
+
+        &[type="button"] {
+            &:hover {
+                cursor: pointer;
+            }
+        }
+
+        &[type="date"] {
+            --_calendar-color: initial;
+
+            &::-webkit-calendar-picker-indicator {
+                background-color: var(--_calendar-color);
+            }
+
+            &:hover {
+                cursor: text;
+            }
+        }
+
+        &[type="datetime"] {
+            &:hover {
+                cursor: text;
+            }
+        }
+
+        &[type="datetime-local"] {
+            --_calendar-color: initial;
+
+            &::-webkit-calendar-picker-indicator {
+                background-color: var(--_calendar-color);
+            }
+
+            &:hover {
+                cursor: text;
+            }
+        }
+
+        &[type="email"] {
+            &:hover {
+                cursor: text;
+            }
+        }
+
+        &[type="month"] {
+            --_calendar-color: initial;
+
+            &::-webkit-calendar-picker-indicator {
+                background-color: var(--_calendar-color);
+            }
+
+            &:hover {
+                cursor: text;
+            }
+        }
+
+        &[type="week"] {
+            --_calendar-color: initial;
+
+            &::-webkit-calendar-picker-indicator {
+                background-color: var(--_calendar-color);
+            }
+
+            &:hover {
+                cursor: text;
+            }
+        }
+
+        &[type="password"] {
+            &:hover {
+                cursor: text;
+            }
+        }
+
+        &[type="tel"] {
+            &:hover {
+                cursor: text;
+            }
+        }
+
+        &[type="time"] {
+            &:hover {
+                cursor: text;
+            }
+
+            --_calendar-color: initial;
+
+            &::-webkit-calendar-picker-indicator {
+                background-color: var(--_calendar-color);
+            }
+        }
+
+        &[type="url"] {
+            &:hover {
+                cursor: text;
+            }
+        }
+
+        &[type="submit"] {
+            &:hover {
+                cursor: pointer;
+            }
+        }
+
+        &[type="reset"] {
+            &:hover {
+                cursor: pointer;
+            }
+        }
+
+        &[type="image"] {
+            &:hover {
+                cursor: pointer;
+            }
+        }
+
+        &[type="hidden"] {
+            &:hover {
+                cursor: pointer;
+            }
+        }
+
+        &[type="file"] {
+            &:hover {
+                cursor: pointer;
+            }
+
+            --_file-selector-display: initial;
+
+            --_file-selector-width: 80px;
+            --_file-selector-height: 21px;
+
+            &::file-selector-button {
+                display: var(--_file-selector-display);
+
+                height: var(--_file-selector-height);
+                width: var(--_file-selector-width);
+            }
+        }
+
+        &[type="color"] {
+            &:hover {
+                cursor: pointer;
+            }
+
+            background-color: transparent;
+            border: transparent;
+            outline: 2px solid currentColor;
+
+            padding: 0px;
+
+            --_color-swatch-display: inline-block;
+
+            --_color-swatch-height: 100%;
+
+            --_color-swatch-border-width: 0px;
+            --_color-swatch-border-color: transparent;
+            --_color-swatch-border-radius: 0px;
+            border-radius: var(--_color-swatch-border-radius);
+
+            &::-moz-color-swatch {
+                display: var(--_color-swatch-display);
+
+                height: var(--_color-swatch-height);
+
+                border: var(--_color-swatch-border-width) solid var(--_color-swatch-border-color);
+
+                border-radius: var(--_color-swatch-border-radius);
+            }
+
+            &::-webkit-color-swatch {
+                display: var(--_color-swatch-display);
+
+                height: var(--_color-swatch-height);
+
+                border: var(--_color-swatch-border-width) solid var(--_color-swatch-border-color);
+
+                border-radius: var(--_color-swatch-border-radius);
+            }
+        }
+
+        &[type="search"] {
+            &:hover {
+                cursor: text;
+            }
+
+            --_reset-button-display: initial;
+
+            &::-webkit-clear-button {
+                display: var(--_reset-button-display);
+                // appearance: var(--_reset-button-display);
+            }
+
+            --_cancel-button-display: initial;
+
+            &::-webkit-search-cancel-button {
+                display: var(--_cancel-button-display);
+            }
+
+            --_results-button-display: initial;
+
+            &::-webkit-search-results-button {
+                display: var(--_results-button-display);
+            }
+        }
+
+        &[type="number"] {
+            &:hover {
+                cursor: text;
+            }
+
+            --_inner-spin-appearance: auto;
+            --_inner-spin-hover-cursor: pointer;
+
+            --_outer-spin-appearance: auto;
+            --_outer-spin-hover-cursor: pointer;
+
+            --_moz-appearance: initial;
+
+            /*
+                Ignore the warning, this is to reset the input on Firefox
+            */
+            -moz-appearance: var(--_moz-appearance);
+
+            &::-webkit-inner-spin-button {
+                appearance: var(--_inner-spin-appearance);
+
+                &:hover {
+                    cursor: var(--_inner-spin-hover-cursor);
+                }
+            }
+
+            &::-webkit-outer-spin-button {
+                appearance: var(--_outer-spin-appearance);
+
+                &:hover {
+                    cursor: var(--_outer-spin-hover-cursor);
+                }
+            }
+        }
+
+        &[type="range"] {
+            &:hover {
+                cursor: grab;
+            }
+
+            &:active {
+                cursor: grabbing;
+            }
+
+            border-radius: var(--_thumb-border-radius);
+            //Track
+            --_track-width: 160px;
+            --_track-height: 20px;
+
+            --_track-appearance: none;
+
+            --_track-bg: #e9e9ed;
+            --_track-bg-image: none;
+
+            background-color: var(--_track-bg);
+            background-image: var(--_track-bg-image);
+
+            appearance: var(--_track-appearance);
+            overflow: hidden;
+
+            &::-webkit-slider-runnable-track {
+                background-color: var(--_track-bg);
+
+                width: var(--_track-width);
+                height: var(--_track-bg);
+            }
+
+            &::-moz-range-track {
+                background-color: var(--_track-bg);
+
+                width: var(--_track-width);
+                height: var(--_track-bg);
+            }
+
+            //Thumb
+            --_thumb-appearance: none;
+
+            --_thumb-bg: #484851;
+
+            --_thumb-border-color: white;
+            --_thumb-border-width: 2px;
+            --_thumb-border-radius: 100vmax;
+
+            --_thumb-width: 15px;
+            --_thumb-height: 15px;
+
+            --_inner-track-size: calc(var(--_track-width));
+            --_inner-track-offset: calc(-1 * var(--_track-width) - var(--_thumb-width) / 2); //We add a box shadow to the left
+            --_inner-track-bg: #2374ff;
+
+            &::-webkit-slider-thumb {
+                appearance: var(--_thumb-appearance);
+                -webkit-appearance: var(--_thumb-appearance);
+
+                background-color: var(--_thumb-bg);
+                color: var(--_thumb-bg);
+
+                border: var(--_thumb-border-width) solid var(--_thumb-border-color);
+                border-radius: var(--_thumb-border-radius);
+
+                width: var(--_thumb-width);
+                height: var(--_thumb-height);
+
+                box-shadow: var(--_inner-track-offset) 0 0 var(--_inner-track-size) var(--_inner-track-bg);
+            }
+
+            &::-moz-range-thumb {
+                appearance: var(--_thumb-appearance) !important;
+
+                background-color: var(--_thumb-bg);
+
+                border: var(--_thumb-border-width) solid var(--_thumb-border-color);
+                border-radius: var(--_thumb-border-radius);
+
+                width: var(--_thumb-width);
+                height: var(--_thumb-height);
+
+                box-shadow: var(--_inner-track-offset) 0 0 var(--_inner-track-size) var(--_inner-track-bg);
+            }
+        }
+    }
+}

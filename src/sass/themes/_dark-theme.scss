@@ -1,0 +1,37 @@
+@media (prefers-color-scheme: dark) {
+
+    //CSS
+    :root {
+        --bg-primary: #050505;
+        --bg-secondary: black;
+
+        --color-primary: #cdcdcd;
+        --color-primary--hover: #bfbfbf;
+        --color-primary--active: #a3a3a3;
+        --color-secondary: #848484;
+
+        --editor-bg-color: #181818;
+        --editor-pieces-bg-color: #454442;
+
+        --semi-transparent-bg: rgba(0, 0, 0, 70%);
+
+        --border-color: #242424;
+
+        --scrollbar-track-bg-color: black;
+        --scrollbar-thumb-bg-color: #ababab;
+        --scrollbar-thumb-bg-color--hover: #8a8a8a;
+        --scrollbar-thumb-bg-color--active: #4f4f4f;
+
+        --selection-bg: #838383;
+        --selection-color: white;
+    }
+
+    ::backdrop {
+        --backdrop-bg-color: rgba(0, 0, 0, 0.5);
+
+        --scrollbar-track-bg-color: black;
+        --scrollbar-thumb-bg-color: #ababab;
+        --scrollbar-thumb-bg-color--hover: #8a8a8a;
+        --scrollbar-thumb-bg-color--active: #4f4f4f;
+    }
+}
