@@ -1,9 +1,7 @@
 @use "../utils/" as *;
 
 .index {
-    @include center-flex-column(20px);
-
-    --_square-size: 100px;
+    @include center-flex(20px);
 
     overflow: hidden;
 }
@@ -14,3 +12,131 @@
 
 
 ::view-transition-group(root) {}
+
+.video {
+    filter: url(#blur-and-scale);
+
+    &__container {
+        @include center-flex-column(20px);
+
+        flex: 2;
+    }
+
+    &__controls {}
+
+    &__progress-thumb {}
+
+    &__progress-bar-chunk {}
+}
+
+.video-timestamps {
+
+    max-height: var(--_video-height, 300px);
+    overflow-y: auto;
+    border-radius: 5px;
+
+    background-color: var(--ts-container-bg);
+    padding: 5px;
+
+    &__title {
+        background-color: inherit;
+        border-radius: inherit;
+
+        position: sticky;
+
+        --_title-padding: 5px;
+        padding: var(--_title-padding);
+        margin: calc(-1 * var(--_title-padding));
+
+        position: sticky;
+        top: calc(-1 * var(--_title-padding));
+    }
+
+    &__list {
+        margin-top: 25px;
+
+        @include center-flex-column(20px);
+
+        flex: 1;
+    }
+
+    &__item {
+        display: flex;
+        flex-direction: row;
+        column-gap: 20px;
+        row-gap: 10px;
+
+        flex-wrap: wrap;
+
+        padding: 10px;
+
+        background-color: var(--ts-item-bg);
+        border-radius: 5px;
+    }
+
+    &__img {
+        object-fit: cover;
+
+        height: 55px;
+        flex: 0 1 100px;
+
+        overflow: hidden;
+
+        border-radius: 5px;
+    }
+
+    &__labels-container {
+        flex: 1 1 32%;
+        display: grid;
+        grid-template-columns: [full-width-start label-start] max-content [label-end input-start] 1fr [input-end full-width-end];
+        row-gap: 10px;
+    }
+
+    &__label {
+        display: grid;
+        grid-column: full-width;
+        grid-template-columns: subgrid;
+        column-gap: 10px;
+
+        align-items: center;
+    }
+
+    &__input {
+        padding: 5px 10px;
+
+        border-radius: 100vmax;
+
+        background: var(--ts-input-bg);
+    }
+
+    &__remove {
+        flex: 0 1 150px;
+
+        color: white;
+        background-color: red;
+        margin-left: auto;
+
+        border-radius: 5px;
+        padding: 5px 10px;
+
+        display: grid;
+        grid-template-areas: "stack";
+        justify-items: stretch;
+
+        &>* {
+            grid-area: stack;
+
+        }
+    }
+
+    &__remove-text {
+        width: 100%;
+    }
+
+    &__remove-icon {
+        justify-self: flex-start;
+        height: 10px;
+
+        margin-top: 3px;
+    }
+}
