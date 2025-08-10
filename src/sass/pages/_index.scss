@@ -1,9 +1,15 @@
 @use "../utils/" as *;
 
 .index {
-    @include center-flex(20px);
+    display: grid;
+    grid-template-columns: [full-width-start] minmax(325px, 1fr) auto [full-width-end];
+    align-items: start;
+    column-gap: 10px;
 
-    overflow: hidden;
+    padding-inline: 15px;
+    padding-block: 30px;
+
+    overflow-x: clip;
 }
 
 @view-transition {
@@ -14,12 +20,48 @@
 ::view-transition-group(root) {}
 
 .video {
+    object-fit: contain;
     filter: url(#blur-and-scale);
+
+    width: 100%;
+    height: auto;
+
+    min-height: 425px;
 
     &__container {
         @include center-flex-column(20px);
 
-        flex: 2;
+        justify-content: flex-start;
+
+        width: 100%;
+        height: 100%;
+    }
+
+    &__no-video {
+        width: 100%;
+        height: 100%;
+
+        @include center-flex-column(20px);
+
+        --_border-color: rgb(from var(--color-primary) r g b / 50%);
+
+        border: 2px dotted var(--_border-color);
+        border-radius: 6px;
+
+        &.dragging {
+            background-color: rgba(128, 128, 128, 25%);
+            border-style: dashed;
+
+            --_border-color: var(--color-primary);
+        }
+    }
+
+    &__no-video-icon {
+        font-size: 64px;
+    }
+
+    &__no-video-spinner {
+        --_size: 64px;
     }
 
     &__controls {}
@@ -33,10 +75,14 @@
 
     max-height: var(--_video-height, 300px);
     overflow-y: auto;
+
     border-radius: 5px;
 
     background-color: var(--ts-container-bg);
+
     padding: 5px;
+
+    z-index: 1;
 
     &__title {
         background-color: inherit;
@@ -56,45 +102,56 @@
         margin-top: 25px;
 
         @include center-flex-column(20px);
-
-        flex: 1;
+        counter-reset: timestamps;
     }
 
     &__item {
-        display: flex;
-        flex-direction: row;
+        display: grid;
+        grid-template-columns: [full-width-start img-start] auto [img-end timestamps-controls-start] 1fr [timestamps-controls-end full-width-end];
+        grid-template-rows: repeat(3, auto);
         column-gap: 20px;
         row-gap: 10px;
 
-        flex-wrap: wrap;
 
         padding: 10px;
 
         background-color: var(--ts-item-bg);
         border-radius: 5px;
+
+        counter-increment: timestamps;
+    }
+
+    &__item-title {
+        grid-column: full-width;
+
+        &::before {
+            content: "Chapter " counter(timestamps) ": ";
+        }
     }
 
     &__img {
         object-fit: cover;
 
         height: 55px;
-        flex: 0 1 100px;
 
         overflow: hidden;
 
         border-radius: 5px;
+
+        grid-column: img;
     }
 
     &__labels-container {
-        flex: 1 1 32%;
         display: grid;
-        grid-template-columns: [full-width-start label-start] max-content [label-end input-start] 1fr [input-end full-width-end];
+        grid-template-columns: [full-width-label-start label-start] max-content [label-end input-start] 1fr [input-end full-width-label-end];
         row-gap: 10px;
+
+        grid-column: timestamps-controls;
     }
 
     &__label {
         display: grid;
-        grid-column: full-width;
+        grid-column: full-width-label;
         grid-template-columns: subgrid;
         column-gap: 10px;
 
@@ -110,7 +167,6 @@
     }
 
     &__remove {
-        flex: 0 1 150px;
 
         color: white;
         background-color: red;
@@ -122,6 +178,10 @@
         display: grid;
         grid-template-areas: "stack";
         justify-items: stretch;
+
+        width: 50%;
+
+        grid-column: 2;
 
         &>* {
             grid-area: stack;
@@ -139,4 +199,8 @@
 
         margin-top: 3px;
     }
+}
+
+.video-timestamp-outputs {
+    grid-column: full-width;
 }
