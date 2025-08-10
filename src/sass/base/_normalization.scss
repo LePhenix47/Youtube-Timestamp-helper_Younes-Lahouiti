@@ -85,7 +85,7 @@
         ;
     }
 
-    :is(ul, ol) {
+    :is(ul, ol, menu) {
         list-style-type: none;
     }
 
@@ -100,6 +100,15 @@
         font-family: inherit;
 
         color: var(--color-primary);
+
+        display: grid;
+        grid-template-areas: "stack";
+        justify-items: stretch;
+
+        &>* {
+            grid-area: stack;
+
+        }
 
         &:hover {
             cursor: pointer;
