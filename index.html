@@ -20,7 +20,7 @@
     <meta property="og:url" content="https://younes-portfolio-dev.vercel.app/" />
 
     <!-- Title -->
-    <title>Vite template</title>
+    <title>Youtube Timestamp helper</title>
 
     <!-- CSS -->
     <!-- <link rel="stylesheet" href="/src/sass/main.scss" /> -->
@@ -52,14 +52,53 @@
 
     <main class="index" data-element="index">
         <section class="video__container">
-            <!-- 
-            <video class="video" controls playsinline>
+
+            <video class="video" playsinline>
                 <source src="https://archive.org/download/BigBuckBunny_124/Content/big_buck_bunny_720p_surround.mp4"
                     type="video/mp4" />
-            </video> 
-            -->
+            </video>
 
-            <label class="video__no-video">
+
+            <menu class="video__controls">
+                <li class="video__progress">
+                    <div class="video__progress-bar-chunk">
+                        <div class="video__progress-chunk-progress"></div>
+                        <div class="video__progress-chunk-progress video__progress-chunk-progress--preview"></div>
+                    </div>
+                    <div class="video__progress-thumb square"></div>
+
+                    <figure class="video__progress-frame">
+                        <img src="https://7da60cd3-4995-430f-9067-ee6ddaf07cfd.mdnplay.dev/shared-assets/images/examples/elephant.jpg"
+                            alt="Timestamp frame" class="video__progress-frame-img" />
+                        <figcaption class="video__progress-frame-caption">Chapter 1 - STRAWBERRY Elephant</figcaption>
+                    </figure>
+                </li>
+
+                <li class="video-options">
+
+                    <button type="button" class="video-options__video-play">
+                        <i class="fa-solid fa-play"></i>
+                        <i class="fa-solid fa-pause"></i>
+                    </button>
+
+                    <label class="video-options__video-volume">
+                        <i class="fa-solid fa-volume-high"></i>
+                        <i class="fa-solid fa-volume-low"></i>
+                        <i class="fa-solid fa-volume-off"></i>
+                        <i class="fa-solid fa-volume-xmark"></i>
+                        <input type="range" />
+                    </label>
+
+                    <p class="video-options__timestamp-info">
+                        <span class="video-options__timestamp-start">0:00</span> /
+                        <span class="video-options__timestamp-end">12:26</span>
+                        <span class="video-options__timestamp-chapter">Chapter 1</span>
+                    </p>
+                </li>
+            </menu>
+
+
+            <!-- <label class="video__no-video">
 
                 <input type="file" class="video__no-video-input hide" accept="video/*" />
 
@@ -85,7 +124,7 @@
                 </span>
 
                 <i class="fa-solid fa-arrow-up-from-bracket video__no-video-icon"></i>
-            </label>
+            </label> -->
         </section>
         <aside class="video-timestamps">
             <h2 class="video-timestamps__title">Chapters timestamps</h2>
@@ -166,6 +205,13 @@
         <section class="video-timestamp-outputs">
             <label for="timestamps-output">Timestamp output:</label>
             <textarea name="" id="timestamps-output"></textarea>
+
+            <button type="button" class="video-timestamps__remove">
+                <i class="fa-solid fa-xmark video-timestamps__remove-icon" aria-hidden="true"></i>
+                <span class="video-timestamps__remove-text">
+                    Delete current video
+                </span>
+            </button>
         </section>
     </main>
     <footer class="footer" data-element="footer">

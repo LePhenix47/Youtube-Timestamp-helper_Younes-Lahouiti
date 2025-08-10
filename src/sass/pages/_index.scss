@@ -29,12 +29,11 @@
     min-height: 425px;
 
     &__container {
-        @include center-flex-column(20px);
+        @include center-flex-column;
 
         justify-content: flex-start;
 
-        width: 100%;
-        height: 100%;
+        position: relative;
     }
 
     &__no-video {
@@ -64,11 +63,95 @@
         --_size: 64px;
     }
 
-    &__controls {}
+    &__controls {
+        background-color: purple;
+        width: 100%;
 
-    &__progress-thumb {}
+        position: absolute;
+        bottom: 0;
+    }
 
-    &__progress-bar-chunk {}
+    &__progress {
+        height: 3px;
+        width: 100%;
+
+        position: relative;
+
+        --_total-video-progress: 8%;
+    }
+
+    &__progress-thumb {
+        background-color: yellow;
+        border-radius: 50%;
+
+        --_size: 14px;
+
+        position: absolute;
+        top: calc(50% - var(--_size) / 2);
+        left: var(--_total-video-progress);
+
+        anchor-name: --progress-thumb;
+
+        translate: -50% 0%;
+    }
+
+
+    &__progress-frame {
+        @include center-flex-column(10px);
+
+        position: absolute;
+        position-anchor: --progress-thumb;
+
+        bottom: anchor(top);
+        left: anchor(50%);
+
+        margin-bottom: 5px;
+        translate: -50% 0%;
+
+        overflow: hidden;
+        width: 300px;
+        min-height: 150px;
+    }
+
+    &__progress-frame-img {
+        width: 50%;
+        height: 50%;
+        object-fit: cover;
+
+        border: 2px solid currentColor;
+        border-radius: 8px;
+    }
+
+    &__progress-bar-chunk {
+        --_chunk-size: 10%;
+        width: var(--_chunk-size);
+
+        background-color: yellow;
+        height: 100%;
+
+        position: relative;
+        isolation: isolate;
+    }
+
+    &__progress-chunk-progress {
+        --_chunk-progress: 50%;
+        width: var(--_chunk-progress);
+
+        background-color: var(--yt-color);
+
+        height: 100%;
+
+        &--preview {
+            --_chunk-preview-progress: 75%;
+            width: var(--_chunk-preview-progress);
+
+            position: absolute;
+            top: 0;
+            z-index: -1;
+            background-color: grey;
+        }
+    }
+
 }
 
 .video-timestamps {
@@ -175,18 +258,10 @@
         border-radius: 5px;
         padding: 5px 10px;
 
-        display: grid;
-        grid-template-areas: "stack";
-        justify-items: stretch;
 
         width: 50%;
 
         grid-column: 2;
-
-        &>* {
-            grid-area: stack;
-
-        }
     }
 
     &__remove-text {
