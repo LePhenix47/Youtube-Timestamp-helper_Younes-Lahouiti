@@ -77,7 +77,15 @@
 
         position: relative;
 
-        --_total-video-progress: 8%;
+        --_video-duration-ms: 1000;
+
+        // ? for the actual video progress
+        --_current-video-progress-ms: 500;
+
+        // ? for hover progress
+        --_current-video-hover-ms: 750;
+
+        --_total-video-progress: calc(var(--_current-video-progress-ms) / var(--_video-duration-ms) * 100%);
     }
 
     &__progress-thumb {
@@ -88,11 +96,13 @@
 
         position: absolute;
         top: calc(50% - var(--_size) / 2);
-        left: var(--_total-video-progress);
+        left: clamp(0%, var(--_total-video-progress), 100%);
 
         anchor-name: --progress-thumb;
 
         translate: -50% 0%;
+
+        z-index: 2;
     }
 
 
@@ -103,19 +113,21 @@
         position-anchor: --progress-thumb;
 
         bottom: anchor(top);
-        left: anchor(50%);
+        left: clamp(150px, anchor(50%), 100% - 150px);
 
         margin-bottom: 5px;
         translate: -50% 0%;
 
         overflow: hidden;
-        width: 300px;
+        width: 150px;
         min-height: 150px;
+
+        color: inherit;
     }
 
     &__progress-frame-img {
-        width: 50%;
-        height: 50%;
+        width: 150px;
+        height: 110px;
         object-fit: cover;
 
         border: 2px solid currentColor;
@@ -123,32 +135,47 @@
     }
 
     &__progress-bar-chunk {
-        --_chunk-size: 10%;
-        width: var(--_chunk-size);
+        // ? Variable for computing stuff (my name is stuff)
+        // ? Timestamps for the chunk in milliseconds to get the duration
+        --_chunk-start-ms: 0;
+        --_chunk-end-ms: 850;
 
-        background-color: yellow;
+        --_chunk-duration-ms: calc(var(--_chunk-end-ms) - var(--_chunk-start-ms));
+        --_elapsed-time-in-chunk-ms: calc(var(--_current-video-progress-ms) - var(--_chunk-start-ms));
+
+        // ? Vars for the children
+        --_chunk-progress: calc(max(0, var(--_elapsed-time-in-chunk-ms)) / var(--_chunk-duration-ms) * 100%);
+        --_chunk-hover-progress: calc(max(0, var(--_current-video-hover-ms))/ var(--_chunk-duration-ms) * 100%);
+
+        // ? Vars for the current chunk
+        --_chunk-size: calc(var(--_chunk-duration-ms) / var(--_video-duration-ms) * 100%);
+        --_chunk-position: calc(var(--_chunk-start-ms) / var(--_video-duration-ms) * 100%);
+
+        width: var(--_chunk-size);
         height: 100%;
 
-        position: relative;
+        left: clamp(0%, var(--_chunk-position), 100%);
+
+        position: absolute;
         isolation: isolate;
+
+        background-color: green;
     }
 
     &__progress-chunk-progress {
-        --_chunk-progress: 50%;
         width: var(--_chunk-progress);
 
         background-color: var(--yt-color);
 
         height: 100%;
 
-        &--preview {
-            --_chunk-preview-progress: 75%;
-            width: var(--_chunk-preview-progress);
+        &--hover-progress {
+            width: var(--_chunk-hover-progress);
 
             position: absolute;
             top: 0;
             z-index: -1;
-            background-color: grey;
+            background-color: #ffffff80;
         }
     }
 
