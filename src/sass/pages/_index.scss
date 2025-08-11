@@ -80,12 +80,14 @@
         --_video-duration-ms: 1000;
 
         // ? for the actual video progress
-        --_current-video-progress-ms: 500;
+        --_current-video-progress-ms: 650;
 
         // ? for hover progress
         --_current-video-hover-ms: 750;
 
         --_total-video-progress: calc(var(--_current-video-progress-ms) / var(--_video-duration-ms) * 100%);
+
+        // --_chunks-gap: 5px;
     }
 
     &__progress-thumb {
@@ -138,7 +140,7 @@
         // ? Variable for computing stuff (my name is stuff)
         // ? Timestamps for the chunk in milliseconds to get the duration
         --_chunk-start-ms: 0;
-        --_chunk-end-ms: 850;
+        --_chunk-end-ms: 500;
 
         --_chunk-duration-ms: calc(var(--_chunk-end-ms) - var(--_chunk-start-ms));
         --_elapsed-time-in-chunk-ms: calc(var(--_current-video-progress-ms) - var(--_chunk-start-ms));
@@ -159,10 +161,12 @@
         position: absolute;
         isolation: isolate;
 
+        overflow: hidden;
         background-color: green;
     }
 
     &__progress-chunk-progress {
+
         width: var(--_chunk-progress);
 
         background-color: var(--yt-color);
