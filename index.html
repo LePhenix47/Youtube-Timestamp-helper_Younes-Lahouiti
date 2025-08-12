@@ -90,22 +90,27 @@
 
                 <li class="video-options">
 
-                    <button type="button" class="video-options__video-play">
+                    <button type="button" class="video-options__video-play square">
                         <i class="fa-solid fa-play"></i>
-                        <i class="fa-solid fa-pause"></i>
+                        <!-- <i class="fa-solid fa-pause"></i> -->
                     </button>
 
                     <label class="video-options__video-volume">
-                        <i class="fa-solid fa-volume-high"></i>
-                        <i class="fa-solid fa-volume-low"></i>
-                        <i class="fa-solid fa-volume-off"></i>
-                        <i class="fa-solid fa-volume-xmark"></i>
-                        <input type="range" />
+                        <i
+                            class="fa-solid fa-volume-high video-options__video-volume-icon video-options__video-volume-icon--high"></i>
+                        <!-- <i
+                            class="fa-solid fa-volume-low video-options__video-volume-icon video-options__video-volume-icon--low"></i>
+                        <i
+                            class="fa-solid fa-volume-off video-options__video-volume-icon video-options__video-volume-icon--off"></i> -->
+                        <!-- <i
+                            class="fa-solid fa-volume-xmark video-options__video-volume-icon video-options__video-volume-icon--xmark"></i> -->
+                        <input type="range" class="video-options__video-volume-range"
+                            data-range-style="overflowing-thumb" min="0" max="100" />
                     </label>
 
                     <p class="video-options__timestamp-info">
                         <span class="video-options__timestamp-start">0:00</span> /
-                        <span class="video-options__timestamp-end">12:26</span>
+                        <span class="video-options__timestamp-end">12:26</span> •
                         <span class="video-options__timestamp-chapter">Chapter 1</span>
                     </p>
                 </li>

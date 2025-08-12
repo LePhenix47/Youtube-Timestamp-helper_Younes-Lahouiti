@@ -28,12 +28,15 @@
 
     min-height: 425px;
 
+    border-radius: inherit;
+
     &__container {
         @include center-flex-column;
 
         justify-content: flex-start;
 
         position: relative;
+        border-radius: 8px;
     }
 
     &__no-video {
@@ -64,8 +67,21 @@
     }
 
     &__controls {
-        background-color: purple;
+        @include center-flex-column(15px);
+        align-items: flex-start;
+
+        --_fade-height: 90%;
+        background-image: linear-gradient(0deg,
+                rgba(0, 0, 0, 50%) 0px,
+                transparent var(--_fade-height));
+
+        color: white;
+
+        border-radius: inherit;
+
         width: 100%;
+
+        padding: 5px;
 
         position: absolute;
         bottom: 0;
@@ -74,6 +90,7 @@
     &__progress {
         --_pb-height: 3;
         height: calc(var(--_pb-height) * 1px);
+
 
         width: 100%;
 
@@ -140,6 +157,8 @@
             --_scale-y: calc(var(--_new-pb-height) / var(--_pb-height));
 
             scale: 1 var(--_scale-y);
+
+            cursor: pointer;
         }
     }
 
@@ -215,10 +234,67 @@
         height: 110px;
         object-fit: cover;
 
-        border: 2px solid currentColor;
+        border: 2px solid white;
         border-radius: 8px;
     }
 
+    &__progress-frame-caption {
+        color: white;
+
+        text-shadow: 0 0 5px black;
+
+        text-align: center;
+    }
+
+}
+
+.video-options {
+    display: flex;
+
+    gap: 20px;
+
+    // background-color: orangered;
+
+    &__video-play {
+        --_size: 20px;
+
+        place-items: center;
+        border: none;
+
+        color: inherit
+    }
+
+    &__video-volume {
+        height: 20px;
+        width: 20px;
+
+
+        overflow: clip;
+
+        display: flex;
+        align-items: center;
+
+        transition: width 150ms ease-in-out;
+
+        &:hover {
+            width: max-content;
+        }
+    }
+
+    &__video-volume-range {
+        margin-left: 5px;
+
+        --_range-bg: rgba(255, 255, 255, 0.25);
+        --_progress-bg: white;
+    }
+
+    &__timestamp-info {
+        font-size: 13px;
+
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
 }
 
 .video-timestamps {
