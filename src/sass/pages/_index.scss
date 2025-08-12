@@ -91,7 +91,7 @@
 
         --_chunks-gap: 3px;
 
-        &:has(.video__progress-bar-chunk:hover) .video__progress-bar-chunk:not(:hover) {
+        &:hover .video__progress-bar-chunk:not(:hover) {
             --_new-pb-height: 5;
             --_scale-y: calc(var(--_new-pb-height) / var(--_pb-height));
 
@@ -123,7 +123,7 @@
         position: absolute;
         isolation: isolate;
 
-        background-color: green;
+        background-color: rgba(255, 255, 255, 25%);
 
         width: calc(var(--_chunk-size) - var(--_chunks-gap));
         left: clamp(0%, var(--_chunk-position) + var(--_chunks-gap), 100% - var(--_chunks-gap));
@@ -158,12 +158,12 @@
             position: absolute;
             top: 0;
             z-index: -1;
-            background-color: #ffffff80;
+            background-color: rgba(255, 255, 255, 50%);
         }
     }
 
     &__progress-thumb {
-        background-color: yellow;
+        background-color: var(--yt-color);
         border-radius: 50%;
 
         --_size: 14px;
@@ -177,6 +177,13 @@
         translate: -50% 0%;
 
         z-index: 2;
+
+        transition: scale 150ms ease-in-out;
+
+        // ? If the user hovered a chunk bar where the thumb is → scale it up 
+        &.chunk-hover {
+            scale: 1.5;
+        }
     }
 
 
