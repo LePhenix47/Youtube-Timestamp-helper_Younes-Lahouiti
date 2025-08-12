@@ -472,7 +472,7 @@
             }
         }
 
-        &[type="range"] {
+        &[type="range"]:not([data-range-style="overflowing-thumb"]) {
             &:hover {
                 cursor: grab;
             }
@@ -555,6 +555,81 @@
                 height: var(--_thumb-height);
 
                 box-shadow: var(--_inner-track-offset) 0 0 var(--_inner-track-size) var(--_inner-track-bg);
+            }
+        }
+
+        &[type="range"][data-range-style="overflowing-thumb"] {
+            --_progress-bg: red;
+            --_range-bg: rgba(0, 0, 0, 25%);
+
+            --_range-height: 5px;
+
+            --_progress-border-radius: 100vmax;
+
+            --_webkit-progression-width: 50%;
+
+            border-radius: var(--_progress-border-radius);
+            height: var(--_range-height);
+
+            appearance: none;
+
+            &:hover {
+                cursor: grab;
+            }
+
+            &:active {
+                cursor: grabbing;
+            }
+
+            // * WebKit & Chromium
+            &::-webkit-slider-thumb {
+                appearance: none;
+
+                border: none;
+                border-radius: inherit;
+
+                background-color: var(--_progress-bg);
+
+                height: calc(var(--_range-height) * 2);
+                width: calc(var(--_range-height) * 2);
+
+                translate: 0% -25%;
+
+                border: none;
+            }
+
+            &::-webkit-slider-runnable-track {
+                border-radius: inherit;
+                height: inherit;
+
+                background-image: linear-gradient(90deg,
+                        var(--_progress-bg) var(--_webkit-progression-width),
+                        var(--_range-bg) var(--_webkit-progression-width));
+            }
+
+            &::-webkit-slider-container {
+                border-radius: inherit;
+                height: inherit;
+            }
+
+            // * Mozilla Firefox
+            &::-moz-range-thumb {
+                background-color: var(--_progress-bg);
+                height: calc(var(--_range-height) * 2);
+                width: calc(var(--_range-height) * 2);
+                border: none;
+            }
+
+            &::-moz-range-progress {
+                background-color: var(--_progress-bg);
+                border-radius: inherit;
+                height: inherit;
+            }
+
+            &::-moz-range-track {
+                height: inherit;
+                border-radius: inherit;
+                background-color: var(--_range-bg);
             }
         }
     }
