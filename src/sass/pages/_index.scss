@@ -227,6 +227,18 @@
         margin-bottom: 5px;
 
         color: inherit;
+
+        transition:
+            opacity 150ms ease-in-out,
+            visibility 150ms ease-in-out;
+
+        opacity: 0;
+        visibility: collapse;
+
+        &.chunk-hover {
+            visibility: visible;
+            opacity: 1;
+        }
     }
 
     &__progress-frame-img {
@@ -236,6 +248,7 @@
 
         border: 2px solid white;
         border-radius: 8px;
+
     }
 
     &__progress-frame-caption {
@@ -257,6 +270,7 @@
 
     &__video-play {
         --_size: 20px;
+        font-size: 20px;
 
         place-items: center;
         border: none;
