@@ -61,6 +61,44 @@
                     type="video/mp4" />
             </video>
 
+            <div class="video-indicators">
+                <p class="video-indicators__video-indicator square video-indicators__video-indicator--play">
+                    <i class="fa-solid fa-play"></i>
+                </p>
+                <p class="video-indicators__video-indicator square video-indicators__video-indicator--pause">
+                    <i class="fa-solid fa-pause"></i>
+                </p>
+
+                <p class="video-indicators__skip square video-indicators__skip--backwards"><i
+                        class="fa-solid fa-backward"></i>
+                    <span>10 seconds</span>
+                </p>
+
+                <p class="video-indicators__skip square video-indicators__skip--forwards"><i
+                        class="fa-solid fa-forward"></i>
+
+                    <span>10 seconds</span>
+                </p>
+
+
+                <p class="video-indicators__video-buffer square">
+                    <!-- TODO: Since we're reusing the same SVG but with just the attribute values changed, we can create a single SVG symbol and use <use> -->
+                    <svg width="100%" height="100%" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <g transform="translate(50, 50)">
+                            <circle r="40" fill="transparent" stroke="currentColor" stroke-width="6"
+                                stroke-dasharray="251" stroke-dashoffset="502" stroke-linecap="round">
+                                <animateTransform attributeName="transform" type="rotate" from="0 0 0" to="360 0 0"
+                                    dur="2.5s" repeatCount="indefinite" />
+                                <animate attributeName="stroke-dashoffset" dur="2s" values="500;250;"
+                                    repeatCount="indefinite" />
+                                <animate attributeName="stroke-dasharray" values="250;500;" dur="2s"
+                                    repeatCount="indefinite" />
+                            </circle>
+                        </g>
+                    </svg>
+                </p>
+            </div>
+
 
             <menu class="video__controls">
                 <li class="video__progress">

@@ -128,6 +128,7 @@
         --_elapsed-hover-in-chunk-ms: calc(var(--_current-video-hover-ms) - var(--_chunk-start-ms));
 
         // ? Vars for the children
+        // --_chunk-buffered-progress: calc(max(0, var(???)) / var(--_chunk-duration-ms) * 100%);
         --_chunk-progress: calc(max(0, var(--_elapsed-time-in-chunk-ms)) / var(--_chunk-duration-ms) * 100%);
         --_chunk-hover-progress: calc(max(0, var(--_elapsed-hover-in-chunk-ms))/ var(--_chunk-duration-ms) * 100%);
 
@@ -163,6 +164,7 @@
     }
 
     &__progress-chunk-progress {
+        position: absolute;
 
         width: var(--_chunk-progress);
         max-width: 100%;
@@ -175,7 +177,6 @@
             width: var(--_chunk-hover-progress);
 
             position: absolute;
-            top: 0;
             z-index: -1;
             background-color: rgba(255, 255, 255, 50%);
         }
@@ -257,6 +258,140 @@
         text-shadow: 0 0 5px black;
 
         text-align: center;
+    }
+
+}
+
+
+.video-indicators {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+
+    border-radius: inherit;
+
+    // ? We can show animations 
+    &:has(+.video__controls .video-options__video-play>input:checked) .video-indicators__video-indicator--pause {
+        display: flex;
+        animation: bezel-fade-out 500ms linear forwards;
+    }
+
+    &:has(+.video__controls .video-options__video-play>input:not(:checked)) .video-indicators__video-indicator--play {
+        display: flex;
+        animation: bezel-fade-out 500ms linear forwards;
+    }
+
+    &__video-indicator {
+        @include center-flex;
+
+        position: absolute;
+        top: 50%;
+        left: 50%;
+
+        translate: -50% -50%;
+
+        --_size: 52px;
+        background-color: rgba(0, 0, 0, 50%);
+        border-radius: 50%;
+
+        display: none;
+    }
+
+    &__skip {
+        @include center-flex-column(10px);
+
+        position: absolute;
+        top: 50%;
+        --_inline-offset: 25px;
+
+        translate: 0 -50%;
+
+        --_size: 110px;
+        background-color: rgba(0, 0, 0, 50%);
+        border-radius: 50%;
+
+        /* must be in % to work */
+        --_shine-width: 10%;
+        --_shine-position: 50%;
+
+        mask-size: 200% 100%;
+        mask-repeat: repeat;
+
+        mask-image: linear-gradient(45deg,
+                black calc(var(--_shine-position) - var(--_shine-width)),
+                transparent var(--_shine-position),
+                black calc(var(--_shine-position) + var(--_shine-width)));
+
+        mask-position: 0% 100%;
+        animation: shine-animation-mask 0.5s infinite linear;
+        animation-iteration-count: 3;
+
+        display: none;
+
+
+        &>i {
+            font-size: 24px;
+        }
+
+        &>span {
+            font-size: 11px;
+            user-select: none;
+        }
+
+        &--backwards {
+            left: var(--_inline-offset)
+        }
+
+        &--forwards {
+            right: var(--_inline-offset)
+        }
+    }
+
+
+    &__video-buffer {
+
+        position: absolute;
+        top: 50%;
+        left: 50%;
+
+        translate: -50% -50%;
+
+        --_size: 64px;
+
+        display: none;
+    }
+
+    /*
+    
+    */
+}
+
+@keyframes shine-animation-mask {
+    0% {
+        opacity: 50%;
+        mask-position: 150% 100%;
+    }
+
+    50% {
+        opacity: 1;
+
+    }
+
+    99% {
+        opacity: 50%;
+        mask-position: -50% 100%;
+    }
+}
+
+@keyframes bezel-fade-out {
+    0% {
+        opacity: 1;
+        scale: 1;
+    }
+
+    100% {
+        opacity: 0;
+        scale: 2
     }
 
 }
@@ -418,7 +553,7 @@
 
         border-radius: 100vmax;
 
-        background: var(--ts-input-bg);
+        background-color: var(--ts-input-bg);
     }
 
     &__remove {
