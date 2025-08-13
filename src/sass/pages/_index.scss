@@ -266,16 +266,27 @@
 
     gap: 20px;
 
-    // background-color: orangered;
+    padding-inline: 10px;
+    padding-bottom: 5px;
 
     &__video-play {
+        @include center-flex;
+
         --_size: 20px;
         font-size: 20px;
 
         place-items: center;
         border: none;
 
-        color: inherit
+        color: inherit;
+
+        &:has(> input:checked)>.fa-play {
+            display: none;
+        }
+
+        &:not(:has(> input:checked))>.fa-pause {
+            display: none;
+        }
     }
 
     &__video-volume {
@@ -308,6 +319,10 @@
         display: flex;
         align-items: center;
         gap: 5px;
+    }
+
+    &__timestamp-chapter {
+        color: inherit;
     }
 }
 

@@ -40,21 +40,24 @@
 <body>
     <header class="header" data-element="header">
         <!-- SVG filter for the video (ambient mode) -->
-        <svg width="0" height="0">
-            <filter id="blur-and-scale" y="-50%" x="-50%" width="200%" height="200%">
-                <feGaussianBlur in="SourceGraphic" stdDeviation="60" result="blurred" />
-                <feColorMatrix type="saturate" in="blurred" values="4" />
-                <feComposite in="SourceGraphic" operator="over" />
-            </filter>
-        </svg>
+
         <h1 class="header__title" title="Title">Youtube Timestamp helper</h1>
     </header>
 
     <main class="index" data-element="index">
         <section class="video__container">
 
+            <svg width="0" height="0" style="visibility: collapse">
+                <filter id="blur-and-scale" y="-50%" x="-50%" width="200%" height="200%">
+                    <feGaussianBlur in="SourceGraphic" stdDeviation="60" result="blurred" />
+                    <feColorMatrix type="saturate" in="blurred" values="4" />
+                    <feComposite in="SourceGraphic" operator="over" />
+                </filter>
+            </svg>
+
             <video class="video" playsinline>
-                <source src="https://archive.org/download/BigBuckBunny_124/Content/big_buck_bunny_720p_surround.mp4"
+                <source
+                    src="https://archive.org/download/BigBuckBunny_124/Content/big_buck_bunny_720p_surround.mp4#t=350"
                     type="video/mp4" />
             </video>
 
@@ -90,10 +93,11 @@
 
                 <li class="video-options">
 
-                    <button type="button" class="video-options__video-play square">
+                    <label class="video-options__video-play square">
+                        <input type="checkbox" class="hide" />
                         <i class="fa-solid fa-play"></i>
-                        <!-- <i class="fa-solid fa-pause"></i> -->
-                    </button>
+                        <i class="fa-solid fa-pause"></i>
+                    </label>
 
                     <label class="video-options__video-volume">
                         <i
@@ -111,7 +115,7 @@
                     <p class="video-options__timestamp-info">
                         <span class="video-options__timestamp-start">0:00</span> /
                         <span class="video-options__timestamp-end">12:26</span> •
-                        <span class="video-options__timestamp-chapter">Chapter 1</span>
+                        <button type="button" class="video-options__timestamp-chapter">Chapter 1</button>
                     </p>
                 </li>
             </menu>
