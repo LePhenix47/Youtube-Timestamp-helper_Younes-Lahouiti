@@ -571,6 +571,13 @@
             border-radius: var(--_progress-border-radius);
             height: var(--_range-height);
 
+            /*
+            * Remove the native input background layer from the render engine.
+            * Without this, even with `appearance: none`, browsers (esp. WebKit/Blink/Gecko)
+            * still draw an opaque platform-default track behind the track,
+            * breaking transparency (e.g., "transparent" becomes flat gray).
+            */
+            background: none;
             appearance: none;
 
             &:hover {
