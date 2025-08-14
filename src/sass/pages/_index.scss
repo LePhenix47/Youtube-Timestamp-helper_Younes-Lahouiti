@@ -63,7 +63,10 @@
     }
 
     &__no-video-spinner {
-        --_size: 64px;
+
+        &>.square {
+            --_size: 64px;
+        }
     }
 
     &__controls {
