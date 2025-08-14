@@ -466,6 +466,10 @@
         gap: 5px;
     }
 
+    &__timestamp {
+        font-variant-numeric: tabular-nums;
+    }
+
     &__timestamp-chapter {
         color: inherit;
     }
