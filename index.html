@@ -70,13 +70,13 @@
                 </symbol>
             </svg>
 
-            <video class="video" playsinline>
+            <video class="video hide" playsinline>
                 <source
                     src="https://archive.org/download/BigBuckBunny_124/Content/big_buck_bunny_720p_surround.mp4#t=350"
                     type="video/mp4" />
             </video>
 
-            <div class="video-indicators">
+            <div class="video-indicators hide">
                 <p class="video-indicators__video-indicator square video-indicators__video-indicator--play">
                     <i class="fa-solid fa-play"></i>
                 </p>
@@ -103,7 +103,7 @@
             </div>
 
 
-            <menu class="video__controls">
+            <menu class="video__controls hide">
                 <li class="video__progress">
                     <ul class="video__progress-chunks-container">
                         <li class="video__progress-bar-chunk" style=" --_chunk-start-secs: 0; --_chunk-end-secs: 500;">
@@ -178,7 +178,7 @@
             </menu>
 
 
-            <!-- <label class="video__no-video">
+            <label class="video__no-video">
 
                 <input type="file" class="video__no-video-input hide" accept="video/*" />
 
@@ -187,55 +187,18 @@
                 </span>
 
 
-                <span class="video__no-video-spinner">
+                <span class="video__no-video-spinner hide">
                     <svg width="100%" height="100%" class="square">
                         <use href="#spinning-circle" style="--_circle-stroke-width: 10;" />
                     </svg>
                 </span>
 
                 <i class="fa-solid fa-arrow-up-from-bracket video__no-video-icon"></i>
-            </label> -->
+            </label>
         </section>
-        <aside class="video-timestamps">
+        <aside class="video-timestamps hide">
             <h2 class="video-timestamps__title">Chapters timestamps</h2>
             <ul class="video-timestamps__list">
-
-                <!-- 
-               <li class="video-timestamps__item">
-                    <h3 class="video-timestamps__item-title">Intro</h3>
-                    <img src="https://younes-portfolio-dev.vercel.app/_next/image?url=%2F_next%2Fstatic%2Fmedia%2FP4-DW-image.a91dea01.png&w=640&q=75"
-                        alt="" class="video-timestamps__img" />
-
-                    <form class="video-timestamps__labels-container">
-                        <label class="video-timestamps__label" for="title-1">
-                            Title:
-                            <input placeholder="Introduction" type="text"
-                                class="video-timestamps__input video-timestamps__input--title" />
-                        </label>
-
-                        <label class="video-timestamps__label" for="start-1">
-                            Start:
-                            <input placeholder="ex: mm:ss" type="text"
-                                class="video-timestamps__input video-timestamps__input--start" />
-                        </label>
-
-                        <label class="video-timestamps__label" for="end-1">
-                            End:
-                            <input placeholder="ex: hh:mm:ss" type="text"
-                                class="video-timestamps__input video-timestamps__input--end" />
-                        </label>
-                    </form>
-
-                    <button type="button" class="video-timestamps__remove">
-                        <i class="fa-solid fa-xmark video-timestamps__remove-icon"></i>
-                        <span class="video-timestamps__remove-text">
-                            Remove
-                        </span>
-                    </button>
-
-                </li>
-                -->
-
                 <li class="video-timestamps__item">
                     <h3 class="video-timestamps__item-title">Intro</h3>
                     <img src="https://younes-portfolio-dev.vercel.app/_next/image?url=%2F_next%2Fstatic%2Fmedia%2FP4-DW-image.a91dea01.png&w=640&q=75"
@@ -276,7 +239,7 @@
             <label for="timestamps-output">Timestamp output:</label>
             <textarea name="" id="timestamps-output"></textarea>
 
-            <button type="button" class="video-timestamps__remove">
+            <button type="button" class="video-timestamps__remove hide">
                 <i class="fa-solid fa-xmark video-timestamps__remove-icon" aria-hidden="true"></i>
                 <span class="video-timestamps__remove-text">
                     Delete current video
