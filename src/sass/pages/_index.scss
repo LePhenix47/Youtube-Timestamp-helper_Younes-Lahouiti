@@ -96,15 +96,18 @@
 
         position: relative;
 
-        --_video-duration-ms: 1000;
+        // ? For the total video duration
+        --_video-duration-secs: 1000;
 
         // ? for the actual video progress
-        --_current-video-progress-ms: 650;
+        --_current-video-progress-secs: 650;
 
         // ? for hover progress
-        --_current-video-hover-ms: 750;
+        --_current-video-hover-secs: 750;
 
-        --_total-video-progress: calc(var(--_current-video-progress-ms) / var(--_video-duration-ms) * 100%);
+        --_total-video-progress: calc(var(--_current-video-progress-secs) / var(--_video-duration-secs) * 100%);
+
+        --_buffer-end-secs: 860;
 
         --_chunks-gap: 3px;
 
@@ -120,21 +123,24 @@
     &__progress-bar-chunk {
         // ? Variable for computing stuff (my name is stuff)
         // ? Timestamps for the chunk in milliseconds to get the duration
-        /* --_chunk-start-ms: 0; */
-        /* --_chunk-end-ms: 500; */
+        /* --_chunk-start-secs: 0; */
+        /* --_chunk-end-secs: 500; */
 
-        --_chunk-duration-ms: calc(var(--_chunk-end-ms) - var(--_chunk-start-ms));
-        --_elapsed-time-in-chunk-ms: calc(var(--_current-video-progress-ms) - var(--_chunk-start-ms));
-        --_elapsed-hover-in-chunk-ms: calc(var(--_current-video-hover-ms) - var(--_chunk-start-ms));
+        --_chunk-duration-secs: calc(var(--_chunk-end-secs) - var(--_chunk-start-secs));
+        --_elapsed-time-in-chunk-secs: calc(var(--_current-video-progress-secs) - var(--_chunk-start-secs));
+        --_elapsed-hover-in-chunk-secs: calc(var(--_current-video-hover-secs) - var(--_chunk-start-secs));
+        --_elapsed-buffer-in-chunk: calc((var(--_buffer-end-secs) - var(--_chunk-start-secs)));
 
         // ? Vars for the children
-        // --_chunk-buffered-progress: calc(max(0, var(???)) / var(--_chunk-duration-ms) * 100%);
-        --_chunk-progress: calc(max(0, var(--_elapsed-time-in-chunk-ms)) / var(--_chunk-duration-ms) * 100%);
-        --_chunk-hover-progress: calc(max(0, var(--_elapsed-hover-in-chunk-ms))/ var(--_chunk-duration-ms) * 100%);
+        --_chunk-progress: calc(max(0, var(--_elapsed-time-in-chunk-secs)) / var(--_chunk-duration-secs) * 100%);
+        --_chunk-hover-progress: calc(max(0, var(--_elapsed-hover-in-chunk-secs))/ var(--_chunk-duration-secs) * 100%);
+        --_chunk-buffered-progress:
+            calc(max(0, var(--_elapsed-buffer-in-chunk)) / var(--_chunk-duration-secs) * 100%);
+
 
         // ? Vars for the current chunk
-        --_chunk-size: calc(var(--_chunk-duration-ms) / var(--_video-duration-ms) * 100%);
-        --_chunk-position: calc(var(--_chunk-start-ms) / var(--_video-duration-ms) * 100%);
+        --_chunk-size: calc(var(--_chunk-duration-secs) / var(--_video-duration-secs) * 100%);
+        --_chunk-position: calc(var(--_chunk-start-secs) / var(--_video-duration-secs) * 100%);
 
         height: 100%;
 
@@ -179,6 +185,14 @@
             position: absolute;
             z-index: -1;
             background-color: rgba(255, 255, 255, 50%);
+        }
+
+        &--buffer-progress {
+            width: var(--_chunk-buffered-progress);
+
+            position: absolute;
+            z-index: -2;
+            background-color: rgba(255, 255, 255, 25%);
         }
     }
 
@@ -360,10 +374,6 @@
 
         display: none;
     }
-
-    /*
-    
-    */
 }
 
 @keyframes shine-animation-mask {
