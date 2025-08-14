@@ -144,6 +144,9 @@
 
         height: 100%;
 
+        display: flex;
+        justify-content: space-between;
+
         position: absolute;
         isolation: isolate;
 
@@ -196,6 +199,36 @@
         }
     }
 
+    &__progress-drag-slide {
+        display: flex;
+
+        width: 10px;
+        height: 100%;
+        z-index: 1;
+
+        --_stripe-width: 1px;
+        --_stripe-gap: 2px;
+        --_stripe-color: blue;
+
+        background-image: repeating-linear-gradient(45deg,
+                var(--_stripe-color) 0,
+                var(--_stripe-color) var(--_stripe-width), transparent var(--_stripe-width),
+                transparent calc(var(--_stripe-width) + var(--_stripe-gap)));
+
+        outline: 1px solid rgba(255, 255, 255, 50%);
+
+        touch-action: none;
+        user-select: none;
+
+        &--start {
+            --_stripe-color: yellow;
+        }
+
+        &--end {
+            --_stripe-color: purple;
+        }
+    }
+
     &__progress-thumb {
         background-color: var(--yt-color);
         border-radius: 50%;
@@ -213,6 +246,9 @@
         z-index: 2;
 
         transition: scale 150ms ease-in-out;
+
+        touch-action: none;
+        user-select: none;
 
         // ? If the user hovered a chunk bar where the thumb is → scale it up 
         &.chunk-hover {
@@ -363,16 +399,22 @@
 
 
     &__video-buffer {
-
+        border-radius: inherit;
         position: absolute;
-        top: 50%;
-        left: 50%;
 
-        translate: -50% -50%;
+        @include center-flex;
 
-        --_size: 64px;
+
+
+        background-color: rgba(0, 0, 0, 50%);
+        width: 100%;
+        height: 100%;
 
         display: none;
+
+        &>.square {
+            --_size: 64px;
+        }
     }
 }
 

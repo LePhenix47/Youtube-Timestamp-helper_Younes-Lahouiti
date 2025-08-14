@@ -47,12 +47,27 @@
     <main class="index" data-element="index">
         <section class="video__container">
 
-            <svg width="0" height="0" style="visibility: collapse">
+            <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="visibility: collapse">
                 <filter id="blur-and-scale" y="-50%" x="-50%" width="200%" height="200%">
                     <feGaussianBlur in="SourceGraphic" stdDeviation="60" result="blurred" />
                     <feColorMatrix type="saturate" in="blurred" values="4" />
                     <feComposite in="SourceGraphic" operator="over" />
                 </filter>
+
+                <symbol id="spinning-circle" viewBox="0 0 100 100">
+                    <g transform="translate(50, 50)">
+                        <circle r="40" fill="transparent" stroke="var(--_circle-stroke, currentColor)"
+                            stroke-width="var(--_circle-stroke-width, 10)" stroke-dasharray="251"
+                            stroke-dashoffset="502" stroke-linecap="round">
+                            <animateTransform attributeName="transform" type="rotate" from="0 0 0" to="360 0 0"
+                                dur="2.5s" repeatCount="indefinite" />
+                            <animate attributeName="stroke-dashoffset" dur="2s" values="500;250;"
+                                repeatCount="indefinite" />
+                            <animate attributeName="stroke-dasharray" values="250;500;" dur="2s"
+                                repeatCount="indefinite" />
+                        </circle>
+                    </g>
+                </symbol>
             </svg>
 
             <video class="video" playsinline>
@@ -81,20 +96,10 @@
                 </p>
 
 
-                <p class="video-indicators__video-buffer square">
-                    <!-- TODO: Since we're reusing the same SVG but with just the attribute values changed, we can create a single SVG symbol and use <use> -->
-                    <svg width="100%" height="100%" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                        <g transform="translate(50, 50)">
-                            <circle r="40" fill="transparent" stroke="currentColor" stroke-width="6"
-                                stroke-dasharray="251" stroke-dashoffset="502" stroke-linecap="round">
-                                <animateTransform attributeName="transform" type="rotate" from="0 0 0" to="360 0 0"
-                                    dur="2.5s" repeatCount="indefinite" />
-                                <animate attributeName="stroke-dashoffset" dur="2s" values="500;250;"
-                                    repeatCount="indefinite" />
-                                <animate attributeName="stroke-dasharray" values="250;500;" dur="2s"
-                                    repeatCount="indefinite" />
-                            </circle>
-                        </g>
+                <p class="video-indicators__video-buffer">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 100 100"
+                        class="square">
+                        <use href="#spinning-circle" style="--_circle-stroke-width: 6;" />
                     </svg>
                 </p>
             </div>
@@ -104,6 +109,8 @@
                 <li class="video__progress">
                     <ul class="video__progress-chunks-container">
                         <li class="video__progress-bar-chunk" style=" --_chunk-start-secs: 0; --_chunk-end-secs: 500;">
+                            <div class="video__progress-drag-slide video__progress-drag-slide--start"></div>
+                            <div class="video__progress-drag-slide video__progress-drag-slide--end"></div>
                             <div class="video__progress-chunk-progress"></div>
                             <div class="video__progress-chunk-progress video__progress-chunk-progress--hover-progress">
                             </div>
@@ -112,6 +119,8 @@
                         </li>
                         <li class="video__progress-bar-chunk"
                             style=" --_chunk-start-secs: 500; --_chunk-end-secs: 950;">
+                            <div class="video__progress-drag-slide video__progress-drag-slide--start"></div>
+                            <div class="video__progress-drag-slide video__progress-drag-slide--end"></div>
                             <div class="video__progress-chunk-progress"></div>
                             <div class="video__progress-chunk-progress video__progress-chunk-progress--hover-progress">
                             </div>
@@ -120,6 +129,8 @@
                         </li>
                         <li class="video__progress-bar-chunk"
                             style=" --_chunk-start-secs: 950; --_chunk-end-secs: 1000;">
+                            <div class="video__progress-drag-slide video__progress-drag-slide--start"></div>
+                            <div class="video__progress-drag-slide video__progress-drag-slide--end"></div>
                             <div class="video__progress-chunk-progress"></div>
                             <div class="video__progress-chunk-progress video__progress-chunk-progress--hover-progress">
                             </div>
@@ -177,19 +188,7 @@
 
 
                 <span class="video__no-video-spinner square">
-                    <svg width="100%" height="100%" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                        <g transform="translate(50, 50)">
-                            <circle r="40" fill="transparent" stroke="currentColor" stroke-width="10"
-                                stroke-dasharray="251" stroke-dashoffset="502" stroke-linecap="round">
-                                <animateTransform attributeName="transform" type="rotate" from="0 0 0" to="360 0 0"
-                                    dur="2.5s" repeatCount="indefinite" />
-                                <animate attributeName="stroke-dashoffset" dur="2s" values="500;250;"
-                                    repeatCount="indefinite" />
-                                <animate attributeName="stroke-dasharray" values="250;500;" dur="2s"
-                                    repeatCount="indefinite" />
-                            </circle>
-                        </g>
-                    </svg>
+                    <use href="#spinning-circle" style="--_circle-stroke-width: 10;" />
                 </span>
 
                 <i class="fa-solid fa-arrow-up-from-bracket video__no-video-icon"></i>
