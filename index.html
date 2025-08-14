@@ -84,19 +84,18 @@
                     <i class="fa-solid fa-pause"></i>
                 </p>
 
-                <p class="video-indicators__skip square video-indicators__skip--backwards"><i
-                        class="fa-solid fa-backward"></i>
+                <p class="video-indicators__skip hide square video-indicators__skip--backwards">
+                    <i class="fa-solid fa-backward"></i>
                     <span>10 seconds</span>
                 </p>
 
-                <p class="video-indicators__skip square video-indicators__skip--forwards"><i
-                        class="fa-solid fa-forward"></i>
-
+                <p class="video-indicators__skip hide square video-indicators__skip--forwards">
+                    <i class="fa-solid fa-forward"></i>
                     <span>10 seconds</span>
                 </p>
 
 
-                <p class="video-indicators__video-buffer">
+                <p class="video-indicators__video-buffer hide">
                     <svg width="100%" height="100%" class="square">
                         <use href="#spinning-circle" style="--_circle-stroke-width: 6;" />
                     </svg>
@@ -143,14 +142,16 @@
                     <figure class="video__progress-frame">
                         <img src="https://7da60cd3-4995-430f-9067-ee6ddaf07cfd.mdnplay.dev/shared-assets/images/examples/elephant.jpg"
                             alt="Timestamp frame" class="video__progress-frame-img" />
-                        <figcaption class="video__progress-frame-caption">STRAWBERRY Elephant</figcaption>
+                        <figcaption class="video__progress-frame-caption">STRAWBERRY Elephant
+                            <span class="video__progress-frame-timestamp">0:00</span>
+                        </figcaption>
                     </figure>
                 </li>
 
                 <li class="video-options">
 
                     <label class="video-options__video-play square">
-                        <input type="checkbox" class="hide" />
+                        <input type="checkbox" class="hide video-options__play-input-toggle" />
                         <i class="fa-solid fa-play"></i>
                         <i class="fa-solid fa-pause"></i>
                     </label>
