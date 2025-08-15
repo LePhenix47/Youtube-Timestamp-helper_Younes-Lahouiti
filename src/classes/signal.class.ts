@@ -7,9 +7,9 @@ class Signal {
   private globalController = new AbortController();
 
   on = <T>(
-    target: EventTarget,
     name: string,
     callback: EventCallback<T>,
+    target: EventTarget = document.body,
     useIndividualController?: boolean
   ): AbortController | null => {
     const eventName = this.makeName(name);
@@ -33,9 +33,9 @@ class Signal {
   };
 
   once = <T>(
-    target: EventTarget,
     name: string,
     callback: EventCallback<T>,
+    target: EventTarget = document.body,
     useIndividualController?: boolean
   ): AbortController | null => {
     const eventName = this.makeName(name);

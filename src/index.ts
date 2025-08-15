@@ -17,27 +17,45 @@ const videoDropZoneInput = document.querySelector<HTMLInputElement>(
   "[data-element=upload-video-input]"
 );
 
+signal.on<{ isHovering: boolean }>("dropzone-drag", (detail) => {
+  console.log("Dropzone drag detail:", detail);
+
+  const { isHovering } = detail;
+
+  videoDropZone.classList.toggle("drag-hover", isHovering);
+});
+
+signal.on<{ file: File; eventType: string }>("video-upload", (detail) => {
+  console.log("Video upload detail:", detail);
+});
+
+signal.on<{ file: File; errorMessage: string; eventType: string }>(
+  "video-upload-error",
+  (detail) => {
+    videoDropZone.classList.remove("drag-hover");
+  }
+);
+
 const fileDropManager = new FileDropManager(videoDropZone, videoDropZoneInput);
 
-fileDropManager.setFileValidation((file) => {
+fileDropManager.setFileValidation((file: File) => {
   if (!file.type.startsWith("video/")) {
     return "Invalid file type. Please upload a video file.";
   }
 });
 
 fileDropManager
-  .onFileUpload((file, eventType) => {
-    console.log("File uploaded:", file);
-    console.log("Event type:", eventType);
+  .onFileUploadError((file: File, errorMessage: string, eventType: string) => {
+    signal.emit("video-upload-error", { file, errorMessage, eventType });
   })
-  .onFileUploadError((file, errorMessage, eventType) => {
-    console.error("File upload error:", errorMessage);
+  .onFileUpload((file: File, eventType: string) => {
+    signal.emit("video-upload", { file, eventType });
   });
 
 fileDropManager
   .onDragEnter(() => {
-    console.log("Drag enter");
+    signal.emit("dropzone-drag", { isHovering: true });
   })
   .onDragLeave(() => {
-    console.log("Drag leave");
+    signal.emit("dropzone-drag", { isHovering: false });
   });

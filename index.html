@@ -70,13 +70,13 @@
                 </symbol>
             </svg>
 
-            <video class="video hide" playsinline>
+            <video class="video hide" playsinline data-element="video-player">
                 <source
                     src="https://archive.org/download/BigBuckBunny_124/Content/big_buck_bunny_720p_surround.mp4#t=350"
                     type="video/mp4" />
             </video>
 
-            <div class="video-indicators hide">
+            <div class="video-indicators hide" data-element="video-indicators">
                 <p class="video-indicators__video-indicator square video-indicators__video-indicator--play">
                     <i class="fa-solid fa-play"></i>
                 </p>
@@ -103,43 +103,28 @@
             </div>
 
 
-            <menu class="video__controls hide">
-                <li class="video__progress">
-                    <ul class="video__progress-chunks-container">
+            <menu class="video__controls hide" data-element="video-controls">
+                <li class="video__progress" style="
+                --_video-duration-secs: 500;
+                --_current-video-progress-secs: 250;
+                --_current-video-hover-secs: 0;
+                --_buffer-end-secs: 400;">
+                    <ul class="video__progress-chunks-container" data-element="video-progress-chunk-list">
                         <li class="video__progress-bar-chunk" style=" --_chunk-start-secs: 0; --_chunk-end-secs: 500;">
-                            <div class="video__progress-drag-slide video__progress-drag-slide--start"></div>
-                            <div class="video__progress-drag-slide video__progress-drag-slide--end"></div>
+                            <button class="video__progress-drag-slide video__progress-drag-slide--start"
+                                disabled></button>
+                            <button class="video__progress-drag-slide video__progress-drag-slide--end"
+                                disabled></button>
                             <div class="video__progress-chunk-progress"></div>
                             <div class="video__progress-chunk-progress video__progress-chunk-progress--hover-progress">
                             </div>
                             <div class="video__progress-chunk-progress video__progress-chunk-progress--buffer-progress">
                             </div>
                         </li>
-                        <li class="video__progress-bar-chunk"
-                            style=" --_chunk-start-secs: 500; --_chunk-end-secs: 950;">
-                            <div class="video__progress-drag-slide video__progress-drag-slide--start"></div>
-                            <div class="video__progress-drag-slide video__progress-drag-slide--end"></div>
-                            <div class="video__progress-chunk-progress"></div>
-                            <div class="video__progress-chunk-progress video__progress-chunk-progress--hover-progress">
-                            </div>
-                            <div class="video__progress-chunk-progress video__progress-chunk-progress--buffer-progress">
-                            </div>
-                        </li>
-                        <li class="video__progress-bar-chunk"
-                            style=" --_chunk-start-secs: 950; --_chunk-end-secs: 1000;">
-                            <div class="video__progress-drag-slide video__progress-drag-slide--start"></div>
-                            <div class="video__progress-drag-slide video__progress-drag-slide--end"></div>
-                            <div class="video__progress-chunk-progress"></div>
-                            <div class="video__progress-chunk-progress video__progress-chunk-progress--hover-progress">
-                            </div>
-                            <div class="video__progress-chunk-progress video__progress-chunk-progress--buffer-progress">
-                            </div>
-                        </li>
-
                     </ul>
-                    <div class="video__progress-thumb square"></div>
+                    <div class="video__progress-thumb square" data-element="video-progress-thumb"></div>
 
-                    <figure class="video__progress-frame">
+                    <figure class="video__progress-frame" data-element="video-progress-frame">
                         <img src="https://7da60cd3-4995-430f-9067-ee6ddaf07cfd.mdnplay.dev/shared-assets/images/examples/elephant.jpg"
                             alt="Timestamp frame" class="video__progress-frame-img" />
                         <figcaption class="video__progress-frame-caption">STRAWBERRY Elephant
@@ -197,9 +182,10 @@
                 <i class="fa-solid fa-arrow-up-from-bracket video__no-video-icon"></i>
             </label>
         </section>
-        <aside class="video-timestamps hide">
-            <h2 class="video-timestamps__title">Chapters timestamps</h2>
-            <ul class="video-timestamps__list">
+        <aside class="video-timestamps hide" data-element="video-timestamps">
+            <h2 class="video-timestamps__title">Chapters timestamps <button type="button"
+                    class="video-timestamps__add-button square"><i class="fa-solid fa-plus"></i></button></h2>
+            <ul class="video-timestamps__list" data-element="video-timestamps-list">
                 <li class="video-timestamps__item">
                     <h3 class="video-timestamps__item-title">Intro</h3>
                     <img src="https://younes-portfolio-dev.vercel.app/_next/image?url=%2F_next%2Fstatic%2Fmedia%2FP4-DW-image.a91dea01.png&w=640&q=75"
