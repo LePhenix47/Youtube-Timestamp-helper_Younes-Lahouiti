@@ -58,7 +58,7 @@
         border: 2px dotted var(--_border-color);
         border-radius: 6px;
 
-        &.dragging {
+        &.drag-enter {
             background-color: rgba(128, 128, 128, 25%);
             border-style: dashed;
 
