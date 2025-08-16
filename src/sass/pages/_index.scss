@@ -515,7 +515,14 @@
     }
 
     &__video-volume-range {
-        margin-left: 5px;
+        width: 64px;
+
+        --_range-height: 3px;
+        --_thumb-size: 12px;
+
+        margin-left: 15px;
+
+        border-radius: 0px;
 
         --_range-bg: rgba(255, 255, 255, 0.25);
         --_progress-bg: white;
