@@ -568,15 +568,13 @@
 
             --_webkit-progression-width: 50%;
 
+            --_thumb-size: 15px;
+            --_thumb-border-radius: 50%;
+            --_thumb-bg: var(--_progress-bg);
+
             border-radius: var(--_progress-border-radius);
             height: var(--_range-height);
 
-            /*
-            * Remove the native input background layer from the render engine.
-            * Without this, even with `appearance: none`, browsers (esp. WebKit/Blink/Gecko)
-            * still draw an opaque platform-default track behind the track,
-            * breaking transparency (e.g., "transparent" becomes flat gray).
-            */
             background: none;
             appearance: none;
 
@@ -593,14 +591,16 @@
                 appearance: none;
 
                 border: none;
-                border-radius: inherit;
+                border-radius: var(--_thumb-border-radius);
 
-                background-color: var(--_progress-bg);
+                background: var(--_thumb-bg);
 
-                height: calc(var(--_range-height) * 2);
-                width: calc(var(--_range-height) * 2);
+                height: var(--_thumb-size);
+                width: var(--_thumb-size);
 
-                translate: 0% -25%;
+                --_middle: calc(-1 * (var(--_thumb-size) - var(--_range-height)) / 2);
+
+                translate: 0% var(--_middle, 0%);
 
                 border: none;
             }
@@ -622,9 +622,10 @@
             // * Mozilla Firefox
             &::-moz-range-thumb {
                 background-color: var(--_progress-bg);
-                height: calc(var(--_range-height) * 2);
-                width: calc(var(--_range-height) * 2);
+                height: var(--_thumb-size);
+                width: var(--_thumb-size);
                 border: none;
+                border-radius: var(--_thumb-border-radius);
             }
 
             &::-moz-range-progress {
