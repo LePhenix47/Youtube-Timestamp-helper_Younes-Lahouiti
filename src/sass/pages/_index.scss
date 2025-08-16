@@ -501,10 +501,10 @@
         height: 20px;
         width: 20px;
 
-
         overflow: clip;
 
         display: flex;
+
         align-items: center;
 
         transition: width 150ms ease-in-out;
@@ -512,6 +512,19 @@
         &:hover {
             width: max-content;
         }
+    }
+
+    &__video-volume-button {
+        @include center-flex;
+
+        background: none;
+        border: none;
+        color: inherit;
+
+        height: 20px;
+        width: min(100%, 20px);
+
+        font-size: 15px;
     }
 
     &__video-volume-range {
