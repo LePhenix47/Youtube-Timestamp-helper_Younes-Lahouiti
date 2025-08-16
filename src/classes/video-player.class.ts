@@ -10,6 +10,7 @@ type EndedCallback = () => void;
 type SeekingCallback = (time: number) => void;
 type VolumeCallback = (volume: number, muted: boolean) => void;
 type ErrorCallback = (message: string, error: MediaError | null) => void;
+type LoadingCallback = () => void; // 🔹 new
 
 class VideoPlayerManager {
   private video: HTMLVideoElement;
@@ -25,6 +26,8 @@ class VideoPlayerManager {
   private onSeekedCallback?: SeekingCallback;
   private onVolumeCallback?: VolumeCallback;
   private onErrorCallback?: ErrorCallback;
+  private onWaitingCallback?: LoadingCallback; // 🔹
+  private onCanPlayCallback?: LoadingCallback; // 🔹
 
   constructor(video: HTMLVideoElement) {
     if (!(video instanceof HTMLVideoElement)) {
@@ -61,17 +64,13 @@ class VideoPlayerManager {
 
     this.video.addEventListener(
       "play",
-      () => {
-        this.onStateChangeCallback?.(true);
-      },
+      () => this.onStateChangeCallback?.(true),
       { signal }
     );
 
     this.video.addEventListener(
       "pause",
-      () => {
-        this.onStateChangeCallback?.(false);
-      },
+      () => this.onStateChangeCallback?.(false),
       { signal }
     );
 
@@ -87,35 +86,25 @@ class VideoPlayerManager {
       { signal }
     );
 
-    this.video.addEventListener(
-      "ended",
-      () => {
-        this.onEndedCallback?.();
-      },
-      { signal }
-    );
+    this.video.addEventListener("ended", () => this.onEndedCallback?.(), {
+      signal,
+    });
 
     this.video.addEventListener(
       "seeking",
-      () => {
-        this.onSeekingCallback?.(this.video.currentTime);
-      },
+      () => this.onSeekingCallback?.(this.video.currentTime),
       { signal }
     );
 
     this.video.addEventListener(
       "seeked",
-      () => {
-        this.onSeekedCallback?.(this.video.currentTime);
-      },
+      () => this.onSeekedCallback?.(this.video.currentTime),
       { signal }
     );
 
     this.video.addEventListener(
       "volumechange",
-      () => {
-        this.onVolumeCallback?.(this.video.volume, this.video.muted);
-      },
+      () => this.onVolumeCallback?.(this.video.volume, this.video.muted),
       { signal }
     );
 
@@ -127,11 +116,19 @@ class VideoPlayerManager {
       },
       { signal }
     );
+
+    // 🔹 Loading events
+    this.video.addEventListener("waiting", () => this.onWaitingCallback?.(), {
+      signal,
+    });
+
+    this.video.addEventListener("canplay", () => this.onCanPlayCallback?.(), {
+      signal,
+    });
   }
 
   // 🔹 Source loading
-  loadSource = (source: File | Blob | string) => {
-    // revoke previous URL if any
+  public loadSource = (source: File | Blob | string) => {
     if (this.objectUrl) {
       URL.revokeObjectURL(this.objectUrl);
       this.objectUrl = undefined;
@@ -156,78 +153,74 @@ class VideoPlayerManager {
   };
 
   // 🔹 Event API
-  onTimeUpdate = (fn: TimeUpdateCallback): this => {
+  public onTimeUpdate = (fn: TimeUpdateCallback): this => {
     this.onTimeUpdateCallback = fn;
     return this;
   };
-  onBufferUpdate = (fn: BufferUpdateCallback): this => {
+  public onBufferUpdate = (fn: BufferUpdateCallback): this => {
     this.onBufferUpdateCallback = fn;
     return this;
   };
-  onStateChange = (fn: StateChangeCallback): this => {
+  public onStateChange = (fn: StateChangeCallback): this => {
     this.onStateChangeCallback = fn;
     return this;
   };
-  onMetadata = (fn: MetadataCallback): this => {
+  public onMetadata = (fn: MetadataCallback): this => {
     this.onMetadataCallback = fn;
     return this;
   };
-  onEnded = (fn: EndedCallback): this => {
+  public onEnded = (fn: EndedCallback): this => {
     this.onEndedCallback = fn;
     return this;
   };
-  onSeeking = (fn: SeekingCallback): this => {
+  public onSeeking = (fn: SeekingCallback): this => {
     this.onSeekingCallback = fn;
     return this;
   };
-  onSeeked = (fn: SeekingCallback): this => {
+  public onSeeked = (fn: SeekingCallback): this => {
     this.onSeekedCallback = fn;
     return this;
   };
-  onVolumeChange = (fn: VolumeCallback): this => {
+  public onVolumeChange = (fn: VolumeCallback): this => {
     this.onVolumeCallback = fn;
     return this;
   };
-  onError = (fn: ErrorCallback): this => {
+  public onError = (fn: ErrorCallback): this => {
     this.onErrorCallback = fn;
+    return this;
+  };
+  // 🔹 New loading events
+  public onWaiting = (fn: LoadingCallback): this => {
+    this.onWaitingCallback = fn;
+    return this;
+  };
+  public onCanPlay = (fn: LoadingCallback): this => {
+    this.onCanPlayCallback = fn;
     return this;
   };
 
   // 🔹 Controls
-  play = () => {
-    this.video.play();
-  };
-  pause = () => {
-    this.video.pause();
-  };
-  toggle = () => {
-    this.video.paused ? this.play() : this.pause();
-  };
-  seek = (seconds: number) => {
-    this.video.currentTime = seconds;
-  };
-  setVolume = (level: number) => {
-    this.video.volume = Math.min(1, Math.max(0, level));
-  };
-  mute = () => {
-    this.video.muted = true;
-  };
-  unmute = () => {
-    this.video.muted = false;
-  };
-  setPlaybackRate = (rate: number) => {
+  public play = () => this.video.play();
+  public pause = () => this.video.pause();
+  public toggle = () => (this.video.paused ? this.play() : this.pause());
+  public seek = (seconds: number) => (this.video.currentTime = seconds);
+  public setVolume = (level: number) =>
+    (this.video.volume = Math.min(1, Math.max(0, level)));
+  public mute = () => (this.video.muted = true);
+  public unmute = () => (this.video.muted = false);
+  public setPlaybackRate = (rate: number) => {
     if (rate <= 0) throw new Error("Invalid playback rate");
     this.video.playbackRate = rate;
   };
 
-  destroy = () => {
+  public destroy = () => {
     this.abortController.abort();
     if (this.objectUrl) {
       URL.revokeObjectURL(this.objectUrl);
       this.objectUrl = undefined;
     }
     this.abortController = new AbortController();
-    this.video.removeAttribute("src"); // optional reset
+    this.video.removeAttribute("src");
     this.video.load();
   };
 }
