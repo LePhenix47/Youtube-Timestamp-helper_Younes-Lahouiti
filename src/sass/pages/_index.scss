@@ -41,7 +41,7 @@
         border-radius: 8px;
 
         // ? If the video is playing and we're not hovering the video → hide the controls
-        &:not(:hover):has(>.video__controls .video-options__play-input-toggle:not(:checked))>.video__controls {
+        &:not(:hover):has(>.video__controls .video-options__play-input-toggle:checked)>.video__controls {
             opacity: 0;
         }
     }
@@ -345,12 +345,12 @@
     border-radius: inherit;
 
     // ? We can show animations 
-    &:has(+.video__controls .video-options__play-input-toggle:checked) .video-indicators__video-indicator--pause {
+    &:has(+.video__controls .video-options__play-input-toggle:checked) .video-indicators__video-indicator--play {
         display: flex;
         animation: bezel-fade-out 500ms linear forwards;
     }
 
-    &:has(+.video__controls .video-options__play-input-toggle:not(:checked)) .video-indicators__video-indicator--play {
+    &:has(+.video__controls .video-options__play-input-toggle:not(:checked)) .video-indicators__video-indicator--pause {
         display: flex;
         animation: bezel-fade-out 500ms linear forwards;
     }
@@ -488,11 +488,11 @@
 
         color: inherit;
 
-        &:has(> input:checked)>.fa-pause {
+        &:has(> input:checked)>.fa-play {
             display: none;
         }
 
-        &:not(:has(> input:checked))>.fa-play {
+        &:not(:has(> input:checked))>.fa-pause {
             display: none;
         }
     }
@@ -522,9 +522,15 @@
         color: inherit;
 
         height: 20px;
-        width: min(100%, 20px);
+        width: 20px;
 
-        font-size: 15px;
+        &>i {
+            @include center-flex;
+
+            height: 20px;
+            width: 20px;
+            font-size: 15px;
+        }
     }
 
     &__video-volume-range {

@@ -37,6 +37,10 @@ class VideoPlayerManager {
     this.setupEvents();
   }
 
+  get isMuted(): boolean {
+    return this.video.muted;
+  }
+
   private setupEvents() {
     const { signal } = this.abortController;
 
@@ -55,7 +59,11 @@ class VideoPlayerManager {
       "progress",
       () => {
         const lastRangeIndex = this.video.buffered.length - 1;
-        if (lastRangeIndex < 0) return;
+
+        if (lastRangeIndex < 0) {
+          return;
+        }
+
         const bufferedEnd = this.video.buffered.end(lastRangeIndex);
         this.onBufferUpdateCallback?.(bufferedEnd, this.video.duration);
       },
@@ -189,25 +197,48 @@ class VideoPlayerManager {
     this.onErrorCallback = fn;
     return this;
   };
-  // 🔹 New loading events
+
   public onWaiting = (fn: LoadingCallback): this => {
     this.onWaitingCallback = fn;
     return this;
   };
+
   public onCanPlay = (fn: LoadingCallback): this => {
     this.onCanPlayCallback = fn;
     return this;
   };
 
   // 🔹 Controls
-  public play = () => this.video.play();
-  public pause = () => this.video.pause();
-  public toggle = () => (this.video.paused ? this.play() : this.pause());
+  public play = async () => {
+    try {
+      await this.video.play();
+    } catch (err: any) {
+      if (err.name !== "AbortError") {
+        console.error("Video play error:", err);
+      }
+    }
+  };
+
+  public pause = () => {
+    this.video.pause();
+  };
+
+  public toggle = async () => {
+    if (this.video.paused) {
+      await this.play();
+    } else {
+      this.pause();
+    }
+  };
+
   public seek = (seconds: number) => (this.video.currentTime = seconds);
   public setVolume = (level: number) =>
     (this.video.volume = Math.min(1, Math.max(0, level)));
+
   public mute = () => (this.video.muted = true);
+
   public unmute = () => (this.video.muted = false);
+
   public setPlaybackRate = (rate: number) => {
     if (rate <= 0) throw new Error("Invalid playback rate");
     this.video.playbackRate = rate;

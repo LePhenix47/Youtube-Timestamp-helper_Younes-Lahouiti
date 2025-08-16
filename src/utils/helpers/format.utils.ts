@@ -105,7 +105,7 @@ export function formatNumberWithOptions(
  * @returns {string} The formatted duration string in the format "HH:MM:SS". If the duration is less than one hour, the format will be "MM:SS" (if minutes is a single digit value it won't be padded with a leading zero).
  */
 export function formatVideoTimeStamp(durationInSeconds: number): string {
-  const seconds: number = durationInSeconds % 60;
+  const seconds: number = Math.floor(durationInSeconds) % 60;
   const minutes: number = Math.floor(durationInSeconds / 60) % 60;
   const hours: number = Math.floor(durationInSeconds / 3_600);
 
