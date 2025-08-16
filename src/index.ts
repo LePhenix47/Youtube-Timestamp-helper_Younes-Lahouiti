@@ -1,13 +1,11 @@
+import "./sass/main.scss";
 import FileDropManager from "./classes/file-drop-manager.class";
 import Signal from "./classes/signal.class";
-import "./sass/main.scss";
-
 import { fixInputRangeBackground } from "@utils/fix.utils";
+
 fixInputRangeBackground();
 
 console.log("Hello world!");
-
-const signal = new Signal();
 
 const videoDropZone = document.querySelector<HTMLLabelElement>(
   "[data-element=upload-video-container]"
@@ -16,6 +14,59 @@ const videoDropZone = document.querySelector<HTMLLabelElement>(
 const videoDropZoneInput = document.querySelector<HTMLInputElement>(
   "[data-element=upload-video-input]"
 );
+
+const videoPlayer = document.querySelector<HTMLVideoElement>(
+  "[data-element=video-player]"
+);
+
+const videoSourceElement =
+  videoPlayer.querySelector<HTMLSourceElement>("source");
+
+const videoIndicators = document.querySelector<HTMLDivElement>(
+  "[data-element=video-indicators]"
+);
+
+const videoControls = document.querySelector<HTMLMenuElement>(
+  "[data-element=video-controls]"
+);
+
+const timestampsSideBar = document.querySelector<HTMLElement>(
+  "[data-element=video-timestamps]"
+);
+
+const signal = new Signal();
+
+signal.on("show-video", () => {
+  videoDropZone.classList.remove("drag-hover");
+  videoDropZone.classList.add("hide");
+
+  const uploadedVideoElements = [
+    videoPlayer,
+    videoIndicators,
+    videoControls,
+    timestampsSideBar,
+  ] as const;
+
+  for (const element of uploadedVideoElements) {
+    element.classList.remove("hide");
+  }
+});
+
+signal.on("show-dropzone", () => {
+  videoDropZone.classList.remove("drag-hover");
+  videoDropZone.classList.remove("hide");
+
+  const uploadedVideoElements = [
+    videoPlayer,
+    videoIndicators,
+    videoControls,
+    timestampsSideBar,
+  ] as const;
+
+  for (const element of uploadedVideoElements) {
+    element.classList.add("hide");
+  }
+});
 
 signal.on<{ isHovering: boolean }>("dropzone-drag", (detail) => {
   console.log("Dropzone drag detail:", detail);
@@ -27,6 +78,13 @@ signal.on<{ isHovering: boolean }>("dropzone-drag", (detail) => {
 
 signal.on<{ file: File; eventType: string }>("video-upload", (detail) => {
   console.log("Video upload detail:", detail);
+  const { file, eventType } = detail;
+
+  signal.emit("show-video");
+
+  const videoURL = URL.createObjectURL(file);
+  videoSourceElement.src = videoURL;
+  videoPlayer.load();
 });
 
 signal.on<{ file: File; errorMessage: string; eventType: string }>(
