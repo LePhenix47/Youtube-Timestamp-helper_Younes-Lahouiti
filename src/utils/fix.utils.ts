@@ -14,7 +14,7 @@ export function fixInputRangeBackground() {
       const input = e.currentTarget as HTMLInputElement;
       const { min, max, valueAsNumber } = input;
 
-      const percentage: number = Math.round(
+      const percentage: number = Math.floor(
         (valueAsNumber / Number(max)) * 100
       );
 
