@@ -559,10 +559,14 @@
         }
 
         &[type="range"][data-range-style="overflowing-thumb"] {
+            align-items: center;
+            display: flex;
+
             --_progress-bg: red;
             --_range-bg: rgba(0, 0, 0, 25%);
 
             --_range-height: 5px;
+            --_input-interaction-zone-height: 35px;
 
             --_progress-border-radius: 100vmax;
 
@@ -573,7 +577,7 @@
             --_thumb-bg: var(--_progress-bg);
 
             border-radius: var(--_progress-border-radius);
-            height: var(--_range-height);
+            height: var(--_input-interaction-zone-height);
 
             background: none;
             appearance: none;
@@ -607,7 +611,7 @@
 
             &::-webkit-slider-runnable-track {
                 border-radius: inherit;
-                height: inherit;
+                height: var(--_range-height);
 
                 background-image: linear-gradient(90deg,
                         var(--_progress-bg) var(--_webkit-progression-width),
@@ -616,7 +620,7 @@
 
             &::-webkit-slider-container {
                 border-radius: inherit;
-                height: inherit;
+                height: var(--_range-height);
             }
 
             // * Mozilla Firefox
@@ -631,11 +635,11 @@
             &::-moz-range-progress {
                 background-color: var(--_progress-bg);
                 border-radius: inherit;
-                height: inherit;
+                height: var(--_range-height);
             }
 
             &::-moz-range-track {
-                height: inherit;
+                height: var(--_range-height);
                 border-radius: inherit;
                 background-color: var(--_range-bg);
             }
