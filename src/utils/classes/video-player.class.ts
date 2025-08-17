@@ -235,7 +235,10 @@ class VideoPlayerManager {
     }
   };
 
-  public seek = (seconds: number) => (this.video.currentTime = seconds);
+  public seek = (seconds: number) => {
+    this.video.currentTime = seconds;
+  };
+
   public setVolume = (level: number) => {
     this.video.volume = Math.min(1, Math.max(0, level));
   };
