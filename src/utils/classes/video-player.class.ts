@@ -41,6 +41,10 @@ class VideoPlayerManager {
     return this.video.muted;
   }
 
+  get volume(): number {
+    return this.video.volume;
+  }
+
   private setupEvents() {
     const { signal } = this.abortController;
 
@@ -232,12 +236,17 @@ class VideoPlayerManager {
   };
 
   public seek = (seconds: number) => (this.video.currentTime = seconds);
-  public setVolume = (level: number) =>
-    (this.video.volume = Math.min(1, Math.max(0, level)));
+  public setVolume = (level: number) => {
+    this.video.volume = Math.min(1, Math.max(0, level));
+  };
 
-  public mute = () => (this.video.muted = true);
+  public mute = () => {
+    this.video.muted = true;
+  };
 
-  public unmute = () => (this.video.muted = false);
+  public unmute = () => {
+    this.video.muted = false;
+  };
 
   public setPlaybackRate = (rate: number) => {
     if (rate <= 0) throw new Error("Invalid playback rate");

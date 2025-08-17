@@ -23,24 +23,34 @@ export function bindVideoControls(
 ) {
   const { playButton, volumeSlider, muteButton, fullscreenButton } = elements;
 
-  playButton.addEventListener("click", () =>
-    signal.emit("video-play-toggle", { element: playButton })
-  );
+  playButton.addEventListener("click", (e) => {
+    e.stopPropagation();
+
+    signal.emit("video-play-toggle");
+  });
+
+  const inputPLayButton = playButton.querySelector("input[type=checkbox]");
+  inputPLayButton.addEventListener("change", (e) => {
+    e.stopPropagation();
+
+    signal.emit("video-play-toggle");
+  });
 
   volumeSlider.addEventListener("input", (e: InputEvent) => {
-    const input = e.target as HTMLInputElement;
-
     signal.emit("video-volume-change", {
-      value: input.valueAsNumber,
-      element: volumeSlider,
+      value: volumeSlider.valueAsNumber,
     });
   });
 
-  muteButton?.addEventListener("click", () =>
-    signal.emit("video-mute-toggle", { element: muteButton })
-  );
+  muteButton?.addEventListener("click", (e) => {
+    e.stopPropagation();
 
-  fullscreenButton?.addEventListener("click", () =>
-    signal.emit("video-fullscreen-toggle", { element: fullscreenButton })
-  );
+    signal.emit("video-mute-toggle", {
+      value: volumeSlider.valueAsNumber,
+    });
+  });
+
+  fullscreenButton?.addEventListener("click", (e) => {
+    signal.emit("video-fullscreen-toggle");
+  });
 }

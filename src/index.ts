@@ -55,9 +55,12 @@ const playButton = videoControls.querySelector<HTMLLabelElement>(
   "[data-element=video-play-button]"
 );
 
-const volumeSlider = videoControls.querySelector<HTMLInputElement>(
+const volumeSliderLabel = videoControls.querySelector<HTMLLabelElement>(
   "[data-element=video-volume-slider]"
 );
+
+const volumeSlider =
+  volumeSliderLabel.querySelector<HTMLInputElement>("input[type=range]");
 
 const muteButton = videoControls.querySelector<HTMLButtonElement>(
   "[data-element=video-mute-button]"
@@ -181,9 +184,7 @@ signal.on<{ file: File; errorMessage: string; eventType: string }>(
   }
 );
 
-signal.on<{ element: HTMLElement }>("video-play-toggle", async (detail) => {
-  const { element: playButton } = detail;
-
+signal.on("video-play-toggle", async (detail) => {
   const inputForPlayButton =
     playButton.querySelector<HTMLInputElement>("input");
 
@@ -194,56 +195,50 @@ signal.on<{ element: HTMLElement }>("video-play-toggle", async (detail) => {
   }
 });
 
-signal.on<{ element: HTMLElement; value: number }>(
-  "video-volume-change",
-  (detail) => {
-    const { element: volumeRange, value } = detail;
-    console.log("Volume change:", { volumeRange, value });
+signal.on<{ value: number }>("video-volume-change", (detail) => {
+  const { value } = detail;
+  console.log("Volume change:", value);
 
-    videoManager.setVolume(value / 100);
+  videoManager.unmute();
+  videoManager.setVolume(value / 100);
 
-    const icon = muteButton.querySelector<HTMLLIElement>("i");
-    icon.classList.remove(
-      "fa-volume-xmark",
-      "fa-volume-off",
-      "fa-volume-low",
-      "fa-volume-high"
-    );
+  const icon = muteButton.querySelector<HTMLLIElement>("i");
+  icon.classList.remove(
+    "fa-volume-xmark",
+    "fa-volume-off",
+    "fa-volume-low",
+    "fa-volume-high"
+  );
 
-    if (value >= 50) {
-      icon.classList.add("fa-volume-high");
-    } else if (value > 0) {
-      icon.classList.add("fa-volume-low");
-    } else {
-      icon.classList.add("fa-volume-off");
-    }
+  if (value >= 50) {
+    icon.classList.add("fa-volume-high");
+  } else if (value > 0) {
+    icon.classList.add("fa-volume-low");
+  } else {
+    icon.classList.add("fa-volume-off");
   }
-);
+});
 
-signal.on<{ element: HTMLElement; value: number }>(
-  "video-mute-toggle",
-  (detail) => {
-    const { element: volumeRange, value } = detail;
-    console.log("Volume change:", { volumeRange, value });
+signal.on<{ value: number }>("video-mute-toggle", (detail) => {
+  const { value } = detail;
 
-    // videoManager.
+  const isMuted: boolean = videoManager.isMuted;
+  // videoManager.
 
-    videoManager.setVolume(value / 100);
+  const icon = muteButton.querySelector<HTMLLIElement>("i");
+  icon.classList.remove(
+    "fa-volume-xmark",
+    "fa-volume-off",
+    "fa-volume-low",
+    "fa-volume-high"
+  );
 
-    const icon = muteButton.querySelector<HTMLLIElement>("i");
-    icon.classList.remove(
-      "fa-volume-xmark",
-      "fa-volume-off",
-      "fa-volume-low",
-      "fa-volume-high"
-    );
-
-    if (value >= 50) {
-      icon.classList.add("fa-volume-high");
-    } else if (value > 0) {
-      icon.classList.add("fa-volume-low");
-    } else {
-      icon.classList.add("fa-volume-off");
-    }
+  if (isMuted) {
+    signal.emit("video-volume-change", {
+      value: volumeSlider.valueAsNumber,
+    });
+  } else {
+    videoManager.mute();
+    icon.classList.add("fa-volume-xmark");
   }
-);
+});
