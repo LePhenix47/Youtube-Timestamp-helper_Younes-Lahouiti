@@ -5,6 +5,7 @@ import { fixInputRangeBackground } from "@utils/helpers/fix.utils";
 import VideoPlayerManager from "./utils/classes/video-player.class";
 import { bindVideoControls } from "./binds";
 import { formatVideoTimeStamp } from "@utils/helpers/format.utils";
+import ChapterSideBarManager from "@utils/classes/chapter-sidebar-manager.class";
 
 fixInputRangeBackground();
 
@@ -53,6 +54,10 @@ const timeStampEnd = document.querySelector<HTMLSpanElement>(
   "[data-element=timestamp-end]"
 );
 
+const timeStampAddChapterButton = document.querySelector<HTMLButtonElement>(
+  "[data-element=video-timestamps-add-button]"
+);
+
 const signal = new Signal();
 
 const playButton = videoControls.querySelector<HTMLLabelElement>(
@@ -69,6 +74,12 @@ const volumeSlider =
 const muteButton = videoControls.querySelector<HTMLButtonElement>(
   "[data-element=video-mute-button]"
 );
+
+const chapterSidebarManager = new ChapterSideBarManager(timestampsList);
+
+timeStampAddChapterButton.addEventListener("click", () => {
+  chapterSidebarManager.addChapter();
+});
 
 bindVideoControls(signal, {
   playButton,
@@ -105,17 +116,21 @@ fileDropManager
 
 const videoManager = new VideoPlayerManager(videoPlayer);
 
-videoManager.onMetadata((duration, width, height) => {
-  console.log("Video metadata:", { duration, width, height });
-  videoProgress.style.setProperty("--_video-duration-secs", `${duration}`);
-
-  const formattedDuration: string = formatVideoTimeStamp(duration);
-  timeStampEnd.textContent = formattedDuration;
-});
-
 videoManager
+  .onMetadata((duration, width, height) => {
+    console.log("Video metadata:", { duration, width, height });
+    videoProgress.style.setProperty("--_video-duration-secs", `${duration}`);
+
+    const formattedDuration: string = formatVideoTimeStamp(duration);
+    timeStampEnd.textContent = formattedDuration;
+
+    chapterSidebarManager.setVideoDuration(duration);
+
+    chapterSidebarManager.createInitialChapter();
+  })
   .onBufferUpdate((bufferedEnd, duration) => {
     console.log("Buffer update:", { bufferedEnd, duration });
+
     videoProgress.style.setProperty("--_buffer-end-secs", `${bufferedEnd}`);
   })
   .onTimeUpdate((currentTime, duration) => {
