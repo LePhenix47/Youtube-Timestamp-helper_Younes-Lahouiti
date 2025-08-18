@@ -42,6 +42,10 @@ const timestampsSideBar = document.querySelector<HTMLElement>(
   "[data-element=video-timestamps]"
 );
 
+const timestampsList = document.querySelector<HTMLUListElement>(
+  "[data-element=video-timestamps-list]"
+);
+
 const timeStampStart = document.querySelector<HTMLSpanElement>(
   "[data-element=timestamp-start]"
 );
@@ -90,6 +94,9 @@ fileDropManager
 
 fileDropManager
   .onDragEnter(() => {
+    signal.emit("dropzone-drag", { isHovering: true });
+  })
+  .onDragOver(() => {
     signal.emit("dropzone-drag", { isHovering: true });
   })
   .onDragLeave(() => {
