@@ -30,7 +30,7 @@ class ChapterSideBarManager {
 
   get canHaveChapters(): boolean {
     return (
-      this.videoDuration > this.MIN_CHAPTER_AMOUNT * this.CHAPTER_MIN_LENGTH
+      this.videoDuration >= this.MIN_CHAPTER_AMOUNT * this.CHAPTER_MIN_LENGTH
     );
   }
 
@@ -121,6 +121,11 @@ class ChapterSideBarManager {
   };
 
   public addChapter = () => {
+    if (this.chapters.length >= this.MAX_VIDEO_CHAPTERS) {
+      console.warn("Max chapter limit reached");
+      return;
+    }
+
     const newTitle: string = `Chapter ${this.chapters.length + 1}`;
     const newChapter: Chapter = this.createNewChapter(
       newTitle,
