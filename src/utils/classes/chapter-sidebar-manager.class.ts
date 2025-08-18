@@ -3,7 +3,7 @@ type Chapter = {
   title: string;
   start: number;
   end: number;
-  element?: HTMLElement; // DOM node reference
+  element: HTMLElement; // DOM node reference
 };
 
 class ChapterSideBarManager {
@@ -53,6 +53,10 @@ class ChapterSideBarManager {
     ) as HTMLElement;
   }
 
+  get NEW_CHAPTER_LENGTH() {
+    return 1;
+  }
+
   public setVideoDuration = (duration: number) => {
     this.videoDuration = duration;
   };
@@ -85,6 +89,7 @@ class ChapterSideBarManager {
 
     return clone;
   };
+
   /** Creates the first chapter spanning the whole video */
   public createInitialChapter = () => {
     const title = "Intro";
@@ -107,65 +112,95 @@ class ChapterSideBarManager {
   };
 
   public addChapter = () => {
-    const newChapterLength = 1; // New chapter length in seconds
-    const newTitle = `Chapter ${this.chapters.length + 1}`;
+    const newTitle: string = `Chapter ${this.chapters.length + 1}`;
+    const newChapter: Chapter = this.createNewChapter(
+      newTitle,
+      this.NEW_CHAPTER_LENGTH
+    );
 
-    // Step 1: Create the new chapter element (we’ll assign start/end later)
-    const chapterElement = this.createChapterElement(newTitle, 0, 0);
+    this.chapters.push(newChapter);
 
-    const newChapter: Chapter = {
+    let cumulativeStartTime = 0;
+    for (let i = 0; i < this.chapters.length; i++) {
+      const chap = this.chapters[i];
+
+      const isNotLastChapter = i < this.chapters.length - 1;
+      if (isNotLastChapter) {
+        // All chapters except last
+        const remainingLength: number = this.getRemainingChaptersLength(
+          i,
+          newChapter
+        );
+
+        chap.start = cumulativeStartTime;
+        chap.end = this.videoDuration - remainingLength;
+        cumulativeStartTime = chap.end;
+      } else {
+        // Last chapter always ends at videoDuration
+        chap.start = cumulativeStartTime;
+        chap.end = this.videoDuration;
+      }
+
+      this.updateChapterDOM(chap);
+    }
+
+    this.container.appendChild(newChapter.element!);
+    console.log(this.chapters);
+  };
+
+  /** Helper to get total length of all chapters after index i */
+  private getRemainingChaptersLength = (
+    index: number,
+    newChapter: Chapter
+  ): number => {
+    let sum = 0;
+    for (let j = index + 1; j < this.chapters.length; j++) {
+      const c = this.chapters[j];
+      sum +=
+        c === newChapter ? this.NEW_CHAPTER_LENGTH : this.getChapterDuration(c);
+    }
+    return sum;
+  };
+
+  private updateChapterDOM = (chapter: Chapter): void => {
+    const { title, element, start, end } = chapter;
+    const titleHeading = element.querySelector<HTMLHeadingElement>(
+      ".video-timestamps__item-title"
+    );
+    const titleInput = element.querySelector<HTMLInputElement>(
+      ".video-timestamps__input--title"
+    );
+    const startInput = element.querySelector<HTMLInputElement>(
+      ".video-timestamps__input--start"
+    );
+    const endInput = element.querySelector<HTMLInputElement>(
+      ".video-timestamps__input--end"
+    );
+
+    if (titleHeading) titleHeading.textContent = title;
+    if (titleInput) titleInput.value = title;
+    if (startInput) startInput.value = `${start}`;
+    if (endInput) endInput.value = `${end}`;
+  };
+
+  private createNewChapter = (
+    title: string,
+    start: number = NaN,
+    end: number = NaN
+  ): Chapter => {
+    const chapterElement: HTMLElement = this.createChapterElement(
+      title,
+      start,
+      end
+    );
+
+    return {
       id: crypto.randomUUID(),
-      title: newTitle,
+      title,
       start: 0,
       end: 0,
       element: chapterElement,
     };
-
-    // Step 2: Append the new chapter to the chapters array
-    this.chapters.push(newChapter);
-
-    // Step 3: Recompute start & end for all chapters
-    let elapsed = 0; // Cumulative start time
-    for (let i = 0; i < this.chapters.length; i++) {
-      const chap = this.chapters[i];
-
-      if (i < this.chapters.length - 1) {
-        // All chapters except last: end = videoDuration - sum(lengths of remaining chapters)
-        const remainingLength = this.chapters
-          .slice(i + 1)
-          .reduce(
-            (sum, c) =>
-              sum +
-              (c === newChapter
-                ? newChapterLength
-                : this.getChapterDuration(c)),
-            0
-          );
-
-        chap.start = elapsed;
-        chap.end = this.videoDuration - remainingLength;
-        elapsed = chap.end;
-      } else {
-        // Last chapter always ends at videoDuration
-        chap.start = elapsed;
-        chap.end = this.videoDuration;
-      }
-
-      // Update DOM inputs
-      const startInput = chap.element?.querySelector<HTMLInputElement>(
-        ".video-timestamps__input--start"
-      );
-      const endInput = chap.element?.querySelector<HTMLInputElement>(
-        ".video-timestamps__input--end"
-      );
-      if (startInput) startInput.value = `${chap.start}`;
-      if (endInput) endInput.value = `${chap.end}`;
-    }
-
-    // Step 4: Append the new chapter DOM element to container
-    this.container.appendChild(chapterElement);
-
-    console.log(this.chapters); // Debug
   };
 
   public getChapters() {
