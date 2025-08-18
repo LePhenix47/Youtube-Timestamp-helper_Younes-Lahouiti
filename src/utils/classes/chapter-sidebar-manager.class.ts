@@ -14,11 +14,24 @@ class ChapterSideBarManager {
 
   private videoDuration: number = NaN;
 
+  public readonly CHAPTER_MIN_LENGTH = 10;
+  public readonly MIN_CHAPTER_AMOUNT = 3;
+
   constructor(container: HTMLElement) {
     this.container = container;
 
     // Create the template
     this.initializeTemplate();
+  }
+
+  get MAX_VIDEO_CHAPTERS(): number {
+    return Math.floor(this.videoDuration / this.CHAPTER_MIN_LENGTH);
+  }
+
+  get canHaveChapters(): boolean {
+    return (
+      this.videoDuration > this.MIN_CHAPTER_AMOUNT * this.CHAPTER_MIN_LENGTH
+    );
   }
 
   private initializeTemplate = () => {
@@ -47,14 +60,10 @@ class ChapterSideBarManager {
     `;
   };
 
-  get sidebarClone() {
+  get sidebarClone(): HTMLElement {
     return this.template.content.firstElementChild!.cloneNode(
       true
     ) as HTMLElement;
-  }
-
-  get NEW_CHAPTER_LENGTH() {
-    return 1;
   }
 
   public setVideoDuration = (duration: number) => {
@@ -115,7 +124,7 @@ class ChapterSideBarManager {
     const newTitle: string = `Chapter ${this.chapters.length + 1}`;
     const newChapter: Chapter = this.createNewChapter(
       newTitle,
-      this.NEW_CHAPTER_LENGTH
+      this.CHAPTER_MIN_LENGTH
     );
 
     this.chapters.push(newChapter);
@@ -157,7 +166,7 @@ class ChapterSideBarManager {
     for (let j = index + 1; j < this.chapters.length; j++) {
       const c = this.chapters[j];
       sum +=
-        c === newChapter ? this.NEW_CHAPTER_LENGTH : this.getChapterDuration(c);
+        c === newChapter ? this.CHAPTER_MIN_LENGTH : this.getChapterDuration(c);
     }
     return sum;
   };
