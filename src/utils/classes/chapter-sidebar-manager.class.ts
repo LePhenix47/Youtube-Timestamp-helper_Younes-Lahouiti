@@ -69,7 +69,14 @@ class ChapterSideBarManager {
   }
 
   public setVideoDuration = (duration: number) => {
-    this.videoDuration = duration;
+    if (duration < this.MIN_VIDEO_DURATION) {
+      console.warn(
+        `Video duration ${duration}s is less than minimum required ${this.MIN_VIDEO_DURATION}s`
+      );
+      return;
+    }
+
+    this.videoDuration = Math.floor(duration);
   };
 
   /** Creates a DOM node for a chapter from the template */
@@ -114,6 +121,7 @@ class ChapterSideBarManager {
 
     this.chapters.push(chapter);
     this.container.appendChild(chapter.element!);
+    this.attachEventListeners(chapter, this.chapters.length - 1);
 
     // TODO: emit event to ProgressBarManager to update the progress bar
   };
@@ -160,6 +168,8 @@ class ChapterSideBarManager {
       this.updateChapterDOM(chap);
     }
 
+    this.attachEventListeners(newChapter, this.chapters.length - 1);
+
     this.container.appendChild(newChapter.element!);
     console.log(this.chapters);
 
@@ -201,6 +211,83 @@ class ChapterSideBarManager {
     if (titleInput) titleInput.value = title;
     if (startInput) startInput.value = `${start}`;
     if (endInput) endInput.value = `${end}`;
+  };
+
+  private attachEventListeners = (chapter: Chapter, index: number): void => {
+    const titleInput = chapter.element.querySelector<HTMLInputElement>(
+      ".video-timestamps__input--title"
+    );
+    const startInput = chapter.element.querySelector<HTMLInputElement>(
+      ".video-timestamps__input--start"
+    );
+
+    if (titleInput) {
+      titleInput.addEventListener("input", () => {
+        chapter.title = titleInput.value;
+        const heading = chapter.element.querySelector<HTMLHeadingElement>(
+          ".video-timestamps__item-title"
+        );
+        if (heading) heading.textContent = chapter.title;
+      });
+    }
+
+    if (!startInput) {
+      return;
+    }
+
+    // disable editing if only one chapter
+    if (this.chapters.length === 1) {
+      startInput.readOnly = true;
+      return;
+    }
+
+    startInput.addEventListener("input", () => {
+      const newStart = Number(startInput.value);
+
+      // TODO: This shit is broken and annoying AF
+      // When I input a new start time, IDK why but sometimes the chapter next to the first one bugs out and set the start & end to 0 0
+      // Sometimes it's the first chapter that does that
+      if (
+        !this.validateStartChange(index, newStart) ||
+        Number.isNaN(newStart)
+      ) {
+        // invalid → revert
+        startInput.value = `${chapter.start}`;
+        return;
+      }
+
+      // valid update
+      chapter.start = newStart;
+
+      // adjust previous chapter’s end
+      if (index > 0) {
+        this.chapters[index - 1].end = newStart;
+        this.updateChapterDOM(this.chapters[index - 1]);
+      }
+
+      // re-render current
+      this.updateChapterDOM(chapter);
+    });
+  };
+
+  private validateStartChange = (index: number, newStart: number): boolean => {
+    const chapter = this.chapters[index];
+    const prev = this.chapters[index - 1];
+    const next = this.chapters[index + 1];
+
+    // Must be within video bounds
+    if (newStart < 0 || newStart >= this.videoDuration) return false;
+
+    // Must keep current chapter >= 10s
+    if (chapter.end - newStart < this.CHAPTER_MIN_LENGTH) return false;
+
+    // Must keep previous chapter >= 10s
+    if (prev && newStart - prev.start < this.CHAPTER_MIN_LENGTH) return false;
+
+    // Must keep next chapter >= 10s
+    if (next && next.end - newStart < this.CHAPTER_MIN_LENGTH) return false;
+
+    return true;
   };
 
   private createNewChapter = (
