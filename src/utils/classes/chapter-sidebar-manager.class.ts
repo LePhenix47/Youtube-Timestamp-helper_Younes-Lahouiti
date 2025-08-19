@@ -220,63 +220,68 @@ class ChapterSideBarManager {
     const startInput = chapter.element.querySelector<HTMLInputElement>(
       ".video-timestamps__input--start"
     );
-
     const deleteButton = chapter.element.querySelector<HTMLButtonElement>(
       ".video-timestamps__remove"
     );
 
     if (titleInput) {
-      titleInput.addEventListener("input", () => {
-        chapter.title = titleInput.value;
-        const heading = chapter.element.querySelector<HTMLHeadingElement>(
-          ".video-timestamps__item-title"
-        );
-        if (heading) heading.textContent = chapter.title;
-      });
+      titleInput.addEventListener("input", (event) =>
+        this.onTitleInput(chapter, event)
+      );
     }
 
-    if (!startInput) {
-      return;
+    if (startInput) {
+      startInput.addEventListener("input", (event) =>
+        this.onStartInput(chapter, event)
+      );
     }
 
-    // disable editing if only one chapter
     if (this.chapters.length <= 1) {
       startInput.readOnly = true;
     }
 
-    startInput.addEventListener("input", () => {
-      const newStart = Number(startInput.value);
+    if (deleteButton) {
+      deleteButton.addEventListener("click", () => this.onDeleteClick(chapter));
+    }
+  };
 
-      // TODO: This shit is broken and annoying AF
-      // When I input a new start time, IDK why but sometimes the chapter next to the first one bugs out and set the start & end to 0 0
-      // Sometimes it's the first chapter that does that
-      if (
-        !this.validateStartChange(chapter.id, newStart) ||
-        Number.isNaN(newStart)
-      ) {
-        // invalid → revert
-        startInput.value = `${chapter.start}`;
-        return;
-      }
+  // Handlers
 
-      // valid update
-      chapter.start = newStart;
+  private onTitleInput = (chapter: Chapter, event: Event): void => {
+    const input = event.target as HTMLInputElement;
+    chapter.title = input.value;
+    const heading = chapter.element.querySelector<HTMLHeadingElement>(
+      ".video-timestamps__item-title"
+    );
+    if (heading) heading.textContent = chapter.title;
+  };
 
-      const index = this.findChapterIndex(chapter.id);
-      // adjust previous chapter’s end
-      if (index > 0) {
-        this.chapters[index - 1].end = newStart;
-        this.updateChapterDOM(this.chapters[index - 1]);
-      }
+  private onStartInput = (chapter: Chapter, event: Event): void => {
+    const input = event.target as HTMLInputElement;
+    const newStart = Number(input.value);
 
-      // re-render current
-      this.updateChapterDOM(chapter);
-    });
+    if (
+      !this.validateStartChange(chapter.id, newStart) ||
+      Number.isNaN(newStart)
+    ) {
+      input.value = `${chapter.start}`;
+      return;
+    }
 
-    deleteButton.addEventListener("click", () => {
-      console.log("click on chapter to delete", chapter);
-      this.removeChapter(chapter.id);
-    });
+    const index = this.findChapterIndex(chapter.id);
+    chapter.start = newStart;
+
+    if (index > 0) {
+      this.chapters[index - 1].end = newStart;
+      this.updateChapterDOM(this.chapters[index - 1]);
+    }
+
+    this.updateChapterDOM(chapter);
+  };
+
+  private onDeleteClick = (chapter: Chapter): void => {
+    console.log("click on chapter to delete", chapter);
+    this.removeChapter(chapter.id);
   };
 
   private validateStartChange = (
@@ -318,7 +323,6 @@ class ChapterSideBarManager {
 
   public removeChapter = (chapterId: string): void => {
     const index = this.findChapterIndex(chapterId);
-
     if (this.chapters.length <= 1) {
       console.warn("Cannot delete the only chapter.");
       return;
@@ -328,28 +332,29 @@ class ChapterSideBarManager {
     const prev = this.chapters[index - 1];
     const next = this.chapters[index + 1];
 
-    // --- Handle neighbors ---
-    if (!prev) {
-      // deleting first → next start = 0
-      if (next) {
-        next.start = 0;
-        this.updateChapterDOM(next);
-      }
-    } else if (!next) {
-      // deleting last → prev end = videoDuration
-      prev.end = this.videoDuration;
-      this.updateChapterDOM(prev);
-    } else {
-      // deleting middle → bridge gap
-      prev.end = next.start;
-      this.updateChapterDOM(prev);
-    }
+    this.adjustNeighborsOnDelete(prev, next);
 
-    // --- Remove from DOM & array ---
+    // * Remove from DOM and array
     chapter.element.remove();
     this.chapters.splice(index, 1);
 
     console.log("Remaining chapters:", this.chapters);
+  };
+
+  private adjustNeighborsOnDelete = (prev?: Chapter, next?: Chapter): void => {
+    if (prev && next) {
+      // * deleting middle → bridge gap
+      prev.end = next.start;
+      this.updateChapterDOM(prev);
+    } else if (!prev && next) {
+      // * deleting first → next start = 0
+      next.start = 0;
+      this.updateChapterDOM(next);
+    } else if (prev && !next) {
+      // * deleting last → prev end = videoDuration
+      prev.end = this.videoDuration;
+      this.updateChapterDOM(prev);
+    }
   };
 
   private findChapterIndex = (id: string): number => {
