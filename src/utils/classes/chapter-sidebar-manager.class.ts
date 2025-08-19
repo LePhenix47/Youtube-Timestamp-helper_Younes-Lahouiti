@@ -24,14 +24,16 @@ class ChapterSideBarManager {
     this.initializeTemplate();
   }
 
+  get MIN_VIDEO_DURATION(): number {
+    return this.MIN_CHAPTER_AMOUNT * this.CHAPTER_MIN_LENGTH;
+  }
+
   get MAX_VIDEO_CHAPTERS(): number {
     return Math.floor(this.videoDuration / this.CHAPTER_MIN_LENGTH);
   }
 
   get canHaveChapters(): boolean {
-    return (
-      this.videoDuration >= this.MIN_CHAPTER_AMOUNT * this.CHAPTER_MIN_LENGTH
-    );
+    return this.videoDuration >= this.MIN_VIDEO_DURATION;
   }
 
   private initializeTemplate = () => {
@@ -136,7 +138,7 @@ class ChapterSideBarManager {
 
     let cumulativeStartTime = 0;
     for (let i = 0; i < this.chapters.length; i++) {
-      const chap = this.chapters[i];
+      const chap: Chapter = this.chapters[i];
 
       const isNotLastChapter = i < this.chapters.length - 1;
       if (isNotLastChapter) {
@@ -160,6 +162,8 @@ class ChapterSideBarManager {
 
     this.container.appendChild(newChapter.element!);
     console.log(this.chapters);
+
+    // TODO: emit event to ProgressBarManager to add the progress bar
   };
 
   /** Helper to get total length of all chapters after index i */
@@ -167,11 +171,13 @@ class ChapterSideBarManager {
     index: number,
     newChapter: Chapter
   ): number => {
-    let sum = 0;
+    let sum: number = 0;
     for (let j = index + 1; j < this.chapters.length; j++) {
-      const c = this.chapters[j];
+      const currentIteratedChapter: Chapter = this.chapters[j];
       sum +=
-        c === newChapter ? this.CHAPTER_MIN_LENGTH : this.getChapterDuration(c);
+        currentIteratedChapter === newChapter
+          ? this.CHAPTER_MIN_LENGTH
+          : this.getChapterDuration(currentIteratedChapter);
     }
     return sum;
   };
