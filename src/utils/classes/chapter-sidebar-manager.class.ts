@@ -294,25 +294,25 @@ class ChapterSideBarManager {
     const prev = this.chapters[index - 1];
     const next = this.chapters[index + 1];
 
-    // Must be within video bounds
+    // * Must be within video bounds
     if (newStart < 0 || newStart >= this.videoDuration) {
       console.error("Invalid start time:", newStart);
       return false;
     }
 
-    // Must keep current chapter >= 10s
+    // * Must keep current chapter >= 10s
     if (chapter.end - newStart < this.CHAPTER_MIN_LENGTH) {
       console.error("Current chapter is too short:", chapter);
       return false;
     }
 
-    // Must keep previous chapter >= 10s
+    // * Must keep previous chapter >= 10s
     if (prev && newStart - prev.start < this.CHAPTER_MIN_LENGTH) {
       console.error("Previous chapter is too short:", prev);
       return false;
     }
 
-    // Must keep next chapter >= 10s
+    // * Must keep next chapter >= 10s
     if (next && next.end - newStart < this.CHAPTER_MIN_LENGTH) {
       console.error("Next chapter is too short:", next);
       return false;
