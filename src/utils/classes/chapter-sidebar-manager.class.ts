@@ -40,25 +40,53 @@ class ChapterSideBarManager {
     this.template = document.createElement("template");
 
     this.template.innerHTML = /* html */ `
-      <li class="video-timestamps__item" data-timestamp-id="">
-        <h3 class="video-timestamps__item-title">Intro</h3>
-        <img src="https://younes-portfolio-dev.vercel.app/_next/image?url=%2F_next%2Fstatic%2Fmedia%2FP4-DW-image.a91dea01.png&w=640&q=75" alt="" class="video-timestamps__img" />
-        <form class="video-timestamps__labels-container">
-          <label class="video-timestamps__label">Title:
-            <input type="text" class="video-timestamps__input video-timestamps__input--title" />
-          </label>
-          <label class="video-timestamps__label">Start:
-            <input type="text" class="video-timestamps__input video-timestamps__input--start" />
-          </label>
-          <label class="video-timestamps__label">End:
-            <input type="text" class="video-timestamps__input video-timestamps__input--end" readonly />
-          </label>
-        </form>
-        <button type="button" class="video-timestamps__remove">
-          <i class="fa-solid fa-xmark video-timestamps__remove-icon"></i>
-          <span class="video-timestamps__remove-text">Remove</span>
-        </button>
-      </li>
+       <li class="video-timestamps__item" data-element="chapter">
+      <h3 class="video-timestamps__item-title" data-element="chapter-heading">Intro</h3>
+      <img src="https://younes-portfolio-dev.vercel.app/_next/image?url=%2F_next%2Fstatic%2Fmedia%2FP4-DW-image.a91dea01.png&w=640&q=75" 
+      class="video-timestamps__img"
+      alt=""
+      data-element="chapter-thumbnail"
+      />
+
+      <form class="video-timestamps__labels-container">
+        <label class="video-timestamps__label">
+          Title:
+          <input 
+            type="text" 
+            class="video-timestamps__input video-timestamps__input--title" 
+            data-element="chapter-title-input"
+          />
+        </label>
+
+        <label class="video-timestamps__label">
+          Start:
+          <input 
+            type="text" 
+            class="video-timestamps__input video-timestamps__input--start" 
+            data-element="chapter-start-input"
+          />
+        </label>
+
+        <label class="video-timestamps__label">
+          End:
+          <input 
+            type="text" 
+            class="video-timestamps__input video-timestamps__input--end" 
+            data-element="chapter-end-input"
+            readonly
+          />
+        </label>
+      </form>
+
+      <button 
+        type="button" 
+        class="video-timestamps__remove" 
+        data-element="chapter-delete"
+      >
+        <i class="fa-solid fa-xmark video-timestamps__remove-icon"></i>
+        <span class="video-timestamps__remove-text">Remove</span>
+      </button>
+    </li>
     `;
   };
 
@@ -88,16 +116,16 @@ class ChapterSideBarManager {
     const clone: HTMLElement = this.sidebarClone;
 
     const titleHeading = clone.querySelector<HTMLHeadingElement>(
-      ".video-timestamps__item-title"
+      '[data-element="chapter-heading"]'
     );
     const titleInput = clone.querySelector<HTMLInputElement>(
-      ".video-timestamps__input--title"
+      '[data-element="chapter-title-input"]'
     );
     const startInput = clone.querySelector<HTMLInputElement>(
-      ".video-timestamps__input--start"
+      '[data-element="chapter-start-input"]'
     );
     const endInput = clone.querySelector<HTMLInputElement>(
-      ".video-timestamps__input--end"
+      '[data-element="chapter-end-input"]'
     );
 
     if (titleHeading) titleHeading.textContent = title;
@@ -194,17 +222,17 @@ class ChapterSideBarManager {
 
   private updateChapterDOM = (chapter: Chapter): void => {
     const { title, element, start, end } = chapter;
-    const titleHeading = element.querySelector<HTMLHeadingElement>(
-      ".video-timestamps__item-title"
+    const titleHeading = element.querySelector<HTMLElement>(
+      '[data-element="chapter-heading"]'
     );
     const titleInput = element.querySelector<HTMLInputElement>(
-      ".video-timestamps__input--title"
+      '[data-element="chapter-title-input"]'
     );
     const startInput = element.querySelector<HTMLInputElement>(
-      ".video-timestamps__input--start"
+      '[data-element="chapter-start-input"]'
     );
     const endInput = element.querySelector<HTMLInputElement>(
-      ".video-timestamps__input--end"
+      '[data-element="chapter-end-input"]'
     );
 
     if (titleHeading) titleHeading.textContent = title;
@@ -215,13 +243,13 @@ class ChapterSideBarManager {
 
   private attachEventListeners = (chapter: Chapter): void => {
     const titleInput = chapter.element.querySelector<HTMLInputElement>(
-      ".video-timestamps__input--title"
+      '[data-element="chapter-title-input"]'
     );
     const startInput = chapter.element.querySelector<HTMLInputElement>(
-      ".video-timestamps__input--start"
+      '[data-element="chapter-start-input"]'
     );
     const deleteButton = chapter.element.querySelector<HTMLButtonElement>(
-      ".video-timestamps__remove"
+      '[data-element="chapter-delete"]'
     );
 
     if (titleInput) {
