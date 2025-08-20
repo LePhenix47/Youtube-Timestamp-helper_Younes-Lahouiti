@@ -199,6 +199,7 @@ class ChapterSideBarManager {
     this.attachEventListeners(newChapter);
 
     this.container.appendChild(newChapter.element!);
+    this.normalizeChapterInputs();
     console.log(this.chapters);
 
     // TODO: emit event to ProgressBarManager to add the progress bar
@@ -349,6 +350,24 @@ class ChapterSideBarManager {
     return true;
   };
 
+  private normalizeChapterInputs = (): void => {
+    for (let i = 0; i < this.chapters.length; i++) {
+      const chapter = this.chapters[i];
+      const startInput = chapter.element.querySelector<HTMLInputElement>(
+        '[data-element="chapter-start-input"]'
+      );
+      if (!startInput) return;
+
+      // First chapter always readonly
+      if (i === 0) {
+        startInput.readOnly = true;
+        startInput.value = "0"; // enforce start=0
+      } else {
+        startInput.readOnly = false;
+      }
+    }
+  };
+
   public removeChapter = (chapterId: string): void => {
     const index = this.findChapterIndex(chapterId);
     if (this.chapters.length <= 1) {
@@ -365,7 +384,7 @@ class ChapterSideBarManager {
     // * Remove from DOM and array
     chapter.element.remove();
     this.chapters.splice(index, 1);
-
+    this.normalizeChapterInputs();
     console.log("Remaining chapters:", this.chapters);
   };
 
