@@ -86,6 +86,13 @@ class ProgressBarManager {
   };
 
   private handlePointerDown = (e: PointerEvent): void => {
+    const target = e.target as HTMLElement;
+
+    // Ignore drag-handle buttons (future trimming/clip editing)
+    if (target.closest(".video__progress-drag-slide")) {
+      return;
+    }
+
     this.isScrubbing = true;
     const time = this.computeTimeFromClick(e.pageX);
     this.callbacks.onScrubStart?.(time);
@@ -109,6 +116,11 @@ class ProgressBarManager {
     }
 
     // * Case 2: not scrubbing → only treat as click if inside progress bar
+    // ? Ignore drag-handle buttons (future trimming/clip editing)
+    if (target.closest(".video__progress-drag-slide")) {
+      return;
+    }
+
     if (this.progressContainer.contains(target)) {
       const time = this.computeTimeFromClick(e.pageX);
       this.callbacks.onClick?.(time);
