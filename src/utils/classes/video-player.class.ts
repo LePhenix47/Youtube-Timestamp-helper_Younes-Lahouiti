@@ -37,6 +37,14 @@ class VideoPlayerManager {
     this.setupEvents();
   }
 
+  get duration(): number {
+    return this.video.duration;
+  }
+
+  get isPaused(): boolean {
+    return this.video.paused;
+  }
+
   get isMuted(): boolean {
     return this.video.muted;
   }
