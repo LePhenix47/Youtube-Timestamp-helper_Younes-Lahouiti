@@ -130,7 +130,11 @@
 
         --_chunks-gap: 3px;
 
-        &:hover .video__progress-bar-chunk:not(:hover) {
+        touch-action: none;
+        user-select: none;
+
+        &:hover .video__progress-bar-chunk:not(:hover),
+        &:has(>.video__progress-frame.scrubbing) .video__progress-bar-chunk:not(:hover) {
             --_new-pb-height: 5;
             --_scale-y: calc(var(--_new-pb-height) / var(--_pb-height));
 
@@ -267,9 +271,7 @@
         z-index: 2;
 
         transition: scale 150ms ease-in-out;
-
-        touch-action: none;
-        user-select: none;
+        pointer-events: none;
 
         // ? If the user hovered a chunk bar where the thumb is → scale it up 
         &.scrub-chunk-overlap {

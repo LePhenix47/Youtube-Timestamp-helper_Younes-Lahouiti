@@ -1,5 +1,3 @@
-import UserPointer, { PointerDragEventMap } from "./user-pointer.class";
-
 type ScrubCallbacks = Partial<{
   onScrubStart: (time: number) => void;
   onScrubMove: (time: number) => void;
@@ -11,150 +9,118 @@ type ScrubCallbacks = Partial<{
 }>;
 
 class ProgressBarManager {
-  private readonly container: HTMLElement;
   private readonly progressContainer: HTMLLIElement;
-  private readonly userPointer: UserPointer;
   private callbacks: ScrubCallbacks = {};
 
-  // Scrubbing state
-  private isScrubbing: boolean = false;
-
-  // Video duration (needed for mapping offset → time)
-  private duration: number = 0;
+  public isScrubbing: boolean = false;
+  private duration: number;
   private readonly abortController = new AbortController();
 
-  constructor(
-    container: HTMLElement,
-    duration: number,
-    userPointer?: UserPointer
-  ) {
-    this.container = container;
-    this.progressContainer = this.container.querySelector<HTMLLIElement>(
+  constructor(container: HTMLElement, duration: number) {
+    this.progressContainer = container.querySelector<HTMLLIElement>(
       "[data-element=video-progress]"
-    );
-
+    )!;
     this.duration = duration;
-    this.userPointer = userPointer || new UserPointer(container);
 
     this.attachEvents();
-    this.attachGlobalPointerUp();
   }
 
   public setCallbacks = (callbacks: ScrubCallbacks): void => {
     this.callbacks = { ...this.callbacks, ...callbacks };
   };
 
-  private attachGlobalPointerUp = (): void => {
-    document.addEventListener("pointerup", (e: PointerEvent) => {
-      if (!this.isScrubbing) {
-        return;
-      }
-
-      const { pageX, pageY, movementX, movementY } = e;
-
-      this.handleDragEnd({
-        detail: { pageX, pageY, movementX, movementY },
-      } as CustomEvent<PointerDragEventMap["custom:pointer-drag-end"]>);
-    });
-  };
-
   private attachEvents = (): void => {
-    this.userPointer.on("custom:pointer-drag-start", this.handleDragStart);
-    this.userPointer.on("custom:pointer-drag-move", this.handleDragMove);
-    this.userPointer.on("custom:pointer-drag-end", this.handleDragEnd);
-
     const { signal } = this.abortController;
-    this.progressContainer.addEventListener("click", this.handleClick, {
-      signal,
-    });
+
+    // Hover
     this.progressContainer.addEventListener(
       "pointerenter",
       this.handleHoverEnter,
-      {
-        signal,
-      }
+      { signal }
     );
-
     this.progressContainer.addEventListener(
       "pointermove",
       this.handleHoverMove,
-      {
-        signal,
-      }
+      { signal }
     );
-
     this.progressContainer.addEventListener(
       "pointerleave",
       this.handleHoverLeave,
-      {
-        signal,
-      }
+      { signal }
     );
+
+    // Scrubbing / Clicking
+    this.progressContainer.addEventListener(
+      "pointerdown",
+      this.handlePointerDown,
+      { signal }
+    );
+
+    document.addEventListener("pointermove", this.handlePointerMove, {
+      signal,
+    });
+
+    document.addEventListener("pointerup", this.handlePointerUp, { signal });
   };
 
-  public destroy = () => {
+  public destroy = (): void => {
     this.abortController.abort();
-
-    this.userPointer.destroyAll();
   };
+
+  // --- Handlers ---
 
   private handleHoverEnter = (e: PointerEvent): void => {
     const time = this.computeTimeFromClick(e.pageX);
-
     this.callbacks.onHoverEnter?.(time);
   };
 
   private handleHoverMove = (e: PointerEvent): void => {
+    if (this.isScrubbing) return; // scrubbing overrides hover
     const time = this.computeTimeFromClick(e.pageX);
-
     this.callbacks.onHoverMove?.(time);
   };
 
-  private handleHoverLeave = (_e: PointerEvent): void => {
+  private handleHoverLeave = (): void => {
+    if (this.isScrubbing) return;
     this.callbacks.onHoverLeave?.();
   };
 
-  private handleClick = (e: PointerEvent): void => {
-    if (this.isScrubbing) {
-      return;
-    }
-
-    const time = this.computeTimeFromClick(e.pageX);
-
-    this.callbacks.onClick?.(time);
-  };
-
-  private handleDragStart = (
-    e: CustomEvent<PointerDragEventMap["custom:pointer-drag-start"]>
-  ): void => {
+  private handlePointerDown = (e: PointerEvent): void => {
     this.isScrubbing = true;
+    const time = this.computeTimeFromClick(e.pageX);
+    this.callbacks.onScrubStart?.(time);
   };
 
-  private handleDragMove = (
-    e: CustomEvent<PointerDragEventMap["custom:pointer-drag-move"]>
-  ): void => {
-    const time = this.computeTimeFromOffset(e.detail.pageX);
+  private handlePointerMove = (e: PointerEvent): void => {
+    if (!this.isScrubbing) return;
+    const time = this.computeTimeFromClick(e.pageX);
     this.callbacks.onScrubMove?.(time);
   };
 
-  private handleDragEnd = (
-    e: CustomEvent<PointerDragEventMap["custom:pointer-drag-end"]>
-  ): void => {
-    this.isScrubbing = false;
+  private handlePointerUp = (e: PointerEvent): void => {
+    const target = e.target as HTMLElement | null;
 
-    const time = this.computeTimeFromOffset(e.detail.pageX);
-    this.callbacks.onScrubEnd?.(time);
+    // * Case 1: scrubbing → always end it, regardless of where pointer is released
+    if (this.isScrubbing) {
+      this.isScrubbing = false;
+      const time = this.computeTimeFromClick(e.pageX);
+      this.callbacks.onScrubEnd?.(time);
+      return;
+    }
+
+    // * Case 2: not scrubbing → only treat as click if inside progress bar
+    if (this.progressContainer.contains(target)) {
+      const time = this.computeTimeFromClick(e.pageX);
+      this.callbacks.onClick?.(time);
+    }
   };
 
-  private computeTimeFromOffset = (x: number): number => {
-    return (x / this.progressContainer.offsetWidth) * this.duration;
-  };
-
-  private computeTimeFromClick = (clickX: number): number => {
-    const rect: DOMRect = this.progressContainer.getBoundingClientRect();
-    const offsetX: number = clickX - rect.left;
-
-    return (offsetX / this.progressContainer.offsetWidth) * this.duration;
+  // --- Helpers ---
+  private computeTimeFromClick = (pageX: number): number => {
+    const rect = this.progressContainer.getBoundingClientRect();
+    const offsetX = pageX - rect.left;
+    const clamped = Math.max(0, Math.min(offsetX, rect.width));
+    return (clamped / rect.width) * this.duration;
   };
 }
 

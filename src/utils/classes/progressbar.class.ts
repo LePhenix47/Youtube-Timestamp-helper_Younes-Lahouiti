@@ -59,6 +59,10 @@ class ProgressBar {
   };
 
   public onHoverMove = (time: number): void => {
+    if (this.progressBarManager.isScrubbing) {
+      return;
+    }
+
     this.progressContainer.style.setProperty(
       "--_current-video-hover-secs",
       `${time}`
@@ -68,10 +72,7 @@ class ProgressBar {
   public onHoverLeave = (): void => {
     this.framePreview.classList.remove("scrubbing");
 
-    this.progressContainer.style.setProperty(
-      "--_current-video-hover-secs",
-      "0"
-    );
+    this.updateHoverProgress(0);
   };
 
   public onClick = (time: number): void => {
@@ -81,6 +82,8 @@ class ProgressBar {
 
   // --- Dragging thumb (driven by ProgressBarManager) ---
   public onDragStart = (time: number): void => {
+    this.updateHoverProgress(0);
+
     this.wasPaused = this.videoManager.isPaused;
     this.videoManager.pause();
 
@@ -91,6 +94,8 @@ class ProgressBar {
   };
 
   public onDragMove = (time: number): void => {
+    console.log("drag move");
+
     this.updateThumbPosition(time);
     this.updateFramePreview(time);
   };
@@ -101,6 +106,8 @@ class ProgressBar {
 
     this.videoManager.seek(time);
 
+    this.framePreview.classList.remove("scrubbing");
+
     if (this.wasPaused) {
       return;
     }
@@ -110,6 +117,13 @@ class ProgressBar {
   };
 
   // --- UI updates ---
+  public updateHoverProgress = (currentTime: number): void => {
+    this.progressContainer.style.setProperty(
+      "--_current-video-hover-secs",
+      `${currentTime}`
+    );
+  };
+
   public updateThumbPosition = (time: number): void => {
     // Store the actual current time (seconds) as CSS var
     this.progressContainer.style.setProperty(
