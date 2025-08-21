@@ -6,6 +6,7 @@ import VideoPlayerManager from "./utils/classes/video-player.class";
 import { bindVideoControls } from "./binds";
 import { formatVideoTimeStamp } from "@utils/helpers/format.utils";
 import ChapterSideBarManager from "@utils/classes/chapter-sidebar-manager.class";
+import ProgressBar from "@utils/classes/progressbar.class";
 
 fixInputRangeBackground();
 
@@ -19,23 +20,27 @@ const videoDropZoneInput = document.querySelector<HTMLInputElement>(
   "[data-element=upload-video-input]"
 );
 
-const videoPlayer = document.querySelector<HTMLVideoElement>(
+const videoContainer = document.querySelector<HTMLElement>(
+  "[data-element=video-container]"
+);
+
+const videoPlayer = videoContainer.querySelector<HTMLVideoElement>(
   "[data-element=video-player]"
 );
 
-const videoProgress = document.querySelector<HTMLDivElement>(
+const videoProgress = videoContainer.querySelector<HTMLDivElement>(
   "[data-element=video-progress]"
 );
 
-const videoIndicators = document.querySelector<HTMLDivElement>(
+const videoIndicators = videoContainer.querySelector<HTMLDivElement>(
   "[data-element=video-indicators]"
 );
 
-const videoControls = document.querySelector<HTMLMenuElement>(
+const videoControls = videoContainer.querySelector<HTMLMenuElement>(
   "[data-element=video-controls]"
 );
 
-const videoBuffer = document.querySelector<HTMLParagraphElement>(
+const videoBuffer = videoContainer.querySelector<HTMLParagraphElement>(
   "[data-element=video-buffer]"
 );
 
@@ -127,6 +132,8 @@ videoManager
     chapterSidebarManager.setVideoDuration(duration);
 
     chapterSidebarManager.createInitialChapter();
+
+    progressBar.instantiateListeners();
   })
   .onBufferUpdate((bufferedEnd, duration) => {
     console.log("Buffer update:", { bufferedEnd, duration });
@@ -149,6 +156,8 @@ videoManager
   .onCanPlay(() => {
     videoBuffer.classList.add("hide");
   });
+
+const progressBar = new ProgressBar(videoManager, videoContainer);
 
 signal.on("show-video", () => {
   videoDropZone.classList.remove("drag-hover");
