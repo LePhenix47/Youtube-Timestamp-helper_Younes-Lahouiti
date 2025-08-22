@@ -45,9 +45,9 @@
             opacity: 0;
         }
 
-        &:has(.video__progress-frame.scrubbing) .video-indicators__bg-img {
-            display: block !important;
-        }
+        // &:has(.video__progress-frame.scrubbing) .video-indicators__bg-img {
+        //     display: block !important;
+        // }
     }
 
     &__no-video {
