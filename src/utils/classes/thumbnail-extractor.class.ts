@@ -24,11 +24,11 @@ class ThumbnailExtractor {
     this.ctx = ctx;
   }
 
-  private roundToInterval(time: number): number {
+  private roundToInterval = (time: number): number => {
     return Math.floor(time / this.interval) * this.interval;
-  }
+  };
 
-  public async getFrameAt(time: number): Promise<string> {
+  public getFrameAt = async (time: number): Promise<string> => {
     const rounded = this.roundToInterval(time);
 
     // Wait for the video to actually update (small timeout)
@@ -39,19 +39,19 @@ class ThumbnailExtractor {
     this.addToCache(rounded, dataUrl);
 
     return dataUrl;
-  }
+  };
 
-  private addToCache(time: number, dataUrl: string) {
+  private addToCache = (time: number, dataUrl: string) => {
     if (this.cache.size >= this.MAX_CACHE_SIZE) {
       const firstKey = this.cache.keys().next().value;
       this.cache.delete(firstKey);
     }
     this.cache.set(time, dataUrl);
-  }
+  };
 
-  public clearCache() {
+  public clearCache = () => {
     this.cache.clear();
-  }
+  };
 }
 
 export default ThumbnailExtractor;

@@ -113,10 +113,10 @@ class ProgressBar {
   };
 
   public onDragEnd = (time: number): void => {
+    this.videoManager.seek(time);
+
     this.updateThumbPosition(time);
     this.updateFramePreview(time);
-
-    this.videoManager.seek(time);
 
     this.framePreview.classList.remove("scrubbing");
 
