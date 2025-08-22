@@ -53,6 +53,10 @@ class VideoPlayerManager {
     return this.video.volume;
   }
 
+  get source(): string {
+    return this.video.src;
+  }
+
   private setupEvents() {
     const { signal } = this.abortController;
 
