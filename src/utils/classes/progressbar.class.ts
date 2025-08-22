@@ -3,6 +3,8 @@ import ProgressBarChunk from "./progressbar-chunk.class";
 import ProgressBarManager from "./progressbar-manager.class";
 import VideoPlayerManager from "./video-player.class";
 import ThumbnailExtractor from "./thumbnail-extractor.class";
+import Signal from "./signal.class";
+import { Chapter } from "./chapter-sidebar-manager.class";
 
 class ProgressBar {
   private readonly videoManager: VideoPlayerManager;
@@ -19,6 +21,8 @@ class ProgressBar {
   private thumbnailExtractor: ThumbnailExtractor;
   private thumbnailUpdateTimeout: number | null = null;
 
+  public readonly signal = new Signal();
+
   constructor(videoManager: VideoPlayerManager, videoContainer: HTMLElement) {
     this.videoManager = videoManager;
     this.videoContainer = videoContainer;
@@ -28,7 +32,40 @@ class ProgressBar {
       200, // preview width
       110 // preview height
     );
+
+    this.signal.on("chapter-added", (chapter: Chapter) =>
+      this.addChunk(chapter)
+    );
+    this.signal.on("chapter-updated", (chapter: Chapter) =>
+      this.updateChunk(chapter)
+    );
+    this.signal.on("chapter-deleted", (chapter: Chapter) =>
+      this.removeChunk(chapter)
+    );
   }
+
+  private addChunk = (chapter: Chapter) => {
+    const chunk = new ProgressBarChunk(chapter.id, chapter.start, chapter.end);
+    this.chunks.push(chunk);
+    this.progressContainer.querySelector("ul").appendChild(chunk.element);
+  };
+
+  private updateChunk = (chapter: Chapter) => {
+    const chunk = this.chunks.find((c) => c.id === chapter.id);
+    if (!chunk) return;
+
+    chunk.updateStartTime(chapter.start);
+    chunk.updateEndTime(chapter.end);
+  };
+
+  private removeChunk = (chapter: Chapter) => {
+    const index = this.chunks.findIndex((c) => c.id === chapter.id);
+    if (index === -1) return;
+    const chunk = this.chunks[index];
+
+    chunk.element.remove();
+    this.chunks.splice(index, 1);
+  };
 
   public instantiateListeners = () => {
     // Grab container & elements

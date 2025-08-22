@@ -189,7 +189,8 @@
 
         transition: scale 150ms ease-in-out;
 
-        &:hover {
+        &:hover,
+        &.hover-overlap {
             --_new-pb-height: 9;
             --_scale-y: calc(var(--_new-pb-height) / var(--_pb-height));
 

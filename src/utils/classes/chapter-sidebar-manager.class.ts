@@ -1,4 +1,6 @@
-type Chapter = {
+import Signal from "./signal.class";
+
+export type Chapter = {
   id: string;
   title: string;
   start: number;
@@ -16,6 +18,8 @@ class ChapterSideBarManager {
 
   public readonly CHAPTER_MIN_LENGTH = 10;
   public readonly MIN_CHAPTER_AMOUNT = 3;
+
+  public readonly signal = new Signal();
 
   constructor(container: HTMLElement) {
     this.container = container;
@@ -202,7 +206,7 @@ class ChapterSideBarManager {
     this.normalizeChapterInputs();
     console.log(this.chapters);
 
-    // TODO: emit event to ProgressBarManager to add the progress bar
+    this.signal.emit("chapter-added", newChapter);
   };
 
   /** Helper to get total length of all chapters after index i */
@@ -298,14 +302,27 @@ class ChapterSideBarManager {
     }
 
     const index = this.findChapterIndex(chapter.id);
+    const prev = this.chapters[index - 1];
+    const next = this.chapters[index + 1];
+
+    // Update the current chapter's start
     chapter.start = newStart;
 
-    if (index > 0) {
-      this.chapters[index - 1].end = newStart;
-      this.updateChapterDOM(this.chapters[index - 1]);
+    // Update neighbors if they exist
+    if (prev) {
+      prev.end = newStart;
+      this.updateChapterDOM(prev);
+      this.signal.emit("chapter-updated", prev);
+    }
+    if (next) {
+      // Optional: you might want to enforce something for next.start if needed
+      this.updateChapterDOM(next);
+      this.signal.emit("chapter-updated", next);
     }
 
+    // Update current chapter
     this.updateChapterDOM(chapter);
+    this.signal.emit("chapter-updated", chapter);
   };
 
   private onDeleteClick = (chapter: Chapter): void => {
@@ -385,6 +402,8 @@ class ChapterSideBarManager {
     chapter.element.remove();
     this.chapters.splice(index, 1);
     this.normalizeChapterInputs();
+
+    this.signal.emit("chapter-deleted", chapter);
     console.log("Remaining chapters:", this.chapters);
   };
 

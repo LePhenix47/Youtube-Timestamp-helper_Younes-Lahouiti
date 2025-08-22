@@ -1,10 +1,12 @@
 class ProgressBarChunk {
   private startTime: number;
   private endTime: number;
-  private element: HTMLLIElement;
+  public element: HTMLLIElement;
   private template: HTMLTemplateElement;
+  public id: string;
 
-  constructor(startTime: number, endTime: number) {
+  constructor(id: string, startTime: number, endTime: number) {
+    this.id = id;
     this.startTime = startTime;
     this.endTime = endTime;
 
