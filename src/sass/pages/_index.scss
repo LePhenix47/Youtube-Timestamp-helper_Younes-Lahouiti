@@ -44,6 +44,10 @@
         &:not(:hover):has(>.video__controls .video-options__play-input-toggle:checked)>.video__controls {
             opacity: 0;
         }
+
+        &:has(.video__progress-frame.scrubbing) .video-indicators__bg-img {
+            display: block !important;
+        }
     }
 
     &__no-video {
@@ -374,6 +378,15 @@
         --_size: 52px;
         background-color: rgba(0, 0, 0, 50%);
         border-radius: 50%;
+
+        display: none;
+    }
+
+    &__bg-img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        border-radius: inherit;
 
         display: none;
     }

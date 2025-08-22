@@ -2,6 +2,7 @@ import { formatVideoTimeStamp } from "@utils/helpers/format.utils";
 import ProgressBarChunk from "./progressbar-chunk.class";
 import ProgressBarManager from "./progressbar-manager.class";
 import VideoPlayerManager from "./video-player.class";
+import ThumbnailExtractor from "./thumbnail-extractor.class";
 
 class ProgressBar {
   private readonly videoManager: VideoPlayerManager;
@@ -15,9 +16,18 @@ class ProgressBar {
 
   private wasPaused: boolean;
 
+  private thumbnailExtractor: ThumbnailExtractor;
+  private thumbnailUpdateTimeout: number | null = null;
+
   constructor(videoManager: VideoPlayerManager, videoContainer: HTMLElement) {
     this.videoManager = videoManager;
     this.videoContainer = videoContainer;
+
+    this.thumbnailExtractor = new ThumbnailExtractor(
+      this.videoManager, // or pass via manager accessor
+      200, // preview width
+      110 // preview height
+    );
   }
 
   public instantiateListeners = () => {
@@ -96,7 +106,9 @@ class ProgressBar {
   public onDragMove = (time: number): void => {
     console.log("drag move");
 
+    this.videoManager.seek(time);
     this.updateThumbPosition(time);
+
     this.updateFramePreview(time);
   };
 
@@ -132,14 +144,33 @@ class ProgressBar {
     );
   };
 
-  public updateFramePreview = (time: number): void => {
+  public updateFramePreview = async (time: number): Promise<void> => {
     const formatted = formatVideoTimeStamp(time);
 
-    // TODO: Replace this with actual video thumbnail rendering
     const timestamp = this.framePreview.querySelector<HTMLElement>(
       "[data-element=video-progress-frame-timestamp]"
     );
     timestamp.textContent = formatted;
+
+    const img = this.framePreview.querySelector<HTMLImageElement>(
+      "[data-element=video-progress-frame-img]"
+    );
+    if (!img) return;
+
+    const bg = document.querySelector<HTMLImageElement>(
+      "[data-element=video-progress-bg-img]"
+    );
+    if (!bg) return;
+
+    try {
+      const dataUrl = await this.thumbnailExtractor.getFrameAt(time);
+      console.log(dataUrl);
+
+      img.src = dataUrl;
+      bg.src = dataUrl;
+    } catch (err) {
+      console.error("Thumbnail extraction failed:", err);
+    }
   };
 
   // --- Chunks (chapters) ---

@@ -13,7 +13,7 @@ type ErrorCallback = (message: string, error: MediaError | null) => void;
 type LoadingCallback = () => void; // 🔹 new
 
 class VideoPlayerManager {
-  private video: HTMLVideoElement;
+  public video: HTMLVideoElement;
   private abortController = new AbortController();
   private objectUrl?: string;
 
@@ -35,6 +35,10 @@ class VideoPlayerManager {
     }
     this.video = video;
     this.setupEvents();
+  }
+
+  get videoElement(): HTMLVideoElement {
+    return this.video;
   }
 
   get duration(): number {
