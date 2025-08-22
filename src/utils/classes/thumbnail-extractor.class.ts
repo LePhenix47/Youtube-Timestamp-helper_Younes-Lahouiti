@@ -35,7 +35,7 @@ class ThumbnailExtractor {
     await new Promise((resolve) => setTimeout(resolve, 50));
 
     this.ctx.drawImage(this.video, 0, 0, this.width, this.height);
-    const dataUrl = this.canvas.toDataURL("image/jpeg", 0.7);
+    const dataUrl = this.canvas.toDataURL("image/jpeg", 0.5);
     this.addToCache(rounded, dataUrl);
 
     return dataUrl;
