@@ -4,7 +4,9 @@ import ProgressBarManager from "./progressbar-manager.class";
 import VideoPlayerManager from "./video-player.class";
 import ThumbnailExtractor from "./thumbnail-extractor.class";
 import Signal from "./signal.class";
-import { Chapter } from "./chapter-sidebar-manager.class";
+import ChapterSideBarManager, {
+  Chapter,
+} from "./chapter-sidebar-manager.class";
 
 class ProgressBar {
   private readonly videoManager: VideoPlayerManager;
@@ -60,35 +62,83 @@ class ProgressBar {
     type: "start" | "end",
     time: number
   ) => {
-    const index = this.chunks.findIndex((c) => c.id === id);
-    if (index === -1) return;
+    const chunkIndex = this.chunks.findIndex((c) => c.id === id);
+    if (chunkIndex === -1) return;
 
-    const chunk = this.chunks[index];
+    const currentChunk = this.chunks[chunkIndex];
+    const previousChunk = this.chunks[chunkIndex - 1];
+    const nextChunk = this.chunks[chunkIndex + 1];
+    const minLength = ChapterSideBarManager.CHAPTER_MIN_LENGTH;
 
-    // clamp first/last
-    if (type === "start" && index === 0) time = 0;
-    if (type === "end" && index === this.chunks.length - 1)
-      time = this.videoManager.duration;
+    const clampedTime = this.calculateClampedTime(
+      time,
+      type,
+      chunkIndex,
+      currentChunk,
+      previousChunk,
+      nextChunk,
+      minLength
+    );
 
-    // update current chunk
-    if (type === "start") chunk.updateStartTime(time);
-    else chunk.updateEndTime(time);
+    this.updateChunkBoundaries(
+      type,
+      currentChunk,
+      previousChunk,
+      nextChunk,
+      clampedTime
+    );
 
-    // update neighbors
-    if (type === "start" && index > 0) {
-      this.chunks[index - 1].updateEndTime(time);
+    this.signal.emit("chunk-updated", {
+      id: currentChunk.id,
+      start: currentChunk.startTime,
+      end: currentChunk.endTime,
+    });
+  };
+
+  private calculateClampedTime = (
+    time: number,
+    type: "start" | "end",
+    chunkIndex: number,
+    currentChunk: ProgressBarChunk | null,
+    previousChunk: ProgressBarChunk | null,
+    nextChunk: ProgressBarChunk | null,
+    minLength: number
+  ): number => {
+    // Force boundary chunks to stay at video edges
+    if (type === "start" && chunkIndex === 0) return 0;
+    if (type === "end" && chunkIndex === this.chunks.length - 1) {
+      return this.videoManager.duration;
     }
-    if (type === "end" && index < this.chunks.length - 1) {
-      this.chunks[index + 1].updateStartTime(time);
-    }
 
-    // optionally emit signal for ChapterSideBarManager
-    const chapter = {
-      id: chunk.id,
-      start: chunk.startTime,
-      end: chunk.endTime,
-    };
-    this.signal.emit("chunk-updated", chapter);
+    if (type === "start") {
+      const earliestStart = previousChunk
+        ? previousChunk.startTime + minLength
+        : 0;
+      const latestStart = currentChunk.endTime - minLength;
+      return Math.max(earliestStart, Math.min(time, latestStart));
+    } else {
+      const earliestEnd = currentChunk.startTime + minLength;
+      const latestEnd = nextChunk
+        ? nextChunk.endTime - minLength
+        : this.videoManager.duration;
+      return Math.max(earliestEnd, Math.min(time, latestEnd));
+    }
+  };
+
+  private updateChunkBoundaries = (
+    type: "start" | "end",
+    currentChunk: ProgressBarChunk | null,
+    previousChunk: ProgressBarChunk | null,
+    nextChunk: ProgressBarChunk | null,
+    clampedTime: number
+  ): void => {
+    if (type === "start") {
+      currentChunk.updateStartTime(clampedTime);
+      if (previousChunk) previousChunk.updateEndTime(clampedTime);
+    } else {
+      currentChunk.updateEndTime(clampedTime);
+      if (nextChunk) nextChunk.updateStartTime(clampedTime);
+    }
   };
 
   private syncChunks = (chapters: Chapter[]) => {
