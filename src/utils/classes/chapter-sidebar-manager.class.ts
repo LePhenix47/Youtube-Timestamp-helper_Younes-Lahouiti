@@ -172,7 +172,6 @@ class ChapterSideBarManager {
     }
 
     const newTitle = `Chapter ${this.chapters.length + 1}`;
-    const chapterLength = this.CHAPTER_MIN_LENGTH;
 
     // * Find the last chapter that's long enough to split
     let chapterToShrink = null;
@@ -180,7 +179,7 @@ class ChapterSideBarManager {
       const chapter = this.chapters[i];
       const currentLength = chapter.end - chapter.start;
 
-      if (currentLength >= chapterLength * 2) {
+      if (currentLength >= this.CHAPTER_MIN_LENGTH * 2) {
         chapterToShrink = chapter;
         break;
       }
@@ -191,19 +190,19 @@ class ChapterSideBarManager {
 
     if (chapterToShrink) {
       // * Shrink the donor chapter
-      chapterToShrink.end -= chapterLength;
+      chapterToShrink.end -= this.CHAPTER_MIN_LENGTH;
 
       // * Shift all chapters after the donor to make room
       const donorIndex = this.chapters.indexOf(chapterToShrink);
       for (let i = donorIndex + 1; i < this.chapters.length; i++) {
         const chapter: Chapter = this.chapters[i];
-        chapter.start -= chapterLength;
-        chapter.end -= chapterLength;
+        chapter.start -= this.CHAPTER_MIN_LENGTH;
+        chapter.end -= this.CHAPTER_MIN_LENGTH;
         this.updateChapterDOM(chapter);
       }
 
       // * Place new chapter at the end
-      newChapter.start = this.videoDuration - chapterLength;
+      newChapter.start = this.videoDuration - this.CHAPTER_MIN_LENGTH;
       newChapter.end = this.videoDuration;
 
       this.updateChapterDOM(chapterToShrink);
@@ -212,7 +211,10 @@ class ChapterSideBarManager {
       const lastChapter = this.chapters.at(-1);
       const start = lastChapter ? lastChapter.end : 0;
       newChapter.start = start;
-      newChapter.end = Math.min(this.videoDuration, start + chapterLength);
+      newChapter.end = Math.min(
+        this.videoDuration,
+        start + this.CHAPTER_MIN_LENGTH
+      );
     }
 
     // * Add the new chapter
