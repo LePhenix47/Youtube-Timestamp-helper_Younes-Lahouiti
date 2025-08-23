@@ -130,10 +130,9 @@ videoManager
     timeStampEnd.textContent = formattedDuration;
 
     chapterSidebarManager.setVideoDuration(duration);
+    progressBar.instantiateListeners();
 
     chapterSidebarManager.createInitialChapter();
-
-    progressBar.instantiateListeners();
   })
   .onBufferUpdate((bufferedEnd, duration) => {
     console.log("Buffer update:", { bufferedEnd, duration });

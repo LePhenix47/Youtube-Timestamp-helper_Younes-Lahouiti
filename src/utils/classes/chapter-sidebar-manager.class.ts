@@ -155,7 +155,10 @@ class ChapterSideBarManager {
     this.container.appendChild(chapter.element!);
     this.attachEventListeners(chapter);
 
-    // TODO: emit event to ProgressBarManager to update the progress bar
+    this.signal.emit("chapter-added", {
+      chapter,
+      chapters: this.chapters,
+    });
   };
 
   private getChapterDuration = (chapter: Chapter): number => {
@@ -206,7 +209,10 @@ class ChapterSideBarManager {
     this.normalizeChapterInputs();
     console.log(this.chapters);
 
-    this.signal.emit("chapter-added", newChapter);
+    this.signal.emit("chapter-added", {
+      chapter: newChapter,
+      chapters: this.chapters,
+    });
   };
 
   /** Helper to get total length of all chapters after index i */
@@ -312,17 +318,17 @@ class ChapterSideBarManager {
     if (prev) {
       prev.end = newStart;
       this.updateChapterDOM(prev);
-      this.signal.emit("chapter-updated", prev);
+      this.signal.emit("chapter-updated", { chapter: prev });
     }
     if (next) {
       // Optional: you might want to enforce something for next.start if needed
       this.updateChapterDOM(next);
-      this.signal.emit("chapter-updated", next);
+      this.signal.emit("chapter-updated", { chapter: next });
     }
 
     // Update current chapter
     this.updateChapterDOM(chapter);
-    this.signal.emit("chapter-updated", chapter);
+    this.signal.emit("chapter-updated", { chapter });
   };
 
   private onDeleteClick = (chapter: Chapter): void => {
@@ -403,7 +409,10 @@ class ChapterSideBarManager {
     this.chapters.splice(index, 1);
     this.normalizeChapterInputs();
 
-    this.signal.emit("chapter-deleted", chapter);
+    this.signal.emit("chapter-deleted", {
+      id: chapter.id,
+      chapters: this.chapters,
+    });
     console.log("Remaining chapters:", this.chapters);
   };
 

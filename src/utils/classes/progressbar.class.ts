@@ -33,38 +33,55 @@ class ProgressBar {
       110 // preview height
     );
 
-    this.signal.on("chapter-added", (chapter: Chapter) =>
-      this.addChunk(chapter)
+    this.signal.on(
+      "chapter-added",
+      ({ chapter, chapters }: { chapter: Chapter; chapters: Chapter[] }) => {
+        // Addition can shift others → rebuild from source of truth
+        this.syncChunks(chapters);
+      }
     );
-    this.signal.on("chapter-updated", (chapter: Chapter) =>
-      this.updateChunk(chapter)
-    );
-    this.signal.on("chapter-deleted", (chapter: Chapter) =>
-      this.removeChunk(chapter)
+
+    this.signal.on("chapter-updated", ({ chapter }: { chapter: Chapter }) => {
+      // Only the changed chapter is provided → patch that one
+      this.updateChunk(chapter);
+    });
+
+    this.signal.on(
+      "chapter-deleted",
+      ({ id, chapters }: { id: string; chapters: Chapter[] }) => {
+        // Deletion reflows neighbors → rebuild from list
+        this.syncChunks(chapters);
+      }
     );
   }
 
-  private addChunk = (chapter: Chapter) => {
-    const chunk = new ProgressBarChunk(chapter.id, chapter.start, chapter.end);
-    this.chunks.push(chunk);
-    this.progressContainer.querySelector("ul").appendChild(chunk.element);
+  private syncChunks = (chapters: Chapter[]) => {
+    // remove DOM for old chunks
+    for (const chunk of this.chunks) {
+      const { element } = chunk;
+      element.remove();
+    }
+
+    this.chunks = [];
+
+    const list = this.videoContainer.querySelector<HTMLUListElement>(
+      '[data-element="video-progress-chunk-list"]'
+    );
+    if (!list) return;
+
+    for (const chapter of chapters) {
+      const { id, start, end } = chapter;
+      const chunk = new ProgressBarChunk(id, start, end);
+      this.chunks.push(chunk);
+      list.appendChild(chunk.element);
+    }
   };
 
   private updateChunk = (chapter: Chapter) => {
     const chunk = this.chunks.find((c) => c.id === chapter.id);
     if (!chunk) return;
-
     chunk.updateStartTime(chapter.start);
     chunk.updateEndTime(chapter.end);
-  };
-
-  private removeChunk = (chapter: Chapter) => {
-    const index = this.chunks.findIndex((c) => c.id === chapter.id);
-    if (index === -1) return;
-    const chunk = this.chunks[index];
-
-    chunk.element.remove();
-    this.chunks.splice(index, 1);
   };
 
   public instantiateListeners = () => {
