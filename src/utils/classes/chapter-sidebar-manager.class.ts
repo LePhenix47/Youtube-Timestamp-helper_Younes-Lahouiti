@@ -9,15 +9,14 @@ export type Chapter = {
 };
 
 class ChapterSideBarManager {
+  public static readonly CHAPTER_MIN_LENGTH = 10;
+  public static readonly MIN_CHAPTER_AMOUNT = 3;
   private chapters: Chapter[] = [];
 
   private container: HTMLElement;
   private template: HTMLTemplateElement;
 
   private videoDuration: number = NaN;
-
-  public readonly CHAPTER_MIN_LENGTH = 10;
-  public readonly MIN_CHAPTER_AMOUNT = 3;
 
   public readonly signal = new Signal();
 
@@ -29,11 +28,16 @@ class ChapterSideBarManager {
   }
 
   get MIN_VIDEO_DURATION(): number {
-    return this.MIN_CHAPTER_AMOUNT * this.CHAPTER_MIN_LENGTH;
+    return (
+      ChapterSideBarManager.MIN_CHAPTER_AMOUNT *
+      ChapterSideBarManager.CHAPTER_MIN_LENGTH
+    );
   }
 
   get MAX_VIDEO_CHAPTERS(): number {
-    return Math.floor(this.videoDuration / this.CHAPTER_MIN_LENGTH);
+    return Math.floor(
+      this.videoDuration / ChapterSideBarManager.CHAPTER_MIN_LENGTH
+    );
   }
 
   get canHaveChapters(): boolean {
@@ -179,7 +183,7 @@ class ChapterSideBarManager {
       const chapter = this.chapters[i];
       const currentLength = chapter.end - chapter.start;
 
-      if (currentLength >= this.CHAPTER_MIN_LENGTH * 2) {
+      if (currentLength >= ChapterSideBarManager.CHAPTER_MIN_LENGTH * 2) {
         chapterToShrink = chapter;
         break;
       }
@@ -190,19 +194,20 @@ class ChapterSideBarManager {
 
     if (chapterToShrink) {
       // * Shrink the donor chapter
-      chapterToShrink.end -= this.CHAPTER_MIN_LENGTH;
+      chapterToShrink.end -= ChapterSideBarManager.CHAPTER_MIN_LENGTH;
 
       // * Shift all chapters after the donor to make room
       const donorIndex = this.chapters.indexOf(chapterToShrink);
       for (let i = donorIndex + 1; i < this.chapters.length; i++) {
         const chapter: Chapter = this.chapters[i];
-        chapter.start -= this.CHAPTER_MIN_LENGTH;
-        chapter.end -= this.CHAPTER_MIN_LENGTH;
+        chapter.start -= ChapterSideBarManager.CHAPTER_MIN_LENGTH;
+        chapter.end -= ChapterSideBarManager.CHAPTER_MIN_LENGTH;
         this.updateChapterDOM(chapter);
       }
 
       // * Place new chapter at the end
-      newChapter.start = this.videoDuration - this.CHAPTER_MIN_LENGTH;
+      newChapter.start =
+        this.videoDuration - ChapterSideBarManager.CHAPTER_MIN_LENGTH;
       newChapter.end = this.videoDuration;
 
       this.updateChapterDOM(chapterToShrink);
@@ -213,7 +218,7 @@ class ChapterSideBarManager {
       newChapter.start = start;
       newChapter.end = Math.min(
         this.videoDuration,
-        start + this.CHAPTER_MIN_LENGTH
+        start + ChapterSideBarManager.CHAPTER_MIN_LENGTH
       );
     }
 
@@ -352,19 +357,25 @@ class ChapterSideBarManager {
     }
 
     // * Must keep current chapter >= 10s
-    if (chapter.end - newStart < this.CHAPTER_MIN_LENGTH) {
+    if (chapter.end - newStart < ChapterSideBarManager.CHAPTER_MIN_LENGTH) {
       console.error("Current chapter is too short:", chapter);
       return false;
     }
 
     // * Must keep previous chapter >= 10s
-    if (prev && newStart - prev.start < this.CHAPTER_MIN_LENGTH) {
+    if (
+      prev &&
+      newStart - prev.start < ChapterSideBarManager.CHAPTER_MIN_LENGTH
+    ) {
       console.error("Previous chapter is too short:", prev);
       return false;
     }
 
     // * Must keep next chapter >= 10s
-    if (next && next.end - newStart < this.CHAPTER_MIN_LENGTH) {
+    if (
+      next &&
+      next.end - newStart < ChapterSideBarManager.CHAPTER_MIN_LENGTH
+    ) {
       console.error("Next chapter is too short:", next);
       return false;
     }
