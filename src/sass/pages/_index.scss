@@ -90,9 +90,9 @@
         @include center-flex-column(15px);
         align-items: flex-start;
 
-        --_fade-height: 90%;
+        --_fade-height: 100%;
         background-image: linear-gradient(0deg,
-                rgba(0, 0, 0, 50%) 0px,
+                black 0px,
                 transparent var(--_fade-height));
 
         color: white;
