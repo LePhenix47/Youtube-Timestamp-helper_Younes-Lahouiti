@@ -55,13 +55,44 @@ class ProgressBar {
     );
   }
 
-  private syncChunks = (chapters: Chapter[]) => {
-    // remove DOM for old chunks
-    for (const chunk of this.chunks) {
-      const { element } = chunk;
-      element.remove();
+  private handleChunkDrag = (
+    id: string,
+    type: "start" | "end",
+    time: number
+  ) => {
+    const index = this.chunks.findIndex((c) => c.id === id);
+    if (index === -1) return;
+
+    const chunk = this.chunks[index];
+
+    // clamp first/last
+    if (type === "start" && index === 0) time = 0;
+    if (type === "end" && index === this.chunks.length - 1)
+      time = this.videoManager.duration;
+
+    // update current chunk
+    if (type === "start") chunk.updateStartTime(time);
+    else chunk.updateEndTime(time);
+
+    // update neighbors
+    if (type === "start" && index > 0) {
+      this.chunks[index - 1].updateEndTime(time);
+    }
+    if (type === "end" && index < this.chunks.length - 1) {
+      this.chunks[index + 1].updateStartTime(time);
     }
 
+    // optionally emit signal for ChapterSideBarManager
+    const chapter = {
+      id: chunk.id,
+      start: chunk.startTime,
+      end: chunk.endTime,
+    };
+    this.signal.emit("chunk-updated", chapter);
+  };
+
+  private syncChunks = (chapters: Chapter[]) => {
+    this.chunks.forEach((c) => c.element.remove());
     this.chunks = [];
 
     const list = this.videoContainer.querySelector<HTMLUListElement>(
@@ -69,9 +100,28 @@ class ProgressBar {
     );
     if (!list) return;
 
-    for (const chapter of chapters) {
-      const { id, start, end } = chapter;
-      const chunk = new ProgressBarChunk(id, start, end);
+    for (let i = 0; i < chapters.length; i++) {
+      const chapter = chapters[i];
+      const isFirst = i === 0;
+      const isLast = i === chapters.length - 1;
+      const chunk = new ProgressBarChunk(
+        chapter.id,
+        chapter.start,
+        chapter.end,
+        this.videoManager.duration,
+        isFirst,
+        isLast
+      );
+
+      // attach drag signals
+      chunk.signal.on<{
+        id: string;
+        type: "start" | "end";
+        proposedTime: number;
+      }>("chunk-drag", ({ id, type, proposedTime }) => {
+        this.handleChunkDrag(id, type, proposedTime);
+      });
+
       this.chunks.push(chunk);
       list.appendChild(chunk.element);
     }
