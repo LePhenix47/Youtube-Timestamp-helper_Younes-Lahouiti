@@ -25,6 +25,16 @@ class ChapterSideBarManager {
 
     // Create the template
     this.initializeTemplate();
+
+    this.signal.on<{
+      chapters: {
+        id: string;
+        start: number;
+        end: number;
+      }[];
+    }>("chunk-chapters-updated", ({ chapters }) => {
+      this.syncWithChunks(chapters);
+    });
   }
 
   get MIN_VIDEO_DURATION(): number {
@@ -50,7 +60,7 @@ class ChapterSideBarManager {
     this.template.innerHTML = /* html */ `
        <li class="video-timestamps__item" data-element="chapter">
       <h3 class="video-timestamps__item-title" data-element="chapter-heading">Intro</h3>
-      <img src="https://younes-portfolio-dev.vercel.app/_next/image?url=%2F_next%2Fstatic%2Fmedia%2FP4-DW-image.a91dea01.png&w=640&q=75" 
+      <img src="" 
       class="video-timestamps__img"
       alt=""
       data-element="chapter-thumbnail"
@@ -469,6 +479,40 @@ class ChapterSideBarManager {
   public getChapters() {
     return this.chapters;
   }
+
+  public syncWithChunks = (
+    chaptersFromChunks: { id: string; start: number; end: number }[]
+  ) => {
+    // Keep a quick lookup of titles from the current list
+    const titleMap = new Map(this.chapters.map((c) => [c.id, c.title]));
+
+    // Clear current DOM + internal list
+    this.container.innerHTML = "";
+    this.chapters = [];
+
+    // Rebuild based on chunks
+    for (let i = 0; i < chaptersFromChunks.length; i++) {
+      const { id, start, end } = chaptersFromChunks[i];
+      const title =
+        titleMap.get(id) || (i === 0 ? "Intro" : `Chapter ${i + 1}`);
+
+      const chapter: Chapter = {
+        id,
+        title,
+        start,
+        end,
+        element: this.createChapterElement(title, start, end),
+      };
+
+      this.chapters.push(chapter);
+      this.container.appendChild(chapter.element);
+      this.attachEventListeners(chapter);
+    }
+
+    this.normalizeChapterInputs();
+
+    this.signal.emit("chapters-synced", { chapters: this.chapters });
+  };
 }
 
 export default ChapterSideBarManager;

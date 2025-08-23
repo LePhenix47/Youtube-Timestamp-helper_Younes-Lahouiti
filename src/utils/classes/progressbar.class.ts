@@ -70,7 +70,7 @@ class ProgressBar {
     const nextChunk = this.chunks[chunkIndex + 1];
     const minLength = ChapterSideBarManager.CHAPTER_MIN_LENGTH;
 
-    const clampedTime = this.calculateClampedTime(
+    let clampedTime = this.calculateClampedTime(
       time,
       type,
       chunkIndex,
@@ -80,6 +80,8 @@ class ProgressBar {
       minLength
     );
 
+    clampedTime = Math.floor(clampedTime);
+
     this.updateChunkBoundaries(
       type,
       currentChunk,
@@ -88,10 +90,12 @@ class ProgressBar {
       clampedTime
     );
 
-    this.signal.emit("chunk-updated", {
-      id: currentChunk.id,
-      start: currentChunk.startTime,
-      end: currentChunk.endTime,
+    this.signal.emit("chunk-chapters-updated", {
+      chapters: this.chunks.map((c) => ({
+        id: c.id,
+        start: c.startTime,
+        end: c.endTime,
+      })),
     });
   };
 
@@ -318,7 +322,6 @@ class ProgressBar {
 
     try {
       const dataUrl = await this.thumbnailExtractor.getFrameAt(time);
-      console.log(dataUrl);
 
       img.src = dataUrl;
       bg.src = dataUrl;
