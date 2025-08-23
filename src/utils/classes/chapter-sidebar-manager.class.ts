@@ -171,64 +171,61 @@ class ChapterSideBarManager {
       return;
     }
 
-    const newTitle: string = `Chapter ${this.chapters.length + 1}`;
-    const newChapter: Chapter = this.createNewChapter(
-      newTitle,
-      this.CHAPTER_MIN_LENGTH
-    );
+    const newTitle = `Chapter ${this.chapters.length + 1}`;
+    const chapterLength = this.CHAPTER_MIN_LENGTH;
 
-    this.chapters.push(newChapter);
+    // * Find the last chapter that's long enough to split
+    let chapterToShrink = null;
+    for (let i = this.chapters.length - 1; i >= 0; i--) {
+      const chapter = this.chapters[i];
+      const currentLength = chapter.end - chapter.start;
 
-    let cumulativeStartTime = 0;
-    for (let i = 0; i < this.chapters.length; i++) {
-      const chap: Chapter = this.chapters[i];
-
-      const isNotLastChapter = i < this.chapters.length - 1;
-      if (isNotLastChapter) {
-        // All chapters except last
-        const remainingLength: number = this.getRemainingChaptersLength(
-          i,
-          newChapter
-        );
-
-        chap.start = cumulativeStartTime;
-        chap.end = this.videoDuration - remainingLength;
-        cumulativeStartTime = chap.end;
-      } else {
-        // Last chapter always ends at videoDuration
-        chap.start = cumulativeStartTime;
-        chap.end = this.videoDuration;
+      if (currentLength >= chapterLength * 2) {
+        chapterToShrink = chapter;
+        break;
       }
-
-      this.updateChapterDOM(chap);
     }
 
-    this.attachEventListeners(newChapter);
+    // * Create the new chapter
+    const newChapter = this.createNewChapter(newTitle);
 
-    this.container.appendChild(newChapter.element!);
+    if (chapterToShrink) {
+      // * Shrink the donor chapter
+      chapterToShrink.end -= chapterLength;
+
+      // * Shift all chapters after the donor to make room
+      const donorIndex = this.chapters.indexOf(chapterToShrink);
+      for (let i = donorIndex + 1; i < this.chapters.length; i++) {
+        const chapter: Chapter = this.chapters[i];
+        chapter.start -= chapterLength;
+        chapter.end -= chapterLength;
+        this.updateChapterDOM(chapter);
+      }
+
+      // * Place new chapter at the end
+      newChapter.start = this.videoDuration - chapterLength;
+      newChapter.end = this.videoDuration;
+
+      this.updateChapterDOM(chapterToShrink);
+    } else {
+      // * No room to shrink - just append at the end
+      const lastChapter = this.chapters.at(-1);
+      const start = lastChapter ? lastChapter.end : 0;
+      newChapter.start = start;
+      newChapter.end = Math.min(this.videoDuration, start + chapterLength);
+    }
+
+    // * Add the new chapter
+    this.chapters.push(newChapter);
+    this.container.appendChild(newChapter.element);
+    this.updateChapterDOM(newChapter);
+    this.attachEventListeners(newChapter);
     this.normalizeChapterInputs();
-    console.log(this.chapters);
 
     this.signal.emit("chapter-added", {
       chapter: newChapter,
       chapters: this.chapters,
     });
-  };
-
-  /** Helper to get total length of all chapters after index i */
-  private getRemainingChaptersLength = (
-    index: number,
-    newChapter: Chapter
-  ): number => {
-    let sum: number = 0;
-    for (let j = index + 1; j < this.chapters.length; j++) {
-      const currentIteratedChapter: Chapter = this.chapters[j];
-      sum +=
-        currentIteratedChapter === newChapter
-          ? this.CHAPTER_MIN_LENGTH
-          : this.getChapterDuration(currentIteratedChapter);
-    }
-    return sum;
   };
 
   private updateChapterDOM = (chapter: Chapter): void => {
