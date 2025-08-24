@@ -1,3 +1,4 @@
+import { formatVideoTimeStamp } from "@utils/helpers/format.utils";
 import Signal from "./signal.class";
 
 export type Chapter = {
@@ -106,6 +107,44 @@ class ChapterSideBarManager {
       </button>
     </li>
     `;
+  };
+
+  public getChapterFromDuration = (duration: number): Chapter | null => {
+    const chapterWithinDuration: Chapter | null =
+      this.chapters.find((chapter) => {
+        const isWithinChapterBounds: boolean =
+          duration >= chapter.start && duration <= chapter.end;
+        return isWithinChapterBounds;
+      }) || null;
+
+    return chapterWithinDuration;
+  };
+
+  public getYoutubeTimestamps = () => {
+    const titleTimestampsArray = this.chapters.map((chapter) => {
+      const { start, title } = chapter;
+      return {
+        start,
+        title,
+      };
+    });
+
+    let youtubeTimestamps: string = "";
+
+    // TODO: Make a minor improvement with the value 3600 (needs to be either an enum or a value in a hashmap or something)
+    const isVideoLongerThanAnHour: boolean = this.videoDuration >= 3_600;
+    for (const titleTimestamp of titleTimestampsArray) {
+      const { start, title } = titleTimestamp;
+      // ? We must force the hours padding IF the video duration is over an hour
+      const formattedChapterStart: string = formatVideoTimeStamp(
+        start,
+        isVideoLongerThanAnHour
+      );
+
+      youtubeTimestamps += `${formattedChapterStart} ${title}\n`;
+    }
+
+    return youtubeTimestamps;
   };
 
   get sidebarClone(): HTMLElement {

@@ -104,7 +104,10 @@ export function formatNumberWithOptions(
  * @param {number} durationInSeconds - The duration of the video in seconds.
  * @returns {string} The formatted duration string in the format "HH:MM:SS". If the duration is less than one hour, the format will be "MM:SS" (if minutes is a single digit value it won't be padded with a leading zero).
  */
-export function formatVideoTimeStamp(durationInSeconds: number): string {
+export function formatVideoTimeStamp(
+  durationInSeconds: number,
+  forceHoursPadding: boolean = false
+): string {
   const seconds: number = Math.floor(durationInSeconds) % 60;
   const minutes: number = Math.floor(durationInSeconds / 60) % 60;
   const hours: number = Math.floor(durationInSeconds / 3_600);
@@ -125,7 +128,7 @@ export function formatVideoTimeStamp(durationInSeconds: number): string {
     options
   );
 
-  if (hours === 0) {
+  if (hours === 0 && !forceHoursPadding) {
     return `${minutes}:${formattedSeconds}`;
   }
 
