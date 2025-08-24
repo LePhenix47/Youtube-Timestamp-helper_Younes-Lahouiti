@@ -131,11 +131,13 @@ class ChapterSideBarManager {
 
     let youtubeTimestamps: string = "";
 
-    // TODO: Make a minor improvement with the value 3600 (needs to be either an enum or a value in a hashmap or something)
-    const isVideoLongerThanAnHour: boolean = this.videoDuration >= 3_600;
+    const ONE_HOUR_IN_SECONDS: number = 3_600;
+    const isVideoLongerThanAnHour: boolean =
+      this.videoDuration >= ONE_HOUR_IN_SECONDS;
+
     for (const titleTimestamp of titleTimestampsArray) {
       const { start, title } = titleTimestamp;
-      // ? We must force the hours padding IF the video duration is over an hour
+      // ? We must force the hours padding IF the video duration is over an hour, otherwise the chapters ain't gonna work properly
       const formattedChapterStart: string = formatVideoTimeStamp(
         start,
         isVideoLongerThanAnHour
