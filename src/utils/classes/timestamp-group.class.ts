@@ -32,6 +32,32 @@ class TimestampInputGroup {
     return this.container;
   }
 
+  public onChange = (callback: (totalSeconds: number) => void) => {
+    const inputs =
+      this.container.querySelectorAll<HTMLInputElement>(".timestamp-input");
+
+    for (const input of inputs) {
+      input.addEventListener("input", () => {
+        this.normalizeInputs();
+        callback(this.getTotalSeconds());
+      });
+    }
+  };
+
+  private normalizeInputs = () => {
+    if (this.hoursInput) this.hoursInput.normalize();
+    this.minutesInput.normalize();
+    this.secondsInput.normalize();
+  };
+
+  public setReadonly = (isReadOnly: boolean) => {
+    const inputs =
+      this.container.querySelectorAll<HTMLInputElement>(".timestamp-input");
+
+    for (const input of inputs) {
+      input.readOnly = isReadOnly;
+    }
+  };
   private makeSeparator = (): HTMLElement => {
     const span = document.createElement("span");
     span.className = "timestamp-separator";

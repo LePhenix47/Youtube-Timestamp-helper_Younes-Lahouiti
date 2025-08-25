@@ -6,6 +6,12 @@ class TimestampUnitInput {
   constructor(unit: "hours" | "minutes" | "seconds") {
     this.unit = unit;
 
+    if (unit === "hours") {
+      this.maxValue = 23;
+    } else {
+      this.maxValue = 59;
+    }
+
     this.createInputElement();
     this.setupEvents();
   }
