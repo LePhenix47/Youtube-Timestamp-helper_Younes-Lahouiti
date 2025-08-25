@@ -60,6 +60,12 @@ class ChapterSideBarManager {
     return this.videoDuration >= this.MIN_VIDEO_DURATION;
   }
 
+  get sidebarClone(): HTMLElement {
+    return this.template.content.firstElementChild!.cloneNode(
+      true
+    ) as HTMLElement;
+  }
+
   private initializeTemplate = () => {
     this.template = document.createElement("template");
 
@@ -153,12 +159,6 @@ class ChapterSideBarManager {
 
     return youtubeTimestamps;
   };
-
-  get sidebarClone(): HTMLElement {
-    return this.template.content.firstElementChild!.cloneNode(
-      true
-    ) as HTMLElement;
-  }
 
   public setVideoDuration = (duration: number) => {
     if (duration < this.MIN_VIDEO_DURATION) {
