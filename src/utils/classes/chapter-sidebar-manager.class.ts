@@ -69,7 +69,7 @@ class ChapterSideBarManager {
       <img src="" 
       class="video-timestamps__img"
       alt=""
-      data-element="chapter-thumbnail"
+      data-element="chapter-start-thumbnail"
       />
 
       <form class="video-timestamps__labels-container">
