@@ -55,6 +55,27 @@ class ProgressBar {
         this.syncChunks(chapters);
       }
     );
+
+    this.signal.on<{ chapter: Chapter | null }>(
+      "chapter-for-frame",
+      ({ chapter }) => {
+        const timeStampControlsChapter =
+          document.querySelector<HTMLButtonElement>(
+            "[data-element=timestamp-chapter]"
+          );
+
+        const title = this.framePreview.querySelector<HTMLSpanElement>(
+          "[data-element=video-progress-frame-title]"
+        );
+
+        if (!chapter) {
+          return;
+        }
+
+        timeStampControlsChapter.textContent = chapter.title;
+        title.textContent = chapter.title;
+      }
+    );
   }
 
   private handleChunkDrag = (
@@ -68,7 +89,6 @@ class ProgressBar {
     const currentChunk = this.chunks[chunkIndex];
     const previousChunk = this.chunks[chunkIndex - 1];
     const nextChunk = this.chunks[chunkIndex + 1];
-    const minLength = ChapterSideBarManager.CHAPTER_MIN_LENGTH;
 
     let clampedTime = this.calculateClampedTime(
       time,
@@ -77,7 +97,7 @@ class ProgressBar {
       currentChunk,
       previousChunk,
       nextChunk,
-      minLength
+      ChapterSideBarManager.CHAPTER_MIN_LENGTH
     );
 
     clampedTime = Math.floor(clampedTime);
@@ -89,6 +109,10 @@ class ProgressBar {
       nextChunk,
       clampedTime
     );
+
+    this.signal.emit("frame-preview-updated", {
+      time: this.videoManager.currentTime,
+    });
 
     this.signal.emit("chunk-chapters-updated", {
       chapters: this.chunks.map((c) => ({
@@ -179,6 +203,10 @@ class ProgressBar {
       this.chunks.push(chunk);
       list.appendChild(chunk.element);
     }
+
+    this.signal.emit("frame-preview-updated", {
+      time: this.videoManager.currentTime,
+    });
   };
 
   private updateChunk = (chapter: Chapter) => {
@@ -305,10 +333,17 @@ class ProgressBar {
   public updateFramePreview = async (time: number): Promise<void> => {
     const formatted = formatVideoTimeStamp(time);
 
-    const timestamp = this.framePreview.querySelector<HTMLElement>(
+    const frameTimestamp = this.framePreview.querySelector<HTMLSpanElement>(
       "[data-element=video-progress-frame-timestamp]"
     );
-    timestamp.textContent = formatted;
+    const timeStampStart = document.querySelector<HTMLSpanElement>(
+      "[data-element=timestamp-start]"
+    );
+
+    frameTimestamp.textContent = formatted;
+    timeStampStart.textContent = formatted;
+
+    this.signal.emit("frame-preview-updated", { time });
 
     const img = this.framePreview.querySelector<HTMLImageElement>(
       "[data-element=video-progress-frame-img]"

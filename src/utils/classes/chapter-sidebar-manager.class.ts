@@ -36,6 +36,11 @@ class ChapterSideBarManager {
     }>("chunk-chapters-updated", ({ chapters }) => {
       this.syncWithChunks(chapters);
     });
+
+    this.signal.on<{ time: number }>("frame-preview-updated", ({ time }) => {
+      const chapter: Chapter = this.getChapterFromDuration(time);
+      this.signal.emit("chapter-for-frame", { chapter: chapter || null });
+    });
   }
 
   get MIN_VIDEO_DURATION(): number {

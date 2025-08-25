@@ -45,6 +45,10 @@ class VideoPlayerManager {
     return this.video.duration;
   }
 
+  get currentTime(): number {
+    return this.video.currentTime;
+  }
+
   get isPaused(): boolean {
     return this.video.paused;
   }

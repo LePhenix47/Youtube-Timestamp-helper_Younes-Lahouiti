@@ -5,7 +5,9 @@ import { fixInputRangeBackground } from "@utils/helpers/fix.utils";
 import VideoPlayerManager from "./utils/classes/video-player.class";
 import { bindVideoControls } from "./binds";
 import { formatVideoTimeStamp } from "@utils/helpers/format.utils";
-import ChapterSideBarManager from "@utils/classes/chapter-sidebar-manager.class";
+import ChapterSideBarManager, {
+  Chapter,
+} from "@utils/classes/chapter-sidebar-manager.class";
 import ProgressBar from "@utils/classes/progressbar.class";
 
 fixInputRangeBackground();
@@ -57,6 +59,14 @@ const timeStampStart = document.querySelector<HTMLSpanElement>(
 );
 const timeStampEnd = document.querySelector<HTMLSpanElement>(
   "[data-element=timestamp-end]"
+);
+
+const frameTimestamp = document.querySelector<HTMLSpanElement>(
+  "[data-element=video-progress-frame-timestamp]"
+);
+
+const timeStampControlsChapter = document.querySelector<HTMLButtonElement>(
+  "[data-element=timestamp-chapter]"
 );
 
 const timeStampAddChapterButton = document.querySelector<HTMLButtonElement>(
@@ -146,8 +156,10 @@ videoManager
       `${currentTime}`
     );
 
-    const formattedCurrentTime: string = formatVideoTimeStamp(currentTime);
-    timeStampStart.textContent = formattedCurrentTime;
+    const formatted = formatVideoTimeStamp(currentTime);
+
+    frameTimestamp.textContent = formatted;
+    timeStampStart.textContent = formatted;
   })
   .onWaiting(() => {
     videoBuffer.classList.remove("hide");
