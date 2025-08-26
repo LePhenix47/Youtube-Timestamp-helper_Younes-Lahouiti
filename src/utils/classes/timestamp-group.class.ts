@@ -66,9 +66,6 @@ class TimestampInputGroup {
 
     for (const input of inputs) {
       input.readOnly = isReadOnly;
-      // Add visual feedback for readonly state
-      input.style.opacity = isReadOnly ? "0.6" : "1";
-      input.style.cursor = isReadOnly ? "not-allowed" : "text";
     }
   };
 
@@ -76,7 +73,7 @@ class TimestampInputGroup {
     const span = document.createElement("span");
     span.className = "timestamp-separator";
     span.textContent = ":";
-    span.style.cssText = "font-weight: bold; color: #666; margin: 0 2px;";
+
     return span;
   };
 
