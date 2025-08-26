@@ -9,8 +9,11 @@ import ChapterSideBarManager, {
 } from "./chapter-sidebar-manager.class";
 
 // Debounce utility for performance optimization
-function debounce<T extends (...args: any[]) => void>(func: T, delay: number): T {
-  let timeoutId: number | null = null;
+function debounce<T extends (...args: any[]) => any>(
+  func: T,
+  delay: number
+): T {
+  let timeoutId: ReturnType<typeof setTimeout> | null = null;
   return ((...args: any[]) => {
     if (timeoutId) clearTimeout(timeoutId);
     timeoutId = setTimeout(() => func(...args), delay);
@@ -52,7 +55,10 @@ class ProgressBar {
     );
 
     // Create debounced version of thumbnail update
-    this.debouncedUpdateFramePreview = debounce(this.updateFramePreview.bind(this), 150);
+    this.debouncedUpdateFramePreview = debounce(
+      this.updateFramePreview.bind(this),
+      150
+    );
 
     this.signal.on(
       "chapter-added",
@@ -138,18 +144,18 @@ class ProgressBar {
     this.pendingChunkUpdates.add(id);
     if (previousChunk) this.pendingChunkUpdates.add(previousChunk.id);
     if (nextChunk) this.pendingChunkUpdates.add(nextChunk.id);
-    
+
     this.scheduleBatchedChunkUpdate();
   };
 
   private handleChunkDragEnd = (
     id: string,
-    type: "start" | "end", 
+    type: "start" | "end",
     finalTime: number
   ) => {
     // Clear drag state from all chunks
-    this.chunks.forEach(chunk => chunk.setDragState(false));
-    
+    this.chunks.forEach((chunk) => chunk.setDragState(false));
+
     // Perform final position update
     this.handleChunkDrag(id, type, finalTime);
   };
@@ -318,7 +324,7 @@ class ProgressBar {
     if (this.hoverAnimationFrame) {
       return; // Already scheduled
     }
-    
+
     this.hoverAnimationFrame = requestAnimationFrame(() => {
       this.progressContainer.style.setProperty(
         "--_current-video-hover-secs",
@@ -357,7 +363,7 @@ class ProgressBar {
     if (this.pendingAnimationFrame) {
       cancelAnimationFrame(this.pendingAnimationFrame);
     }
-    
+
     this.pendingAnimationFrame = requestAnimationFrame(() => {
       this.videoManager.seek(time);
       this.updateThumbPosition(time);
@@ -452,13 +458,13 @@ class ProgressBar {
 
   private scheduleBatchedChunkUpdate = (): void => {
     if (this.chunkUpdateAnimationFrame) return;
-    
+
     this.chunkUpdateAnimationFrame = requestAnimationFrame(() => {
       // Only emit updates for chunks that actually changed
       const changedChapters = Array.from(this.pendingChunkUpdates)
-        .map(id => this.chunks.find(c => c.id === id))
+        .map((id) => this.chunks.find((c) => c.id === id))
         .filter(Boolean)
-        .map(c => ({
+        .map((c) => ({
           id: c!.id,
           start: c!.startTime,
           end: c!.endTime,
@@ -477,7 +483,7 @@ class ProgressBar {
           })),
         });
       }
-      
+
       this.pendingChunkUpdates.clear();
       this.chunkUpdateAnimationFrame = null;
     });
