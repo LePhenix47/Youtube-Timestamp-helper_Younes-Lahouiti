@@ -1,5 +1,6 @@
 import { formatVideoTimeStamp } from "@utils/helpers/format.utils";
 import Signal from "./signal.class";
+import TimestampInputGroup from "./timestamp-group.class";
 
 export type Chapter = {
   id: string;
@@ -7,6 +8,7 @@ export type Chapter = {
   start: number;
   end: number;
   element: HTMLElement; // DOM node reference
+  startInputGroup?: TimestampInputGroup;
 };
 
 class ChapterSideBarManager {
@@ -90,11 +92,7 @@ class ChapterSideBarManager {
 
         <label class="video-timestamps__label">
           Start:
-          <input 
-            type="text" 
-            class="video-timestamps__input video-timestamps__input--start" 
-            data-element="chapter-start-input"
-          />
+          <div data-element="chapter-start-input-container" class="video-timestamps__input-container"></div>
         </label>
 
         <label class="video-timestamps__label">
@@ -185,8 +183,8 @@ class ChapterSideBarManager {
     const titleInput = clone.querySelector<HTMLInputElement>(
       '[data-element="chapter-title-input"]'
     );
-    const startInput = clone.querySelector<HTMLInputElement>(
-      '[data-element="chapter-start-input"]'
+    const startInputContainer = clone.querySelector<HTMLDivElement>(
+      '[data-element="chapter-start-input-container"]'
     );
     const endInput = clone.querySelector<HTMLInputElement>(
       '[data-element="chapter-end-input"]'
@@ -194,8 +192,22 @@ class ChapterSideBarManager {
 
     if (titleHeading) titleHeading.textContent = title;
     if (titleInput) titleInput.value = title;
-    if (startInput) startInput.value = `${start}`;
-    if (endInput) endInput.value = `${end}`;
+    if (endInput) {
+      const formattedInput: string = formatVideoTimeStamp(end);
+      endInput.value = formattedInput;
+    }
+
+    // Create and insert the timestamp input group
+    if (startInputContainer) {
+      const ONE_HOUR_IN_SECONDS = 3_600;
+      const showHours = this.videoDuration >= ONE_HOUR_IN_SECONDS;
+      const timestampGroup = new TimestampInputGroup(showHours);
+      timestampGroup.setFromSeconds(start);
+      startInputContainer.appendChild(timestampGroup.element);
+
+      // Store reference for later use
+      (clone as any)._timestampGroup = timestampGroup;
+    }
 
     return clone;
   };
@@ -203,12 +215,16 @@ class ChapterSideBarManager {
   /** Creates the first chapter spanning the whole video */
   public createInitialChapter = () => {
     const title = "Intro";
+    const element = this.createChapterElement(title, 0, this.videoDuration);
+    const timestampGroup = (element as any)._timestampGroup;
+
     const chapter: Chapter = {
       id: crypto.randomUUID(),
       title,
       start: 0,
       end: this.videoDuration,
-      element: this.createChapterElement(title, 0, this.videoDuration),
+      element,
+      startInputGroup: timestampGroup,
     };
 
     this.chapters.push(chapter);
@@ -299,25 +315,26 @@ class ChapterSideBarManager {
     const titleInput = element.querySelector<HTMLInputElement>(
       '[data-element="chapter-title-input"]'
     );
-    const startInput = element.querySelector<HTMLInputElement>(
-      '[data-element="chapter-start-input"]'
-    );
     const endInput = element.querySelector<HTMLInputElement>(
       '[data-element="chapter-end-input"]'
     );
 
     if (titleHeading) titleHeading.textContent = title;
     if (titleInput) titleInput.value = title;
-    if (startInput) startInput.value = `${start}`;
-    if (endInput) endInput.value = `${end}`;
+    if (endInput) {
+      const formattedInput: string = formatVideoTimeStamp(end);
+      endInput.value = formattedInput;
+    }
+
+    // Update timestamp input group
+    if (chapter.startInputGroup) {
+      chapter.startInputGroup.setFromSeconds(start);
+    }
   };
 
   private attachEventListeners = (chapter: Chapter): void => {
     const titleInput = chapter.element.querySelector<HTMLInputElement>(
       '[data-element="chapter-title-input"]'
-    );
-    const startInput = chapter.element.querySelector<HTMLInputElement>(
-      '[data-element="chapter-start-input"]'
     );
     const deleteButton = chapter.element.querySelector<HTMLButtonElement>(
       '[data-element="chapter-delete"]'
@@ -329,14 +346,11 @@ class ChapterSideBarManager {
       );
     }
 
-    if (startInput) {
-      startInput.addEventListener("input", (event) =>
-        this.onStartInput(chapter, event)
-      );
-    }
-
-    if (this.chapters.length <= 1) {
-      startInput.readOnly = true;
+    // Set up timestamp input group change handler
+    if (chapter.startInputGroup) {
+      chapter.startInputGroup.onChange((totalSeconds) => {
+        this.onStartInputChange(chapter, totalSeconds);
+      });
     }
 
     if (deleteButton) {
@@ -355,15 +369,15 @@ class ChapterSideBarManager {
     if (heading) heading.textContent = chapter.title;
   };
 
-  private onStartInput = (chapter: Chapter, event: Event): void => {
-    const input = event.target as HTMLInputElement;
-    const newStart = Number(input.value);
-
+  private onStartInputChange = (chapter: Chapter, newStart: number): void => {
     if (
       !this.validateStartChange(chapter.id, newStart) ||
       Number.isNaN(newStart)
     ) {
-      input.value = `${chapter.start}`;
+      // Reset to previous value
+      if (chapter.startInputGroup) {
+        chapter.startInputGroup.setFromSeconds(chapter.start);
+      }
       return;
     }
 
@@ -380,6 +394,7 @@ class ChapterSideBarManager {
       this.updateChapterDOM(prev);
       this.signal.emit("chapter-updated", { chapter: prev });
     }
+
     if (next) {
       // Optional: you might want to enforce something for next.start if needed
       this.updateChapterDOM(next);
@@ -407,7 +422,7 @@ class ChapterSideBarManager {
     const next = this.chapters[index + 1];
 
     // * Must be within video bounds
-    if (newStart < 0 || newStart >= this.videoDuration) {
+    if (newStart < 0 || newStart > this.videoDuration) {
       console.error("Invalid start time:", newStart);
       return false;
     }
@@ -442,17 +457,14 @@ class ChapterSideBarManager {
   private normalizeChapterInputs = (): void => {
     for (let i = 0; i < this.chapters.length; i++) {
       const chapter = this.chapters[i];
-      const startInput = chapter.element.querySelector<HTMLInputElement>(
-        '[data-element="chapter-start-input"]'
-      );
-      if (!startInput) return;
 
-      // First chapter always readonly
-      if (i === 0) {
-        startInput.readOnly = true;
-        startInput.value = "0"; // enforce start=0
-      } else {
-        startInput.readOnly = false;
+      if (chapter.startInputGroup) {
+        if (i === 0) {
+          chapter.startInputGroup.setReadonly(true);
+          chapter.startInputGroup.setFromSeconds(0);
+        } else {
+          chapter.startInputGroup.setReadonly(false);
+        }
       }
     }
   };
@@ -512,6 +524,7 @@ class ChapterSideBarManager {
       start,
       end
     );
+    const timestampGroup = (chapterElement as any)._timestampGroup;
 
     return {
       id: crypto.randomUUID(),
@@ -519,6 +532,7 @@ class ChapterSideBarManager {
       start: 0,
       end: 0,
       element: chapterElement,
+      startInputGroup: timestampGroup,
     };
   };
 
@@ -542,12 +556,16 @@ class ChapterSideBarManager {
       const title =
         titleMap.get(id) || (i === 0 ? "Intro" : `Chapter ${i + 1}`);
 
+      const element = this.createChapterElement(title, start, end);
+      const timestampGroup = (element as any)._timestampGroup;
+
       const chapter: Chapter = {
         id,
         title,
         start,
         end,
-        element: this.createChapterElement(title, start, end),
+        element,
+        startInputGroup: timestampGroup,
       };
 
       this.chapters.push(chapter);

@@ -6,11 +6,13 @@ class TimestampInputGroup {
   private minutesInput: TimestampUnitInput;
   private secondsInput: TimestampUnitInput;
   public showHours: boolean;
+  private changeCallback?: (totalSeconds: number) => void;
 
   constructor(showHours: boolean) {
     this.showHours = showHours;
     this.container = document.createElement("div");
     this.container.classList.add("timestamp-group");
+    this.container.style.display = "contents";
 
     if (showHours) {
       this.hoursInput = new TimestampUnitInput("hours");
@@ -26,20 +28,27 @@ class TimestampInputGroup {
     this.container.append(this.secondsInput.element);
 
     this.setupNavigation();
+    this.setupChangeDetection();
   }
 
   public get element(): HTMLElement {
     return this.container;
   }
 
+  // Fixed method name to match ChapterSideBarManager usage
   public onChange = (callback: (totalSeconds: number) => void) => {
-    const inputs =
-      this.container.querySelectorAll<HTMLInputElement>(".timestamp-input");
+    this.changeCallback = callback;
+  };
+
+  private setupChangeDetection = (): void => {
+    const inputs = this.container.querySelectorAll<HTMLInputElement>(
+      "[data-element=chapter-start-input]"
+    );
 
     for (const input of inputs) {
       input.addEventListener("input", () => {
         this.normalizeInputs();
-        callback(this.getTotalSeconds());
+        this.changeCallback?.(this.getTotalSeconds());
       });
     }
   };
@@ -51,23 +60,30 @@ class TimestampInputGroup {
   };
 
   public setReadonly = (isReadOnly: boolean) => {
-    const inputs =
-      this.container.querySelectorAll<HTMLInputElement>(".timestamp-input");
+    const inputs = this.container.querySelectorAll<HTMLInputElement>(
+      "[data-element=chapter-start-input]"
+    );
 
     for (const input of inputs) {
       input.readOnly = isReadOnly;
+      // Add visual feedback for readonly state
+      input.style.opacity = isReadOnly ? "0.6" : "1";
+      input.style.cursor = isReadOnly ? "not-allowed" : "text";
     }
   };
+
   private makeSeparator = (): HTMLElement => {
     const span = document.createElement("span");
     span.className = "timestamp-separator";
     span.textContent = ":";
+    span.style.cssText = "font-weight: bold; color: #666; margin: 0 2px;";
     return span;
   };
 
   private setupNavigation = () => {
-    const inputs =
-      this.container.querySelectorAll<HTMLInputElement>(".timestamp-input");
+    const inputs = this.container.querySelectorAll<HTMLInputElement>(
+      "[data-element=chapter-start-input]"
+    );
 
     for (let i = 0; i < inputs.length; i++) {
       const input = inputs[i];
@@ -76,9 +92,22 @@ class TimestampInputGroup {
 
       input.addEventListener("keydown", (ev) => {
         if (ev.key === "ArrowRight" && nextInput) {
+          ev.preventDefault();
           nextInput.focus();
+          nextInput.select();
         } else if (ev.key === "ArrowLeft" && previousInput) {
+          ev.preventDefault();
           previousInput.focus();
+          previousInput.select();
+        }
+      });
+
+      // Auto-advance to next input when typing 2 digits
+      input.addEventListener("input", (ev) => {
+        const target = ev.target as HTMLInputElement;
+        if (target.value.length === 2 && nextInput && !target.readOnly) {
+          nextInput.focus();
+          nextInput.select();
         }
       });
     }
@@ -94,13 +123,22 @@ class TimestampInputGroup {
   public setFromSeconds = (total: number) => {
     const h = Math.floor(total / 3_600);
     const m = Math.floor((total % 3_600) / 60);
-    const s = total % 60;
+    const s = Math.floor(total % 60); // Fixed: added Math.floor for consistency
 
     if (this.hoursInput) {
       this.hoursInput.setValue(h);
     }
     this.minutesInput.setValue(m);
     this.secondsInput.setValue(s);
+  };
+
+  public focus = (): void => {
+    // Focus the first available input
+    if (this.hoursInput) {
+      this.hoursInput.focus();
+    } else {
+      this.minutesInput.focus();
+    }
   };
 }
 

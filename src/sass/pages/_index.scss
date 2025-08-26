@@ -685,12 +685,34 @@
         align-items: center;
     }
 
+    &__input-container {
+        display: flex;
+        align-items: center;
+        border-radius: 100vmax;
+
+        &:focus-within {
+            outline: 2px solid currentColor;
+
+        }
+    }
+
     &__input {
+        flex: 1;
+
+        --_inline-padding: 5px;
         padding: 5px 10px;
 
         border-radius: 100vmax;
 
         background-color: var(--ts-input-bg);
+
+        &--start {
+            --_min-chars: 3;
+            width: calc(var(--_inline-padding) * (5px + var(--_min-chars) * 1ch));
+            text-align: center;
+
+            --_inner-spin-appearance: none;
+        }
     }
 
     &__remove {
