@@ -712,6 +712,11 @@
             text-align: center;
 
             --_inner-spin-appearance: none;
+
+            &:read-only {
+                opacity: 60%;
+                cursor: not-allowed
+            }
         }
     }
 
