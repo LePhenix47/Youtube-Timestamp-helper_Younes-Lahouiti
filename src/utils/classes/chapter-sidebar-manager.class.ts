@@ -236,6 +236,7 @@ class ChapterSideBarManager {
       chapter,
       chapters: this.chapters,
     });
+    this.signal.emit("timestamp-output-update");
   };
 
   private getChapterDuration = (chapter: Chapter): number => {
@@ -306,6 +307,7 @@ class ChapterSideBarManager {
       chapter: newChapter,
       chapters: this.chapters,
     });
+    this.signal.emit("timestamp-output-update");
   };
 
   private updateChapterDOM = (chapter: Chapter): void => {
@@ -405,6 +407,9 @@ class ChapterSideBarManager {
     // Update current chapter
     this.updateChapterDOM(chapter);
     this.signal.emit("chapter-updated", { chapter });
+
+    // Update timestamp output
+    this.signal.emit("timestamp-output-update");
   };
 
   private onDeleteClick = (chapter: Chapter): void => {
@@ -492,6 +497,7 @@ class ChapterSideBarManager {
       id: chapter.id,
       chapters: this.chapters,
     });
+    this.signal.emit("timestamp-output-update");
     console.log("Remaining chapters:", this.chapters);
   };
 
@@ -577,27 +583,36 @@ class ChapterSideBarManager {
     this.normalizeChapterInputs();
 
     this.signal.emit("chapters-synced", { chapters: this.chapters });
+    this.signal.emit("timestamp-output-update");
   };
 
   public selectiveUpdateChapters = (
     chaptersFromChunks: { id: string; start: number; end: number }[]
   ) => {
+    let hasChanges = false;
+    
     // Only update chapters that have actually changed
     for (let i = 0; i < chaptersFromChunks.length; i++) {
       const { id, start, end } = chaptersFromChunks[i];
-      const existingChapter = this.chapters.find(c => c.id === id);
-      
+      const existingChapter = this.chapters.find((c) => c.id === id);
+
       if (existingChapter) {
         // Check if values have actually changed to avoid unnecessary updates
         const startChanged = Math.abs(existingChapter.start - start) > 0.01;
         const endChanged = Math.abs(existingChapter.end - end) > 0.01;
-        
+
         if (startChanged || endChanged) {
           existingChapter.start = start;
           existingChapter.end = end;
           this.updateChapterDOM(existingChapter);
+          hasChanges = true;
         }
       }
+    }
+    
+    // Only emit if there were actual changes
+    if (hasChanges) {
+      this.signal.emit("timestamp-output-update");
     }
   };
 }

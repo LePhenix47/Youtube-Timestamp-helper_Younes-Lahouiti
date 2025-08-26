@@ -73,6 +73,14 @@ const timeStampAddChapterButton = document.querySelector<HTMLButtonElement>(
   "[data-element=video-timestamps-add-button]"
 );
 
+const timestampsOutput = document.querySelector<HTMLTextAreaElement>(
+  "[data-element=timestamps-output]"
+);
+
+const copyTimestampsButton = document.querySelector<HTMLButtonElement>(
+  "[data-element=copy-timestamps-button]"
+);
+
 const signal = new Signal();
 
 const playButton = videoControls.querySelector<HTMLLabelElement>(
@@ -283,4 +291,36 @@ signal.on<{ value: number }>("video-mute-toggle", (detail) => {
     videoManager.mute();
     icon.classList.add("fa-volume-xmark");
   }
+});
+
+signal.on("timestamp-output-update", () => {
+  const youtubeTimestamps = chapterSidebarManager.getYoutubeTimestamps();
+  timestampsOutput.value = youtubeTimestamps;
+});
+
+// Copy button functionality
+const copyToClipboard = async (text: string): Promise<boolean> => {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch (error) {
+    console.error("Failed to copy to clipboard:", error);
+    return false;
+  }
+};
+
+// Copy button emits signal
+copyTimestampsButton?.addEventListener("click", () => {
+  signal.emit("copy-timestamps");
+});
+
+// Handle copy signal
+signal.on("copy-timestamps", async () => {
+  const originalText: string = copyTimestampsButton.innerText;
+  const success = await copyToClipboard(timestampsOutput.value);
+
+  copyTimestampsButton.textContent = success ? "✅ Copied!" : "❌ Failed";
+  setTimeout(() => {
+    copyTimestampsButton.textContent = originalText;
+  }, 2_000);
 });
