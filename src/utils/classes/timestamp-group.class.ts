@@ -84,24 +84,40 @@ class TimestampInputGroup {
 
     for (let i = 0; i < inputs.length; i++) {
       const input = inputs[i];
-      const previousInput = i > 0 ? inputs[i - 1] : null;
-      const nextInput = i < inputs.length - 1 ? inputs[i + 1] : null;
+      const previousInput = inputs?.[i - 1];
+      const nextInput = inputs?.[i + 1];
 
-      input.addEventListener("keydown", (ev) => {
-        if (ev.key === "ArrowRight" && nextInput) {
-          ev.preventDefault();
-          nextInput.focus();
-          nextInput.select();
-        } else if (ev.key === "ArrowLeft" && previousInput) {
-          ev.preventDefault();
-          previousInput.focus();
-          previousInput.select();
+      input.addEventListener("keydown", (e: KeyboardEvent) => {
+        switch (e.key) {
+          case "ArrowLeft": {
+            if (!previousInput) {
+              break;
+            }
+            e.preventDefault();
+
+            previousInput.focus();
+            previousInput.select();
+            break;
+          }
+          case "ArrowRight": {
+            if (!nextInput) {
+              break;
+            }
+            e.preventDefault();
+
+            nextInput.focus();
+            nextInput.select();
+            break;
+          }
+
+          default:
+            break;
         }
       });
 
-      // Auto-advance to next input when typing 2 digits
-      input.addEventListener("input", (ev) => {
-        const target = ev.target as HTMLInputElement;
+      // TODO: Update this shitty logic, this is just shit
+      input.addEventListener("input", (e) => {
+        const target = e.target as HTMLInputElement;
         if (target.value.length === 2 && nextInput && !target.readOnly) {
           nextInput.focus();
           nextInput.select();
@@ -114,6 +130,7 @@ class TimestampInputGroup {
     const h = this.hoursInput ? this.hoursInput.value : 0;
     const m = this.minutesInput.value;
     const s = this.secondsInput.value;
+
     return h * 3_600 + m * 60 + s;
   };
 
