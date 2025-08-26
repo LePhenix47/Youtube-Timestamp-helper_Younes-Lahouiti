@@ -1,5 +1,25 @@
 import Signal from "./signal.class";
 
+// Throttle utility for performance optimization
+function throttle<T extends (...args: any[]) => void>(func: T, delay: number): T {
+  let timeoutId: number | null = null;
+  let lastExecTime = 0;
+  return ((...args: any[]) => {
+    const currentTime = Date.now();
+    if (currentTime - lastExecTime > delay) {
+      func(...args);
+      lastExecTime = currentTime;
+    } else {
+      if (timeoutId) clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        func(...args);
+        lastExecTime = Date.now();
+        timeoutId = null;
+      }, delay - (currentTime - lastExecTime));
+    }
+  }) as T;
+}
+
 class ProgressBarChunk {
   public element: HTMLLIElement;
   public readonly signal = new Signal();
@@ -12,6 +32,11 @@ class ProgressBarChunk {
   private videoDuration: number;
   private isFirst: boolean;
   private isLast: boolean;
+  private cachedRect: DOMRect | null = null;
+  private rectCacheTime = 0;
+  private readonly RECT_CACHE_DURATION = 100; // Cache for 100ms
+  private isDragging = false;
+  private animationFrameId: number | null = null;
 
   constructor(
     id: string,
@@ -61,8 +86,20 @@ class ProgressBarChunk {
   }
 
   private updateChunkDOM = () => {
-    this.element.style.setProperty("--_chunk-start-secs", `${this.startTime}`);
-    this.element.style.setProperty("--_chunk-end-secs", `${this.endTime}`);
+    // During drag operations, batch DOM updates using requestAnimationFrame
+    if (this.isDragging) {
+      if (this.animationFrameId) return; // Already scheduled
+      
+      this.animationFrameId = requestAnimationFrame(() => {
+        this.element.style.setProperty("--_chunk-start-secs", `${this.startTime}`);
+        this.element.style.setProperty("--_chunk-end-secs", `${this.endTime}`);
+        this.animationFrameId = null;
+      });
+    } else {
+      // Immediate update when not dragging
+      this.element.style.setProperty("--_chunk-start-secs", `${this.startTime}`);
+      this.element.style.setProperty("--_chunk-end-secs", `${this.endTime}`);
+    }
   };
 
   /** ------------------------
@@ -94,30 +131,65 @@ class ProgressBarChunk {
     e.preventDefault();
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
 
-    const onMove = (ev: PointerEvent) => {
+    // Set dragging state to enable batched DOM updates
+    this.isDragging = true;
+
+    // Cache the rect at the start of drag to avoid repeated getBoundingClientRect calls
+    this.updateCachedRect();
+
+    // Throttle the drag events to 60fps (16ms)
+    const throttledOnMove = throttle((ev: PointerEvent) => {
       const proposedTime = this.computeTimeFromPointer(ev.pageX);
       this.signal.emit("chunk-drag", {
         id: this.id,
         type,
         proposedTime,
       });
-    };
+    }, 16);
 
     const onUp = (ev: PointerEvent) => {
       (e.target as HTMLElement).releasePointerCapture(ev.pointerId);
-      document.removeEventListener("pointermove", onMove);
+      document.removeEventListener("pointermove", throttledOnMove);
       document.removeEventListener("pointerup", onUp);
 
+      // End dragging state
+      this.isDragging = false;
+      
+      // Final position update
       const finalTime = this.computeTimeFromPointer(ev.pageX);
       this.signal.emit("chunk-drag-end", { id: this.id, type, finalTime });
+      
+      // Clear the cached rect after drag ends
+      this.cachedRect = null;
+      
+      // Force immediate DOM update after drag
+      if (this.animationFrameId) {
+        cancelAnimationFrame(this.animationFrameId);
+        this.animationFrameId = null;
+      }
+      this.updateChunkDOM();
     };
 
-    document.addEventListener("pointermove", onMove);
+    document.addEventListener("pointermove", throttledOnMove);
     document.addEventListener("pointerup", onUp);
   };
 
+  private updateCachedRect = (): void => {
+    const now = Date.now();
+    if (!this.cachedRect || (now - this.rectCacheTime) > this.RECT_CACHE_DURATION) {
+      this.cachedRect = this.element.parentElement!.getBoundingClientRect();
+      this.rectCacheTime = now;
+    }
+  };
+
   private computeTimeFromPointer = (pageX: number): number => {
-    const rect = this.element.parentElement!.getBoundingClientRect();
+    // Use cached rect if available, otherwise get fresh rect
+    let rect = this.cachedRect;
+    if (!rect) {
+      this.updateCachedRect();
+      rect = this.cachedRect!;
+    }
+    
     const offsetX = pageX - rect.left;
     const clamped = Math.max(0, Math.min(offsetX, rect.width));
     return (clamped / rect.width) * this.videoDuration;
@@ -136,13 +208,33 @@ class ProgressBarChunk {
     this.updateChunkDOM();
   };
 
+  public setDragState = (isDragging: boolean) => {
+    this.isDragging = isDragging;
+    // Force immediate update when drag ends
+    if (!isDragging && this.animationFrameId) {
+      cancelAnimationFrame(this.animationFrameId);
+      this.animationFrameId = null;
+      this.updateChunkDOM();
+    }
+  };
+
+  private lastHoverState: boolean | null = null;
+
   public updateHover = (hoverTime: number) => {
     const isHovered = hoverTime >= this.startTime && hoverTime <= this.endTime;
-    this.element.classList.toggle("hover-overlap", isHovered);
+    
+    // Only update DOM if hover state actually changed
+    if (this.lastHoverState !== isHovered) {
+      this.element.classList.toggle("hover-overlap", isHovered);
+      this.lastHoverState = isHovered;
+    }
   };
 
   public destroy = () => {
     this.abortController.abort();
+    if (this.animationFrameId) {
+      cancelAnimationFrame(this.animationFrameId);
+    }
   };
 }
 

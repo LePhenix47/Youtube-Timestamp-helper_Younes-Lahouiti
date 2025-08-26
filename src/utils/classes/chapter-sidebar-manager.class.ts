@@ -36,7 +36,7 @@ class ChapterSideBarManager {
         end: number;
       }[];
     }>("chunk-chapters-updated", ({ chapters }) => {
-      this.syncWithChunks(chapters);
+      this.selectiveUpdateChapters(chapters);
     });
 
     this.signal.on<{ time: number }>("frame-preview-updated", ({ time }) => {
@@ -577,6 +577,28 @@ class ChapterSideBarManager {
     this.normalizeChapterInputs();
 
     this.signal.emit("chapters-synced", { chapters: this.chapters });
+  };
+
+  public selectiveUpdateChapters = (
+    chaptersFromChunks: { id: string; start: number; end: number }[]
+  ) => {
+    // Only update chapters that have actually changed
+    for (let i = 0; i < chaptersFromChunks.length; i++) {
+      const { id, start, end } = chaptersFromChunks[i];
+      const existingChapter = this.chapters.find(c => c.id === id);
+      
+      if (existingChapter) {
+        // Check if values have actually changed to avoid unnecessary updates
+        const startChanged = Math.abs(existingChapter.start - start) > 0.01;
+        const endChanged = Math.abs(existingChapter.end - end) > 0.01;
+        
+        if (startChanged || endChanged) {
+          existingChapter.start = start;
+          existingChapter.end = end;
+          this.updateChapterDOM(existingChapter);
+        }
+      }
+    }
   };
 }
 

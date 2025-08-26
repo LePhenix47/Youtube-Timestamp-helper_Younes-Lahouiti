@@ -8,6 +8,26 @@ type ScrubCallbacks = Partial<{
   onHoverLeave: () => void;
 }>;
 
+// Throttle utility for performance optimization
+function throttle<T extends (...args: any[]) => void>(func: T, delay: number): T {
+  let timeoutId: number | null = null;
+  let lastExecTime = 0;
+  return ((...args: any[]) => {
+    const currentTime = Date.now();
+    if (currentTime - lastExecTime > delay) {
+      func(...args);
+      lastExecTime = currentTime;
+    } else {
+      if (timeoutId) clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        func(...args);
+        lastExecTime = Date.now();
+        timeoutId = null;
+      }, delay - (currentTime - lastExecTime));
+    }
+  }) as T;
+}
+
 class ProgressBarManager {
   private readonly progressContainer: HTMLLIElement;
   private callbacks: ScrubCallbacks = {};
@@ -15,6 +35,11 @@ class ProgressBarManager {
   public isScrubbing: boolean = false;
   private duration: number;
   private readonly abortController = new AbortController();
+  private cachedRect: DOMRect | null = null;
+  private rectCacheTime = 0;
+  private readonly RECT_CACHE_DURATION = 100; // Cache for 100ms
+  private throttledHoverMove: ((e: PointerEvent) => void) | null = null;
+  private throttledPointerMove: ((e: PointerEvent) => void) | null = null;
 
   constructor(container: HTMLElement, duration: number) {
     this.progressContainer = container.querySelector<HTMLLIElement>(
@@ -32,6 +57,10 @@ class ProgressBarManager {
   private attachEvents = (): void => {
     const { signal } = this.abortController;
 
+    // Create throttled versions of frequently called handlers
+    this.throttledHoverMove = throttle(this.handleHoverMove, 16); // 60fps
+    this.throttledPointerMove = throttle(this.handlePointerMove, 16); // 60fps
+
     // Hover
     this.progressContainer.addEventListener(
       "pointerenter",
@@ -40,7 +69,7 @@ class ProgressBarManager {
     );
     this.progressContainer.addEventListener(
       "pointermove",
-      this.handleHoverMove,
+      this.throttledHoverMove,
       { signal }
     );
     this.progressContainer.addEventListener(
@@ -56,7 +85,7 @@ class ProgressBarManager {
       { signal }
     );
 
-    document.addEventListener("pointermove", this.handlePointerMove, {
+    document.addEventListener("pointermove", this.throttledPointerMove, {
       signal,
     });
 
@@ -128,8 +157,17 @@ class ProgressBarManager {
   };
 
   // --- Helpers ---
+  private updateCachedRect = (): void => {
+    const now = Date.now();
+    if (!this.cachedRect || (now - this.rectCacheTime) > this.RECT_CACHE_DURATION) {
+      this.cachedRect = this.progressContainer.getBoundingClientRect();
+      this.rectCacheTime = now;
+    }
+  };
+
   private computeTimeFromClick = (pageX: number): number => {
-    const rect = this.progressContainer.getBoundingClientRect();
+    this.updateCachedRect();
+    const rect = this.cachedRect!;
     const offsetX = pageX - rect.left;
     const clamped = Math.max(0, Math.min(offsetX, rect.width));
     return (clamped / rect.width) * this.duration;
