@@ -29,15 +29,58 @@ class TimestampInputGroup {
 
     this.setupNavigation();
     this.setupChangeDetection();
+    this.setupCascading();
   }
 
   public get element(): HTMLElement {
     return this.container;
   }
 
-  // Fixed method name to match ChapterSideBarManager usage
   public onChange = (callback: (totalSeconds: number) => void) => {
     this.changeCallback = callback;
+  };
+
+  private setupCascading = (): void => {
+    const handleCascade = (
+      unit: "hours" | "minutes" | "seconds",
+      direction: 1 | -1
+    ) => {
+      if (unit === "minutes") {
+        const current = this.minutesInput.value;
+        const newValue = current + direction;
+
+        if (newValue > 59) {
+          this.minutesInput.setValue(0);
+          if (this.hoursInput) {
+            this.hoursInput.setValue(this.hoursInput.value + 1);
+          }
+        } else if (newValue < 0) {
+          this.minutesInput.setValue(59);
+          if (this.hoursInput) {
+            const newHours = this.hoursInput.value - 1;
+            this.hoursInput.setValue(Math.max(0, newHours));
+          }
+        } else {
+          this.minutesInput.setValue(newValue);
+        }
+      } else if (unit === "hours" && this.hoursInput) {
+        const current = this.hoursInput.value;
+        const newValue = Math.max(0, Math.min(23, current + direction));
+        this.hoursInput.setValue(newValue);
+      }
+
+      // Trigger change callback after cascading
+      if (this.changeCallback) {
+        this.changeCallback(this.getTotalSeconds());
+      }
+    };
+
+    // Set up cascading callbacks for each input
+    this.minutesInput.setCascadeCallback(handleCascade);
+    this.secondsInput.setCascadeCallback(handleCascade);
+    if (this.hoursInput) {
+      this.hoursInput.setCascadeCallback(handleCascade);
+    }
   };
 
   private setupChangeDetection = (): void => {
@@ -46,9 +89,22 @@ class TimestampInputGroup {
     );
 
     for (const input of inputs) {
-      input.addEventListener("input", () => {
+      // Only trigger change on blur now, not on every input
+      input.addEventListener("blur", () => {
         this.normalizeInputs();
-        this.changeCallback?.(this.getTotalSeconds());
+        if (this.changeCallback) {
+          this.changeCallback(this.getTotalSeconds());
+        }
+      });
+
+      // Also trigger on Enter key
+      input.addEventListener("keydown", (ev) => {
+        if (ev.key === "Enter") {
+          this.normalizeInputs();
+          if (this.changeCallback) {
+            this.changeCallback(this.getTotalSeconds());
+          }
+        }
       });
     }
   };
@@ -66,6 +122,8 @@ class TimestampInputGroup {
 
     for (const input of inputs) {
       input.readOnly = isReadOnly;
+      input.style.opacity = isReadOnly ? "0.6" : "1";
+      input.style.cursor = isReadOnly ? "not-allowed" : "text";
     }
   };
 
@@ -73,7 +131,7 @@ class TimestampInputGroup {
     const span = document.createElement("span");
     span.className = "timestamp-separator";
     span.textContent = ":";
-
+    span.style.cssText = "font-weight: bold; color: #666; margin: 0 2px;";
     return span;
   };
 
@@ -84,45 +142,31 @@ class TimestampInputGroup {
 
     for (let i = 0; i < inputs.length; i++) {
       const input = inputs[i];
-      const previousInput = inputs?.[i - 1];
-      const nextInput = inputs?.[i + 1];
+      const previousInput = i > 0 ? inputs[i - 1] : null;
+      const nextInput = i < inputs.length - 1 ? inputs[i + 1] : null;
 
-      input.addEventListener("keydown", (e: KeyboardEvent) => {
-        switch (e.key) {
-          case "ArrowLeft": {
-            if (!previousInput) {
-              break;
-            }
-            e.preventDefault();
-
-            previousInput.focus();
-            previousInput.select();
-            break;
-          }
-          case "ArrowRight": {
-            if (!nextInput) {
-              break;
-            }
-            e.preventDefault();
-
-            nextInput.focus();
-            nextInput.select();
-            break;
-          }
-
-          default:
-            break;
-        }
-      });
-
-      // TODO: Update this shitty logic, this is just shit
-      input.addEventListener("input", (e) => {
-        const target = e.target as HTMLInputElement;
-        if (target.value.length === 2 && nextInput && !target.readOnly) {
+      input.addEventListener("keydown", (ev) => {
+        if (ev.key === "ArrowRight" && nextInput) {
+          ev.preventDefault();
           nextInput.focus();
           nextInput.select();
+        } else if (ev.key === "ArrowLeft" && previousInput) {
+          ev.preventDefault();
+          previousInput.focus();
+          previousInput.select();
+        } else if (ev.key === "Tab") {
+          // Allow normal tab behavior, but normalize on tab out
+          setTimeout(() => {
+            this.normalizeInputs();
+            if (this.changeCallback) {
+              this.changeCallback(this.getTotalSeconds());
+            }
+          }, 0);
         }
       });
+
+      // Remove auto-advance on input - let users type freely
+      // Navigation is now only via arrow keys, tab, or manual clicking
     }
   };
 
@@ -130,14 +174,13 @@ class TimestampInputGroup {
     const h = this.hoursInput ? this.hoursInput.value : 0;
     const m = this.minutesInput.value;
     const s = this.secondsInput.value;
-
     return h * 3_600 + m * 60 + s;
   };
 
   public setFromSeconds = (total: number) => {
     const h = Math.floor(total / 3_600);
     const m = Math.floor((total % 3_600) / 60);
-    const s = Math.floor(total % 60); // Fixed: added Math.floor for consistency
+    const s = Math.floor(total % 60);
 
     if (this.hoursInput) {
       this.hoursInput.setValue(h);
@@ -147,7 +190,6 @@ class TimestampInputGroup {
   };
 
   public focus = (): void => {
-    // Focus the first available input
     if (this.hoursInput) {
       this.hoursInput.focus();
     } else {

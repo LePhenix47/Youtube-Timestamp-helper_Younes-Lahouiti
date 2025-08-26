@@ -2,6 +2,10 @@ class TimestampUnitInput {
   private input: HTMLInputElement;
   private readonly unit: "hours" | "minutes" | "seconds";
   private readonly maxValue: number;
+  private cascadeCallback?: (
+    unit: "hours" | "minutes" | "seconds",
+    direction: 1 | -1
+  ) => void;
 
   constructor(unit: "hours" | "minutes" | "seconds") {
     this.unit = unit;
@@ -48,26 +52,16 @@ class TimestampUnitInput {
   };
 
   private setupEvents = (): void => {
-    this.input.addEventListener("keydown", (ev) => this.handleKeyDown(ev));
+    this.input.addEventListener("keydown", (e) => this.handleKeyDown(e));
     this.input.addEventListener("blur", () => this.normalize());
-    // Add input event to handle real-time validation and emit changes
-    this.input.addEventListener("input", () => this.handleInput());
+    // Remove immediate input normalization - only normalize on blur or arrow keys
   };
 
-  private handleInput = (): void => {
-    // Prevent invalid values during typing
-    const value = this.input.valueAsNumber;
-    if (value > this.maxValue) {
-      this.input.value = this.maxValue.toString().padStart(2, "0");
-    } else if (value < 0) {
-      this.input.value = "0";
-    }
-  };
-
-  private handleKeyDown = (ev: KeyboardEvent): void => {
-    if (ev.key === "ArrowUp" || ev.key === "ArrowDown") {
-      ev.preventDefault();
-      this.increment(ev.key === "ArrowUp" ? 1 : -1);
+  private handleKeyDown = (e: KeyboardEvent): void => {
+    if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+      e.preventDefault();
+      this.increment(e.key === "ArrowUp" ? 1 : -1);
+      this.normalize(); // Normalize after arrow key usage
       // Trigger input event to notify parent of change
       this.input.dispatchEvent(new Event("input", { bubbles: true }));
     }
@@ -75,8 +69,26 @@ class TimestampUnitInput {
 
   private increment = (step: number): void => {
     const current = this.input.valueAsNumber || 0;
-    let newVal = (current + step + this.maxValue + 1) % (this.maxValue + 1);
-    this.input.value = newVal.toString().padStart(2, "0");
+    let newVal = current + step;
+
+    // Handle cascading overflow/underflow
+    if (newVal > this.maxValue) {
+      newVal = 0;
+      // Cascade up to the next higher unit
+      if (this.cascadeCallback && this.unit !== "hours") {
+        const nextUnit = this.unit === "seconds" ? "minutes" : "hours";
+        this.cascadeCallback(nextUnit, 1);
+      }
+    } else if (newVal < 0) {
+      newVal = this.maxValue;
+      // Cascade down from the next higher unit
+      if (this.cascadeCallback && this.unit !== "hours") {
+        const nextUnit = this.unit === "seconds" ? "minutes" : "hours";
+        this.cascadeCallback(nextUnit, -1);
+      }
+    }
+
+    this.input.valueAsNumber = newVal;
   };
 
   public normalize = (): void => {
@@ -100,6 +112,12 @@ class TimestampUnitInput {
 
   public focus = (): void => {
     this.input.focus();
+  };
+
+  public setCascadeCallback = (
+    callback: (unit: "hours" | "minutes" | "seconds", direction: 1 | -1) => void
+  ) => {
+    this.cascadeCallback = callback;
   };
 }
 
