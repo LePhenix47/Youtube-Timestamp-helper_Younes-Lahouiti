@@ -73,14 +73,14 @@ class TimestampUnitInput {
 
     // Handle cascading overflow/underflow
     if (newVal > this.maxValue) {
-      newVal = 0;
+      newVal = this.maxValue;
       // Cascade up to the next higher unit
       if (this.cascadeCallback && this.unit !== "hours") {
         const nextUnit = this.unit === "seconds" ? "minutes" : "hours";
         this.cascadeCallback(nextUnit, 1);
       }
     } else if (newVal < 0) {
-      newVal = this.maxValue;
+      newVal = 0;
       // Cascade down from the next higher unit
       if (this.cascadeCallback && this.unit !== "hours") {
         const nextUnit = this.unit === "seconds" ? "minutes" : "hours";

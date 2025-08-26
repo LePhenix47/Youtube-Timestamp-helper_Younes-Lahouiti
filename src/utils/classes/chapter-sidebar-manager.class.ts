@@ -230,6 +230,7 @@ class ChapterSideBarManager {
     this.chapters.push(chapter);
     this.container.appendChild(chapter.element!);
     this.attachEventListeners(chapter);
+    this.normalizeChapterInputs();
 
     this.signal.emit("chapter-added", {
       chapter,

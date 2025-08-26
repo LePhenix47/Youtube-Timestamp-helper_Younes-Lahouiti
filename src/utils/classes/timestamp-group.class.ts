@@ -122,8 +122,6 @@ class TimestampInputGroup {
 
     for (const input of inputs) {
       input.readOnly = isReadOnly;
-      input.style.opacity = isReadOnly ? "0.6" : "1";
-      input.style.cursor = isReadOnly ? "not-allowed" : "text";
     }
   };
 
