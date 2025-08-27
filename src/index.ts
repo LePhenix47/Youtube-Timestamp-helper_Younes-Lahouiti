@@ -396,6 +396,23 @@ videoManager
   })
   .onCanPlay(() => {
     videoBuffer.classList.add("hide");
+  })
+  .onStateChange((isPlaying) => {
+    // When video starts playing, remove video-ended class (handles restart from any source)
+    if (!isPlaying) {
+      return;
+    }
+
+    playButton?.classList?.remove?.("video-ended");
+  })
+  .onEnded(() => {
+    // Add restart class to show restart icon instead of play/pause
+    playButton?.classList.add("video-ended");
+
+    // Uncheck the play button
+    if (playButtonCheckbox) {
+      playButtonCheckbox.checked = false;
+    }
   });
 
 const progressBar = new ProgressBar(videoManager, videoContainer);
@@ -426,20 +443,7 @@ signal.on("show-video", () => {
 
   // Add click event to video for play/pause toggle
   videoPlayer.addEventListener("click", async () => {
-    const wasPlaying = !videoManager.isPaused;
-    
-    if (videoManager.isPaused) {
-      await videoManager.play();
-      showIndicator(playIndicator);
-    } else {
-      videoManager.pause();
-      showIndicator(pauseIndicator);
-    }
-    
-    // Sync checkbox state
-    if (playButtonCheckbox) {
-      playButtonCheckbox.checked = !wasPlaying;
-    }
+    await videoManager.toggle();
   });
 
   // Initialize keyboard controls when video is active
@@ -570,10 +574,21 @@ signal.on("video-play-toggle", async (detail) => {
   const inputForPlayButton =
     playButton.querySelector<HTMLInputElement>("input");
 
-  if (inputForPlayButton.checked) {
+  // Check if video has ended and needs restart
+  if (playButton?.classList.contains("video-ended")) {
+    // Restart video from beginning
+    videoManager.seek(0);
     await videoManager.play();
+
+    // Remove restart class to show normal play/pause icons
+    playButton.classList.remove("video-ended");
   } else {
-    videoManager.pause();
+    // Normal play/pause toggle
+    if (inputForPlayButton.checked) {
+      await videoManager.play();
+    } else {
+      videoManager.pause();
+    }
   }
 });
 

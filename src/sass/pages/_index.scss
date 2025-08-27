@@ -531,6 +531,23 @@
         &:not(:has(> input:checked))>.fa-pause {
             display: none;
         }
+
+        // Hide restart icon by default
+        > .fa-rotate-right {
+            display: none;
+        }
+
+        // When video has ended, show only restart icon
+        &.video-ended {
+            > .fa-play,
+            > .fa-pause {
+                display: none;
+            }
+
+            > .fa-rotate-right {
+                display: block;
+            }
+        }
     }
 
     &__video-volume {
