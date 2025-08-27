@@ -81,7 +81,21 @@ const copyTimestampsButton = document.querySelector<HTMLButtonElement>(
   "[data-element=copy-timestamps-button]"
 );
 
+const notEnoughChaptersAmount = document.querySelector<HTMLSpanElement>(
+  "[data-element=not-enough-chapters-amount]"
+);
+
+const tooManyChaptersAmount = document.querySelector<HTMLSpanElement>(
+  "[data-element=too-many-chapters-amount]"
+);
+
 const signal = new Signal();
+
+// Set the minimum chapter amount immediately (static value)
+if (notEnoughChaptersAmount) {
+  notEnoughChaptersAmount.textContent =
+    ChapterSideBarManager.MIN_CHAPTER_AMOUNT.toString();
+}
 
 const playButton = videoControls.querySelector<HTMLLabelElement>(
   "[data-element=video-play-button]"
@@ -148,6 +162,12 @@ videoManager
     timeStampEnd.textContent = formattedDuration;
 
     chapterSidebarManager.setVideoDuration(duration);
+
+    // Set the maximum chapter amount after video duration is set
+    if (tooManyChaptersAmount) {
+      tooManyChaptersAmount.textContent = `${chapterSidebarManager.MAX_VIDEO_CHAPTERS}`;
+    }
+
     progressBar.instantiateListeners();
 
     chapterSidebarManager.createInitialChapter();
