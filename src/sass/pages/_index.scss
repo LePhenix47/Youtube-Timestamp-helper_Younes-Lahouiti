@@ -367,6 +367,22 @@
         animation: bezel-fade-out 500ms linear forwards;
     }
 
+    &__video-indicator-text {
+        position: absolute;
+        top: 27px;
+        left: 50%;
+        translate: -50% 0%;
+
+        padding-block: 10px;
+        padding-inline: 20px;
+
+        font-size: 20px;
+
+        border-radius: 3px;
+
+        background-color: rgba(0, 0, 0, 0.5)
+    }
+
     &__video-indicator {
         @include center-flex;
 
@@ -380,7 +396,6 @@
         background-color: rgba(0, 0, 0, 50%);
         border-radius: 50%;
 
-        display: none;
     }
 
     &__bg-img {

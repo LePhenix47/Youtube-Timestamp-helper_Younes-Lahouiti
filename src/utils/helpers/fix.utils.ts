@@ -9,18 +9,19 @@ export function fixInputRangeBackground() {
     `input[type="range"][data-range-style="overflowing-thumb"]`
   );
 
+  const callback = (e: InputEvent) => {
+    const input = e.currentTarget as HTMLInputElement;
+    const { min, max, valueAsNumber } = input;
+
+    const percentage: number = Math.floor((valueAsNumber / Number(max)) * 100);
+
+    const stringResult: string = `${percentage}%`;
+
+    input.style.setProperty("--_webkit-progression-width", stringResult);
+  };
+
   for (const input of inputsWithThumbArray) {
-    input.addEventListener("input", (e) => {
-      const input = e.currentTarget as HTMLInputElement;
-      const { min, max, valueAsNumber } = input;
-
-      const percentage: number = Math.floor(
-        (valueAsNumber / Number(max)) * 100
-      );
-
-      const stringResult: string = `${percentage}%`;
-
-      input.style.setProperty("--_webkit-progression-width", stringResult);
-    });
+    input.addEventListener("input", callback);
+    input.addEventListener("change", callback);
   }
 }

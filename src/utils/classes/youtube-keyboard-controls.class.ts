@@ -1,8 +1,23 @@
 import VideoPlayerManager from "./video-player.class";
 
+type PlayPauseCallback = (isPlaying: boolean) => void;
+type SeekCallback = (direction: "backward" | "forward", seconds: number) => void;
+type VolumeChangeCallback = (newVolume: number) => void;
+type MuteToggleCallback = (isMuted: boolean) => void;
+type JumpCallback = (percentage?: number) => void;
+type FrameStepCallback = (direction: "backward" | "forward") => void;
+
 class YouTubeKeyboardControls {
   private videoManager: VideoPlayerManager;
   private abortController = new AbortController();
+
+  // Callbacks
+  private onPlayPauseCallback?: PlayPauseCallback;
+  private onSeekCallback?: SeekCallback;
+  private onVolumeChangeCallback?: VolumeChangeCallback;
+  private onMuteToggleCallback?: MuteToggleCallback;
+  private onJumpCallback?: JumpCallback;
+  private onFrameStepCallback?: FrameStepCallback;
 
   constructor(videoManager: VideoPlayerManager) {
     this.videoManager = videoManager;
@@ -120,17 +135,25 @@ class YouTubeKeyboardControls {
   };
 
   private togglePlayPause = async (): Promise<void> => {
+    const wasPlaying = !this.videoManager.isPaused;
+    
     if (this.videoManager.isPaused) {
       await this.videoManager.play();
     } else {
       this.videoManager.pause();
     }
+    
+    // Call callback with the new playing state
+    this.onPlayPauseCallback?.(!wasPlaying);
   };
 
   private seekBackward = (seconds: number): void => {
     const currentTime = this.videoManager.currentTime;
     const newTime = Math.max(0, currentTime - seconds);
     this.videoManager.seek(newTime);
+    
+    // Call callback
+    this.onSeekCallback?.("backward", seconds);
   };
 
   private seekForward = (seconds: number): void => {
@@ -138,6 +161,9 @@ class YouTubeKeyboardControls {
     const duration = this.videoManager.duration;
     const newTime = Math.min(duration, currentTime + seconds);
     this.videoManager.seek(newTime);
+    
+    // Call callback
+    this.onSeekCallback?.("forward", seconds);
   };
 
   private stepFrame = (direction: 1 | -1): void => {
@@ -159,16 +185,25 @@ class YouTubeKeyboardControls {
     }
 
     this.videoManager.seek(newTime);
+    
+    // Call callback
+    this.onFrameStepCallback?.(direction === 1 ? "forward" : "backward");
   };
 
   private jumpToStart = (): void => {
     this.videoManager.seek(0);
+    
+    // Call callback (0 percentage for start)
+    this.onJumpCallback?.(0);
   };
 
   private jumpToPercentage = (percentage: number): void => {
     const duration = this.videoManager.duration;
     const targetTime = (duration * percentage) / 100;
     this.videoManager.seek(targetTime);
+    
+    // Call callback with percentage
+    this.onJumpCallback?.(percentage);
   };
 
   private adjustVolume = (delta: number): void => {
@@ -181,14 +216,53 @@ class YouTubeKeyboardControls {
     }
 
     this.videoManager.setVolume(newVolume);
+    
+    // Call callback with new volume
+    this.onVolumeChangeCallback?.(newVolume);
   };
 
   private toggleMute = (): void => {
+    const willBeMuted = !this.videoManager.isMuted;
+    
     if (this.videoManager.isMuted) {
       this.videoManager.unmute();
     } else {
       this.videoManager.mute();
     }
+    
+    // Call callback with new muted state
+    this.onMuteToggleCallback?.(willBeMuted);
+  };
+
+  // Callback setter methods
+  public onPlayPause = (fn: PlayPauseCallback): this => {
+    this.onPlayPauseCallback = fn;
+    return this;
+  };
+
+  public onSeek = (fn: SeekCallback): this => {
+    this.onSeekCallback = fn;
+    return this;
+  };
+
+  public onVolumeChange = (fn: VolumeChangeCallback): this => {
+    this.onVolumeChangeCallback = fn;
+    return this;
+  };
+
+  public onMuteToggle = (fn: MuteToggleCallback): this => {
+    this.onMuteToggleCallback = fn;
+    return this;
+  };
+
+  public onJump = (fn: JumpCallback): this => {
+    this.onJumpCallback = fn;
+    return this;
+  };
+
+  public onFrameStep = (fn: FrameStepCallback): this => {
+    this.onFrameStepCallback = fn;
+    return this;
   };
 
   public destroy = (): void => {

@@ -157,6 +157,105 @@ const muteButton = videoControls.querySelector<HTMLButtonElement>(
   "[data-element=video-mute-button]"
 );
 
+const playButtonCheckbox = playButton?.querySelector<HTMLInputElement>(
+  'input[type="checkbox"]'
+);
+
+// Video indicators DOM elements
+const playIndicator = videoIndicators?.querySelector<HTMLParagraphElement>(
+  "[data-element=play-indicator]"
+);
+const pauseIndicator = videoIndicators?.querySelector<HTMLParagraphElement>(
+  "[data-element=pause-indicator]"
+);
+const skipBackwards10s = videoIndicators?.querySelector<HTMLParagraphElement>(
+  "[data-element=skip-backwards-10s]"
+);
+const skipForwards10s = videoIndicators?.querySelector<HTMLParagraphElement>(
+  "[data-element=skip-forwards-10s]"
+);
+const skipBackwards5s = videoIndicators?.querySelector<HTMLParagraphElement>(
+  "[data-element=skip-backwards-5s]"
+);
+const skipForwards5s = videoIndicators?.querySelector<HTMLParagraphElement>(
+  "[data-element=skip-forwards-5s]"
+);
+const volumeUpIndicator = videoIndicators?.querySelector<HTMLParagraphElement>(
+  "[data-element=volume-up-indicator]"
+);
+const volumeDownIndicator =
+  videoIndicators?.querySelector<HTMLParagraphElement>(
+    "[data-element=volume-down-indicator]"
+  );
+const muteIndicator = videoIndicators?.querySelector<HTMLParagraphElement>(
+  "[data-element=mute-indicator]"
+);
+const unmuteIndicator = videoIndicators?.querySelector<HTMLParagraphElement>(
+  "[data-element=unmute-indicator]"
+);
+const frameBackwardIndicator =
+  videoIndicators?.querySelector<HTMLParagraphElement>(
+    "[data-element=frame-backward-indicator]"
+  );
+const frameForwardIndicator =
+  videoIndicators?.querySelector<HTMLParagraphElement>(
+    "[data-element=frame-forward-indicator]"
+  );
+const jumpStartIndicator = videoIndicators?.querySelector<HTMLParagraphElement>(
+  "[data-element=jump-start-indicator]"
+);
+const indicatorPercentageText =
+  videoIndicators?.querySelector<HTMLParagraphElement>(
+    "[data-element=indicator-percentage-text]"
+  );
+
+// Helper functions for showing indicators
+const showIndicator = (element: HTMLElement | null): void => {
+  if (!element) return;
+
+  element.classList.remove("hide");
+  element.style.animation = "bezel-fade-out 500ms linear forwards";
+
+  // Listen for animation end to hide the element
+  const handleAnimationEnd = () => {
+    element.classList.add("hide");
+    element.removeEventListener("animationend", handleAnimationEnd);
+  };
+  
+  // Remove any existing listener to prevent duplicates
+  element.removeEventListener("animationend", handleAnimationEnd);
+  element.addEventListener("animationend", handleAnimationEnd);
+};
+
+const showSkipIndicator = (element: HTMLElement | null): void => {
+  if (!element) return;
+
+  element.classList.remove("hide");
+  // Skip indicators use their own shine-animation-mask defined in CSS
+
+  // Listen for animation end to hide the element
+  const handleAnimationEnd = () => {
+    element.classList.add("hide");
+    element.removeEventListener("animationend", handleAnimationEnd);
+  };
+  
+  // Remove any existing listener to prevent duplicates
+  element.removeEventListener("animationend", handleAnimationEnd);
+  element.addEventListener("animationend", handleAnimationEnd);
+};
+
+const showTextIndicator = (text: string, duration = 1_000): void => {
+  if (!indicatorPercentageText) return;
+
+  indicatorPercentageText.textContent = text;
+  indicatorPercentageText.classList.remove("hide");
+
+  // Text indicator doesn't have CSS animation, so keep timeout for now
+  setTimeout(() => {
+    indicatorPercentageText.classList.add("hide");
+  }, duration);
+};
+
 const chapterSidebarManager = new ChapterSideBarManager(timestampsList);
 
 timeStampAddChapterButton.addEventListener("click", () => {
@@ -287,9 +386,108 @@ signal.on("show-video", () => {
 
   // Show delete button when video is active
   deleteVideoButton?.classList.remove("hide");
-  
+
   // Initialize keyboard controls when video is active
-  keyboardControls = new YouTubeKeyboardControls(videoManager);
+  keyboardControls = new YouTubeKeyboardControls(videoManager)
+    .onPlayPause((isPlaying) => {
+      // TODO: Again we need to rely on existing signals and update them if necessary
+      // Show play/pause indicator
+      showIndicator(isPlaying ? playIndicator : pauseIndicator);
+
+      // Sync checkbox state
+      if (playButtonCheckbox) {
+        playButtonCheckbox.checked = isPlaying;
+      }
+    })
+    .onSeek((direction, seconds) => {
+      // Show appropriate skip indicator based on seek duration
+      switch (seconds) {
+        case 10:
+          showSkipIndicator(
+            direction === "forward" ? skipForwards10s : skipBackwards10s
+          );
+          break;
+        case 5:
+          showSkipIndicator(
+            direction === "forward" ? skipForwards5s : skipBackwards5s
+          );
+          break;
+      }
+    })
+    .onVolumeChange((newVolume) => {
+      // Show volume indicator
+      showIndicator(newVolume > 0.5 ? volumeUpIndicator : volumeDownIndicator);
+
+      // Show percentage
+      const percentage = Math.round(newVolume * 100);
+      showTextIndicator(`${percentage}%`);
+
+      // Sync volume slider
+      // TODO Update this code, we already have a signal for this
+      if (volumeSlider) {
+        volumeSlider.valueAsNumber = newVolume * 100;
+      }
+
+      // Update volume icon
+      const icon = muteButton?.querySelector<HTMLElement>("i");
+      if (icon) {
+        icon.classList.remove(
+          "fa-volume-xmark",
+          "fa-volume-off",
+          "fa-volume-low",
+          "fa-volume-high"
+        );
+
+        if (newVolume === 0) {
+          icon.classList.add("fa-volume-off");
+        } else if (newVolume < 0.3) {
+          icon.classList.add("fa-volume-low");
+        } else {
+          icon.classList.add("fa-volume-high");
+        }
+      }
+    })
+    .onMuteToggle((isMuted) => {
+      // Show mute/unmute indicator
+      showIndicator(isMuted ? muteIndicator : unmuteIndicator);
+
+      // Update volume icon
+      // TODO Update this code, we already have a signal for this
+      const icon = muteButton?.querySelector<HTMLElement>("i");
+      if (icon) {
+        icon.classList.remove(
+          "fa-volume-xmark",
+          "fa-volume-off",
+          "fa-volume-low",
+          "fa-volume-high"
+        );
+
+        if (isMuted) {
+          icon.classList.add("fa-volume-xmark");
+        } else {
+          const volume = videoManager.volume;
+          if (volume < 0.3) {
+            icon.classList.add("fa-volume-low");
+          } else {
+            icon.classList.add("fa-volume-high");
+          }
+        }
+      }
+    })
+    .onFrameStep((direction) => {
+      // Show frame step indicator
+      showSkipIndicator(
+        direction === "forward" ? frameForwardIndicator : frameBackwardIndicator
+      );
+    })
+    .onJump((percentage) => {
+      // Show jump indicator
+      if (percentage === 0) {
+        showIndicator(jumpStartIndicator);
+      } else if (percentage) {
+        showTextIndicator(`${percentage}%`);
+      }
+    });
 });
 
 signal.on("show-dropzone", () => {
@@ -444,7 +642,7 @@ const resetVideo = () => {
   // Destroy managers and reset state
   progressBar.destroyListeners();
   progressBar.reset(); // Clear chunks and reset progress bar state
-  
+
   // Destroy keyboard controls
   if (keyboardControls) {
     keyboardControls.destroy();

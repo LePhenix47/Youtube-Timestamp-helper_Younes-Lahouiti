@@ -78,22 +78,84 @@
             </video>
 
             <div class="video-indicators hide" data-element="video-indicators">
-                <p class="video-indicators__video-indicator square video-indicators__video-indicator--play">
+                <p class="video-indicators__video-indicator hide square video-indicators__video-indicator--play"
+                    data-element="play-indicator">
                     <i class="fa-solid fa-play"></i>
                 </p>
-                <p class="video-indicators__video-indicator square video-indicators__video-indicator--pause">
+                <p class="video-indicators__video-indicator hide square video-indicators__video-indicator--pause"
+                    data-element="pause-indicator">
                     <i class="fa-solid fa-pause"></i>
                 </p>
 
-                <p class="video-indicators__skip hide square video-indicators__skip--backwards">
+                <p class="video-indicators__skip hide square video-indicators__skip--backwards"
+                    data-element="skip-backwards-10s">
                     <i class="fa-solid fa-backward"></i>
                     <span>10 seconds</span>
                 </p>
 
-                <p class="video-indicators__skip hide square video-indicators__skip--forwards">
+                <p class="video-indicators__skip hide square video-indicators__skip--forwards"
+                    data-element="skip-forwards-10s">
                     <i class="fa-solid fa-forward"></i>
                     <span>10 seconds</span>
                 </p>
+
+                <!-- 5-second skip indicators -->
+                <p class="video-indicators__skip hide square video-indicators__skip--backwards"
+                    data-element="skip-backwards-5s">
+                    <i class="fa-solid fa-backward"></i>
+                    <span>5 seconds</span>
+                </p>
+
+                <p class="video-indicators__skip hide square video-indicators__skip--forwards"
+                    data-element="skip-forwards-5s">
+                    <i class="fa-solid fa-forward"></i>
+                    <span>5 seconds</span>
+                </p>
+
+                <!-- Volume indicators -->
+                <p class="video-indicators__video-indicator hide square video-indicators__video-indicator--volume-up"
+                    data-element="volume-up-indicator">
+                    <i class="fa-solid fa-volume-high"></i>
+                </p>
+
+                <p class="video-indicators__video-indicator hide square video-indicators__video-indicator--volume-down"
+                    data-element="volume-down-indicator">
+                    <i class="fa-solid fa-volume-low"></i>
+                </p>
+
+                <!-- Mute/unmute indicators -->
+                <p class="video-indicators__video-indicator hide square video-indicators__video-indicator--mute"
+                    data-element="mute-indicator">
+                    <i class="fa-solid fa-volume-xmark"></i>
+                </p>
+
+                <p class="video-indicators__video-indicator hide square video-indicators__video-indicator--unmute"
+                    data-element="unmute-indicator">
+                    <i class="fa-solid fa-volume-high"></i>
+                </p>
+
+                <!-- Frame step indicators -->
+                <p class="video-indicators__skip hide square video-indicators__skip--backwards"
+                    data-element="frame-backward-indicator">
+                    <i class="fa-solid fa-step-backward"></i>
+                    <span>1 frame</span>
+                </p>
+
+                <p class="video-indicators__skip hide square video-indicators__skip--forwards"
+                    data-element="frame-forward-indicator">
+                    <i class="fa-solid fa-step-forward"></i>
+                    <span>1 frame</span>
+                </p>
+
+                <!-- Jump indicators -->
+                <p class="video-indicators__video-indicator hide square video-indicators__video-indicator--jump-start"
+                    data-element="jump-start-indicator">
+                    <i class="fa-solid fa-home"></i>
+                </p>
+
+                <!-- Percentage indicator (for volume change) -->
+                <p class="video-indicators__video-indicator-text" data-element="indicator-percentage-text">50%</p>
+
 
                 <img src="video-indicators__bg-img" alt="" class="video-indicators__bg-img"
                     data-element="video-progress-bg-img" />
