@@ -14,6 +14,14 @@ export type Chapter = {
 class ChapterSideBarManager {
   public static readonly CHAPTER_MIN_LENGTH = 10;
   public static readonly MIN_CHAPTER_AMOUNT = 3;
+
+  static get MIN_VIDEO_DURATION(): number {
+    return (
+      ChapterSideBarManager.MIN_CHAPTER_AMOUNT *
+      ChapterSideBarManager.CHAPTER_MIN_LENGTH
+    );
+  }
+
   private chapters: Chapter[] = [];
 
   private container: HTMLElement;
@@ -45,13 +53,6 @@ class ChapterSideBarManager {
     });
   }
 
-  get MIN_VIDEO_DURATION(): number {
-    return (
-      ChapterSideBarManager.MIN_CHAPTER_AMOUNT *
-      ChapterSideBarManager.CHAPTER_MIN_LENGTH
-    );
-  }
-
   get MAX_VIDEO_CHAPTERS(): number {
     return Math.floor(
       this.videoDuration / ChapterSideBarManager.CHAPTER_MIN_LENGTH
@@ -59,7 +60,7 @@ class ChapterSideBarManager {
   }
 
   get canHaveChapters(): boolean {
-    return this.videoDuration >= this.MIN_VIDEO_DURATION;
+    return this.videoDuration >= ChapterSideBarManager.MIN_VIDEO_DURATION;
   }
 
   get sidebarClone(): HTMLElement {
@@ -159,9 +160,9 @@ class ChapterSideBarManager {
   };
 
   public setVideoDuration = (duration: number) => {
-    if (duration < this.MIN_VIDEO_DURATION) {
+    if (duration < ChapterSideBarManager.MIN_VIDEO_DURATION) {
       console.warn(
-        `Video duration ${duration}s is less than minimum required ${this.MIN_VIDEO_DURATION}s`
+        `Video duration ${duration}s is less than minimum required ${ChapterSideBarManager.MIN_VIDEO_DURATION}s`
       );
       return;
     }

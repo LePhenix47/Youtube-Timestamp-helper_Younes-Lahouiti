@@ -14,12 +14,40 @@ fixInputRangeBackground();
 
 console.log("Hello world!");
 
+// Helper function to get video duration from file
+const getVideoDuration = (file: File): Promise<number> => {
+  return new Promise((resolve, reject) => {
+    const video = document.createElement("video");
+    video.preload = "metadata";
+
+    video.onloadedmetadata = () => {
+      window.URL.revokeObjectURL(video.src);
+      resolve(video.duration);
+    };
+
+    video.onerror = () => {
+      window.URL.revokeObjectURL(video.src);
+      reject(new Error("Failed to load video metadata"));
+    };
+
+    video.src = window.URL.createObjectURL(file);
+  });
+};
+
 const videoDropZone = document.querySelector<HTMLLabelElement>(
   "[data-element=upload-video-container]"
 );
 
 const videoDropZoneInput = document.querySelector<HTMLInputElement>(
   "[data-element=upload-video-input]"
+);
+
+const uploadVideoSpinner = document.querySelector<HTMLSpanElement>(
+  "[data-element=upload-video-spinner]"
+);
+
+const uploadVideoIcon = document.querySelector<HTMLElement>(
+  "[data-element=upload-video-icon]"
 );
 
 const videoContainer = document.querySelector<HTMLElement>(
@@ -126,17 +154,38 @@ bindVideoControls(signal, {
 
 const fileDropManager = new FileDropManager(videoDropZone, videoDropZoneInput);
 
-fileDropManager.setFileValidation((file: File) => {
+fileDropManager.setFileValidation(async (file: File) => {
+  // * Show spinner and hide icon when validation starts
+  uploadVideoSpinner?.classList.remove("hide");
+  uploadVideoIcon?.classList.add("hide");
+
+  // * First check: file type
   if (!file.type.startsWith("video/")) {
     return "Invalid file type. Please upload a video file.";
+  }
+
+  // * Second check: video duration
+  try {
+    const duration = await getVideoDuration(file);
+    if (duration < ChapterSideBarManager.MIN_VIDEO_DURATION) {
+      return "Video duration is too short, YouTube chapters do not work for videos that short.";
+    }
+  } catch (error) {
+    return "Unable to read video file. Please try a different video.";
   }
 });
 
 fileDropManager
   .onFileUploadError((file: File, errorMessage: string, eventType: string) => {
+    // Hide spinner and show icon on validation/upload error
+    uploadVideoSpinner?.classList.add("hide");
+    uploadVideoIcon?.classList.remove("hide");
     signal.emit("video-upload-error", { file, errorMessage, eventType });
   })
   .onFileUpload((file: File, eventType: string) => {
+    // Hide spinner and show icon on successful upload
+    uploadVideoSpinner?.classList.add("hide");
+    uploadVideoIcon?.classList.remove("hide");
     signal.emit("video-upload", { file, eventType });
   });
 

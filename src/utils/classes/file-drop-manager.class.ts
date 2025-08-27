@@ -1,5 +1,5 @@
 type FileValidationResult = string | undefined;
-type FileValidationFn = (file: File) => FileValidationResult;
+type FileValidationFn = (file: File) => Promise<FileValidationResult>;
 type FileUploadCallback = (file: File, eventType: Event["type"]) => void;
 type FileUploadErrorCallback = (
   file: File,
@@ -143,18 +143,23 @@ class FileDropManager {
     );
   };
 
-  private handleFile = (file: File, eventType: string): void => {
+  private handleFile = async (file: File, eventType: string): Promise<void> => {
     if (!this.fileValidation) {
       this.onFileUploadCallback?.(file, eventType);
       return;
     }
-    const validationResult: FileValidationResult = this.fileValidation(file);
-    if (validationResult) {
-      console.error("File validation error:", validationResult);
-      this.onFileUploadErrorCallback?.(file, validationResult, eventType);
-      return;
+    try {
+      const validationResult: FileValidationResult = await this.fileValidation(file);
+      if (validationResult) {
+        console.error("File validation error:", validationResult);
+        this.onFileUploadErrorCallback?.(file, validationResult, eventType);
+        return;
+      }
+      this.onFileUploadCallback?.(file, eventType);
+    } catch (error) {
+      console.error("File validation error:", error);
+      this.onFileUploadErrorCallback?.(file, "Validation failed", eventType);
     }
-    this.onFileUploadCallback?.(file, eventType);
   };
 
   public destroy = (): void => {
