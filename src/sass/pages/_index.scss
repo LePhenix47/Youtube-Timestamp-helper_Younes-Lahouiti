@@ -749,4 +749,9 @@
 
 .video-timestamp-outputs {
     grid-column: full-width;
+
+
+    &__error {
+        color: red;
+    }
 }

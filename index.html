@@ -205,9 +205,18 @@
         </aside>
 
         <section class="video-timestamp-outputs">
-            <label for="timestamps-output">Timestamp output:</label>
-            <textarea name="" id="timestamps-output" data-element="timestamps-output" readonly></textarea>
+            <label>Timestamp output:
+                <textarea name="" data-element="timestamps-output" cols="30" rows="5" readonly></textarea>
+            </label>
+
             <button type="button" data-element="copy-timestamps-button">📋 Copy</button>
+
+            <p class="video-timestamp-outputs__error video-timestamp-outputs__error--not-enough"
+                data-element="not-enough-chapters">You must add at
+                least 3 chapters</p>
+            <p class="video-timestamp-outputs__error video-timestamp-outputs__error--too-many"
+                data-element="too-many-chapters">You cannot add more
+                than <span data-element="too-many-chapters-amount">×</span> chapters in this video</p>
 
             <button type="button" class="video-timestamps__remove hide">
                 <i class="fa-solid fa-xmark video-timestamps__remove-icon" aria-hidden="true"></i>
