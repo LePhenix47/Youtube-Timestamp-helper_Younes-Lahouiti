@@ -289,6 +289,43 @@ class ProgressBar {
       onHoverMove: this.onHoverMove,
       onHoverLeave: this.onHoverLeave,
     });
+
+    // Event delegation for drag handles - single listener for all chunks
+    this.setupDragEventDelegation();
+  };
+
+  private setupDragEventDelegation = () => {
+    const chunksContainer = this.progressContainer.querySelector<HTMLUListElement>(
+      "[data-element=video-progress-chunk-list]"
+    );
+    
+    if (!chunksContainer) return;
+
+    // Single event listener for all drag handles using event delegation
+    chunksContainer.addEventListener("pointerdown", (e: PointerEvent) => {
+      const target = e.target as HTMLElement;
+      
+      // Check if clicked element is a drag handle
+      if (!target.matches("[data-element=drag-slide-start], [data-element=drag-slide-end]")) {
+        return;
+      }
+
+      // Skip if handle is disabled
+      if ((target as HTMLButtonElement).disabled) {
+        return;
+      }
+
+      const chunkId = target.dataset.chunkId;
+      const dragType = target.dataset.dragType as "start" | "end";
+      
+      if (!chunkId || !dragType) return;
+
+      // Find the corresponding chunk and start drag
+      const chunk = this.chunks.find(c => c.id === chunkId);
+      if (chunk) {
+        chunk.beginDrag(e, dragType);
+      }
+    });
   };
 
   public destroyListeners = () => {

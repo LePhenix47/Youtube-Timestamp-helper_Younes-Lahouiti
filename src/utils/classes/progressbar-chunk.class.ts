@@ -55,7 +55,7 @@ class ProgressBarChunk {
 
     this.initializeTemplate();
     this.element = this.chunkClone;
-    this.attachDragEvents();
+    this.setupDragHandles();
     this.updateChunkDOM();
   }
 
@@ -103,10 +103,9 @@ class ProgressBarChunk {
   };
 
   /** ------------------------
-   * DRAG EVENTS
+   * DRAG SETUP (no individual listeners - using event delegation)
    * ------------------------ */
-  private attachDragEvents = () => {
-    const { signal } = this.abortController;
+  private setupDragHandles = () => {
     const startHandle = this.element.querySelector<HTMLButtonElement>(
       "[data-element=drag-slide-start]"
     )!;
@@ -114,20 +113,18 @@ class ProgressBarChunk {
       "[data-element=drag-slide-end]"
     )!;
 
+    // Set disabled state and data attributes for event delegation
     startHandle.disabled = this.isFirst;
     endHandle.disabled = this.isLast;
-
-    startHandle.addEventListener(
-      "pointerdown",
-      (e) => this.beginDrag(e, "start"),
-      { signal }
-    );
-    endHandle.addEventListener("pointerdown", (e) => this.beginDrag(e, "end"), {
-      signal,
-    });
+    
+    // Add data attributes to identify chunk and handle type
+    startHandle.dataset.chunkId = this.id;
+    startHandle.dataset.dragType = "start";
+    endHandle.dataset.chunkId = this.id;
+    endHandle.dataset.dragType = "end";
   };
 
-  private beginDrag = (e: PointerEvent, type: "start" | "end") => {
+  public beginDrag = (e: PointerEvent, type: "start" | "end") => {
     e.preventDefault();
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
 
@@ -231,7 +228,7 @@ class ProgressBarChunk {
   };
 
   public destroy = () => {
-    this.abortController.abort();
+    // No longer need to abort individual listeners since we use event delegation
     if (this.animationFrameId) {
       cancelAnimationFrame(this.animationFrameId);
     }
