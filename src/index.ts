@@ -390,6 +390,11 @@ videoManager
 
     frameTimestamp.textContent = formatted;
     timeStampStart.textContent = formatted;
+
+    // TODO: Check if this is ain't gonna cause performance issues
+    signal.emit("frame-preview-updated", {
+      time: videoManager.currentTime,
+    });
   })
   .onWaiting(() => {
     videoBuffer.classList.remove("hide");
