@@ -119,6 +119,17 @@ const tooManyChaptersAmount = document.querySelector<HTMLSpanElement>(
 
 const signal = new Signal();
 
+// Track if we have an active video to prevent accidental tab close
+let hasActiveVideo = false;
+
+// Beforeunload protection function
+const beforeUnloadHandler = (e: BeforeUnloadEvent) => {
+  if (hasActiveVideo) {
+    e.preventDefault();
+    return (e.returnValue = "You have an active video with chapters. Are you sure you want to leave?");
+  }
+};
+
 // Set the minimum chapter amount immediately (static value)
 if (notEnoughChaptersAmount) {
   notEnoughChaptersAmount.textContent =
@@ -261,6 +272,10 @@ signal.on("show-video", () => {
   for (const element of uploadedVideoElements) {
     element.classList.remove("hide");
   }
+  
+  // Add beforeunload protection now that we have an active video
+  hasActiveVideo = true;
+  window.addEventListener("beforeunload", beforeUnloadHandler);
 });
 
 signal.on("show-dropzone", () => {
