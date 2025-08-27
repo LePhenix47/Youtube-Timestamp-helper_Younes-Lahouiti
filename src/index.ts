@@ -9,6 +9,7 @@ import ChapterSideBarManager, {
   Chapter,
 } from "@utils/classes/chapter-sidebar-manager.class";
 import ProgressBar from "@utils/classes/progressbar.class";
+import YouTubeKeyboardControls from "@utils/classes/youtube-keyboard-controls.class";
 
 fixInputRangeBackground();
 
@@ -263,6 +264,8 @@ videoManager
 
 const progressBar = new ProgressBar(videoManager, videoContainer);
 
+let keyboardControls: YouTubeKeyboardControls | null = null;
+
 signal.on("show-video", () => {
   videoDropZone.classList.remove("drag-hover");
   videoDropZone.classList.add("hide");
@@ -284,6 +287,9 @@ signal.on("show-video", () => {
 
   // Show delete button when video is active
   deleteVideoButton?.classList.remove("hide");
+  
+  // Initialize keyboard controls when video is active
+  keyboardControls = new YouTubeKeyboardControls(videoManager);
 });
 
 signal.on("show-dropzone", () => {
@@ -438,6 +444,12 @@ const resetVideo = () => {
   // Destroy managers and reset state
   progressBar.destroyListeners();
   progressBar.reset(); // Clear chunks and reset progress bar state
+  
+  // Destroy keyboard controls
+  if (keyboardControls) {
+    keyboardControls.destroy();
+    keyboardControls = null;
+  }
 
   // Reset chapter sidebar manager (clears all chapters and DOM)
   chapterSidebarManager.reset();
