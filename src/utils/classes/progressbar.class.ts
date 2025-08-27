@@ -154,8 +154,9 @@ class ProgressBar {
     finalTime: number
   ) => {
     // Clear drag state from all chunks
-    // TODO use a for loop
-    this.chunks.forEach((chunk) => chunk.setDragState(false));
+    for (const chunk of this.chunks) {
+      chunk.setDragState(false);
+    }
 
     // Perform final position update
     this.handleChunkDrag(id, type, finalTime);
@@ -208,8 +209,9 @@ class ProgressBar {
   };
 
   private syncChunks = (chapters: Chapter[]) => {
-    // TODO use a for loop
-    this.chunks.forEach((c) => c.element.remove());
+    for (const chunk of this.chunks) {
+      chunk.element.remove();
+    }
     this.chunks = [];
 
     const list = this.videoContainer.querySelector<HTMLUListElement>(
@@ -350,22 +352,22 @@ class ProgressBar {
 
   public reset = (): void => {
     // Clear all chunks
-    // TODO use a for loop
-    this.chunks.forEach((c) => c.element.remove());
+    for (const chunk of this.chunks) {
+      chunk.element.remove();
+    }
     this.chunks = [];
 
     // Reset progress displays
-    // TODO: Add a for loop here to reset the CSS variables
-    this.progressContainer?.style.setProperty("--_video-duration-secs", "0");
-    this.progressContainer?.style.setProperty(
-      "--_current-video-progress-secs",
-      "0"
-    );
-    this.progressContainer?.style.setProperty("--_buffer-end-secs", "0");
-    this.progressContainer?.style.setProperty(
-      "--_current-video-hover-secs",
-      "0"
-    );
+    const cssProperties = [
+      "--_video-duration-secs",
+      "--_current-video-progress-secs", 
+      "--_buffer-end-secs",
+      "--_current-video-hover-secs"
+    ];
+    
+    for (const property of cssProperties) {
+      this.progressContainer?.style.setProperty(property, "0");
+    }
 
     // Clear any pending updates
     this.pendingChunkUpdates.clear();

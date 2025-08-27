@@ -446,10 +446,12 @@ const resetVideo = () => {
   timestampsOutput.value = "";
 
   // Reset time displays
-  // TODO: Improve code with a for loop here
-  timeStampStart.textContent = "0:00";
-  timeStampEnd.textContent = "0:00";
-  frameTimestamp.textContent = "0:00";
+  const timeDisplayElements = [timeStampStart, timeStampEnd, frameTimestamp];
+  for (const element of timeDisplayElements) {
+    if (element) {
+      element.textContent = "0:00";
+    }
+  }
 
   // Show dropzone again
   signal.emit("show-dropzone");
