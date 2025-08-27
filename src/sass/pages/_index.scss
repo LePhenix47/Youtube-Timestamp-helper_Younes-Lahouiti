@@ -612,10 +612,13 @@
 
         --_title-padding: 5px;
         padding: var(--_title-padding);
-        margin: calc(-1 * var(--_title-padding));
+        margin-top: calc(-1 * var(--_title-padding));
+        margin-inline: calc(-1 * var(--_title-padding));
 
         position: sticky;
         top: calc(-1 * var(--_title-padding));
+
+        z-index: 2;
     }
 
     &__add-button {
@@ -639,6 +642,7 @@
         column-gap: 20px;
         row-gap: 10px;
 
+        width: 100%;
 
         padding: 10px;
 
