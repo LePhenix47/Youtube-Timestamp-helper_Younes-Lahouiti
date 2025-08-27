@@ -230,6 +230,15 @@ const showIndicator = (element: HTMLElement | null): void => {
 const showSkipIndicator = (element: HTMLElement | null): void => {
   if (!element) return;
 
+  // Hide all other skip indicators first to prevent stacking
+  for (const indicator of allSkipIndicators) {
+    if (indicator === element) {
+      continue;
+    }
+
+    indicator.classList.add("hide");
+  }
+
   element.classList.remove("hide");
   // Skip indicators use their own shine-animation-mask defined in CSS
 
@@ -244,26 +253,45 @@ const showSkipIndicator = (element: HTMLElement | null): void => {
   element.addEventListener("animationend", handleAnimationEnd);
 };
 
+// Track timeout for percentage text indicator
+let textIndicatorTimeout: number | null = null;
+
 const showTextIndicator = (text: string, duration = 1_000): void => {
   if (!indicatorPercentageText) return;
+
+  // Clear existing timeout to prevent flickering
+  if (textIndicatorTimeout) {
+    clearTimeout(textIndicatorTimeout);
+  }
 
   indicatorPercentageText.textContent = text;
   indicatorPercentageText.classList.remove("hide");
 
-  // Text indicator doesn't have CSS animation, so keep timeout for now
-  setTimeout(() => {
+  // Text indicator doesn't have CSS animation, so use setTimeout
+  textIndicatorTimeout = setTimeout(() => {
     indicatorPercentageText.classList.add("hide");
+    textIndicatorTimeout = null;
   }, duration);
 };
 
 // Helper function to update volume slider and trigger styling update
 const updateVolumeSlider = (value: number): void => {
   if (!volumeSlider) return;
-  
+
   volumeSlider.valueAsNumber = value;
   // Dispatch input event to trigger the CSS custom property update
-  volumeSlider.dispatchEvent(new InputEvent('input', { bubbles: true }));
+  volumeSlider.dispatchEvent(new InputEvent("input", { bubbles: true }));
 };
+
+// Array of all skip indicators for managing visibility
+const allSkipIndicators = [
+  skipBackwards10s,
+  skipForwards10s,
+  skipBackwards5s,
+  skipForwards5s,
+  frameBackwardIndicator,
+  frameForwardIndicator,
+].filter(Boolean); // Remove any null/undefined elements
 
 const chapterSidebarManager = new ChapterSideBarManager(timestampsList);
 
@@ -395,6 +423,24 @@ signal.on("show-video", () => {
 
   // Show delete button when video is active
   deleteVideoButton?.classList.remove("hide");
+
+  // Add click event to video for play/pause toggle
+  videoPlayer.addEventListener("click", async () => {
+    const wasPlaying = !videoManager.isPaused;
+    
+    if (videoManager.isPaused) {
+      await videoManager.play();
+      showIndicator(playIndicator);
+    } else {
+      videoManager.pause();
+      showIndicator(pauseIndicator);
+    }
+    
+    // Sync checkbox state
+    if (playButtonCheckbox) {
+      playButtonCheckbox.checked = !wasPlaying;
+    }
+  });
 
   // Initialize keyboard controls when video is active
   keyboardControls = new YouTubeKeyboardControls(videoManager)
@@ -575,7 +621,7 @@ signal.on<{ value: number }>("video-mute-toggle", (detail) => {
     // Currently muted, so unmute and restore volume
     videoManager.unmute();
     videoManager.setVolume(value / 100);
-    
+
     // Update icon based on volume level
     if (value >= 50) {
       icon.classList.add("fa-volume-high");
