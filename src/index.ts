@@ -109,6 +109,10 @@ const copyTimestampsButton = document.querySelector<HTMLButtonElement>(
   "[data-element=copy-timestamps-button]"
 );
 
+const deleteVideoButton = document.querySelector<HTMLButtonElement>(
+  ".video-timestamps__remove"
+);
+
 const notEnoughChaptersAmount = document.querySelector<HTMLSpanElement>(
   "[data-element=not-enough-chapters-amount]"
 );
@@ -126,7 +130,8 @@ let hasActiveVideo = false;
 const beforeUnloadHandler = (e: BeforeUnloadEvent) => {
   if (hasActiveVideo) {
     e.preventDefault();
-    return (e.returnValue = "You have an active video with chapters. Are you sure you want to leave?");
+    return (e.returnValue =
+      "You have an active video with chapters. Are you sure you want to leave?");
   }
 };
 
@@ -272,10 +277,13 @@ signal.on("show-video", () => {
   for (const element of uploadedVideoElements) {
     element.classList.remove("hide");
   }
-  
+
   // Add beforeunload protection now that we have an active video
   hasActiveVideo = true;
   window.addEventListener("beforeunload", beforeUnloadHandler);
+
+  // Show delete button when video is active
+  deleteVideoButton?.classList.remove("hide");
 });
 
 signal.on("show-dropzone", () => {
@@ -292,6 +300,9 @@ signal.on("show-dropzone", () => {
   for (const element of uploadedVideoElements) {
     element.classList.add("hide");
   }
+
+  // Hide delete button when showing dropzone
+  deleteVideoButton?.classList.add("hide");
 });
 
 signal.on<{ isHovering: boolean }>("dropzone-drag", (detail) => {
@@ -407,4 +418,48 @@ signal.on("copy-timestamps", async () => {
   setTimeout(() => {
     copyTimestampsButton.textContent = originalText;
   }, 2_000);
+});
+
+// Video reset/removal functionality
+const resetVideo = () => {
+  // Remove beforeunload protection
+  hasActiveVideo = false;
+  window.removeEventListener("beforeunload", beforeUnloadHandler);
+
+  // Stop and clear video properly (without destroying event listeners)
+  videoManager.pause();
+
+  // Manually clear video source without destroying event listeners
+  const sourceElement = videoManager.sourceElement;
+  sourceElement.src = "";
+
+  videoPlayer.load();
+
+  // Destroy managers and reset state
+  progressBar.destroyListeners();
+  progressBar.reset(); // Clear chunks and reset progress bar state
+
+  // Reset chapter sidebar manager (clears all chapters and DOM)
+  chapterSidebarManager.reset();
+
+  // Clear timestamps output
+  timestampsOutput.value = "";
+
+  // Reset time displays
+  // TODO: Improve code with a for loop here
+  timeStampStart.textContent = "0:00";
+  timeStampEnd.textContent = "0:00";
+  frameTimestamp.textContent = "0:00";
+
+  // Show dropzone again
+  signal.emit("show-dropzone");
+
+  console.log("Video removed and app reset");
+};
+
+// Add event listener to delete button
+deleteVideoButton?.addEventListener("click", () => {
+  if (confirm("Are you sure you want to remove this video and all chapters?")) {
+    resetVideo();
+  }
 });

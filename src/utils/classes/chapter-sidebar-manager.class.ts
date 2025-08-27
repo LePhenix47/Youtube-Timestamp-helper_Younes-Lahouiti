@@ -619,6 +619,19 @@ class ChapterSideBarManager {
       this.signal.emit("timestamp-output-update");
     }
   };
+
+  public reset = (): void => {
+    // Clear DOM
+    this.container.innerHTML = "";
+    
+    // Clear chapters array
+    this.chapters = [];
+    
+    // Reset video duration
+    this.videoDuration = NaN;
+    
+    console.log("ChapterSideBarManager reset");
+  };
 }
 
 export default ChapterSideBarManager;

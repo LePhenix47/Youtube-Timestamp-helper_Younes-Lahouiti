@@ -154,6 +154,7 @@ class ProgressBar {
     finalTime: number
   ) => {
     // Clear drag state from all chunks
+    // TODO use a for loop
     this.chunks.forEach((chunk) => chunk.setDragState(false));
 
     // Perform final position update
@@ -207,6 +208,7 @@ class ProgressBar {
   };
 
   private syncChunks = (chapters: Chapter[]) => {
+    // TODO use a for loop
     this.chunks.forEach((c) => c.element.remove());
     this.chunks = [];
 
@@ -295,18 +297,23 @@ class ProgressBar {
   };
 
   private setupDragEventDelegation = () => {
-    const chunksContainer = this.progressContainer.querySelector<HTMLUListElement>(
-      "[data-element=video-progress-chunk-list]"
-    );
-    
+    const chunksContainer =
+      this.progressContainer.querySelector<HTMLUListElement>(
+        "[data-element=video-progress-chunk-list]"
+      );
+
     if (!chunksContainer) return;
 
     // Single event listener for all drag handles using event delegation
     chunksContainer.addEventListener("pointerdown", (e: PointerEvent) => {
       const target = e.target as HTMLElement;
-      
+
       // Check if clicked element is a drag handle
-      if (!target.matches("[data-element=drag-slide-start], [data-element=drag-slide-end]")) {
+      if (
+        !target.matches(
+          "[data-element=drag-slide-start], [data-element=drag-slide-end]"
+        )
+      ) {
         return;
       }
 
@@ -317,11 +324,11 @@ class ProgressBar {
 
       const chunkId = target.dataset.chunkId;
       const dragType = target.dataset.dragType as "start" | "end";
-      
+
       if (!chunkId || !dragType) return;
 
       // Find the corresponding chunk and start drag
-      const chunk = this.chunks.find(c => c.id === chunkId);
+      const chunk = this.chunks.find((c) => c.id === chunkId);
       if (chunk) {
         chunk.beginDrag(e, dragType);
       }
@@ -339,6 +346,39 @@ class ProgressBar {
     if (this.hoverAnimationFrame) {
       cancelAnimationFrame(this.hoverAnimationFrame);
     }
+  };
+
+  public reset = (): void => {
+    // Clear all chunks
+    // TODO use a for loop
+    this.chunks.forEach((c) => c.element.remove());
+    this.chunks = [];
+
+    // Reset progress displays
+    // TODO: Add a for loop here to reset the CSS variables
+    this.progressContainer?.style.setProperty("--_video-duration-secs", "0");
+    this.progressContainer?.style.setProperty(
+      "--_current-video-progress-secs",
+      "0"
+    );
+    this.progressContainer?.style.setProperty("--_buffer-end-secs", "0");
+    this.progressContainer?.style.setProperty(
+      "--_current-video-hover-secs",
+      "0"
+    );
+
+    // Clear any pending updates
+    this.pendingChunkUpdates.clear();
+    if (this.chunkUpdateAnimationFrame) {
+      cancelAnimationFrame(this.chunkUpdateAnimationFrame);
+      this.chunkUpdateAnimationFrame = null;
+    }
+    if (this.hoverAnimationFrame) {
+      cancelAnimationFrame(this.hoverAnimationFrame);
+      this.hoverAnimationFrame = null;
+    }
+
+    console.log("ProgressBar reset");
   };
 
   // --- Hover handling (optional, can be extended later) ---

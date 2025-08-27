@@ -159,6 +159,12 @@ class VideoPlayerManager {
     });
   }
 
+  get sourceElement(): HTMLSourceElement | null {
+    const sourceElement = this.video.querySelector<HTMLSourceElement>("source");
+
+    return sourceElement || null;
+  }
+
   // 🔹 Source loading
   public loadSource = (source: File | Blob | string) => {
     if (this.objectUrl) {
