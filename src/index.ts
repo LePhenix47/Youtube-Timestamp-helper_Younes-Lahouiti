@@ -221,7 +221,7 @@ const showIndicator = (element: HTMLElement | null): void => {
     element.classList.add("hide");
     element.removeEventListener("animationend", handleAnimationEnd);
   };
-  
+
   // Remove any existing listener to prevent duplicates
   element.removeEventListener("animationend", handleAnimationEnd);
   element.addEventListener("animationend", handleAnimationEnd);
@@ -238,7 +238,7 @@ const showSkipIndicator = (element: HTMLElement | null): void => {
     element.classList.add("hide");
     element.removeEventListener("animationend", handleAnimationEnd);
   };
-  
+
   // Remove any existing listener to prevent duplicates
   element.removeEventListener("animationend", handleAnimationEnd);
   element.addEventListener("animationend", handleAnimationEnd);
@@ -254,6 +254,15 @@ const showTextIndicator = (text: string, duration = 1_000): void => {
   setTimeout(() => {
     indicatorPercentageText.classList.add("hide");
   }, duration);
+};
+
+// Helper function to update volume slider and trigger styling update
+const updateVolumeSlider = (value: number): void => {
+  if (!volumeSlider) return;
+  
+  volumeSlider.valueAsNumber = value;
+  // Dispatch input event to trigger the CSS custom property update
+  volumeSlider.dispatchEvent(new InputEvent('input', { bubbles: true }));
 };
 
 const chapterSidebarManager = new ChapterSideBarManager(timestampsList);
@@ -390,11 +399,10 @@ signal.on("show-video", () => {
   // Initialize keyboard controls when video is active
   keyboardControls = new YouTubeKeyboardControls(videoManager)
     .onPlayPause((isPlaying) => {
-      // TODO: Again we need to rely on existing signals and update them if necessary
       // Show play/pause indicator
       showIndicator(isPlaying ? playIndicator : pauseIndicator);
 
-      // Sync checkbox state
+      // Sync checkbox state via existing signal system
       if (playButtonCheckbox) {
         playButtonCheckbox.checked = isPlaying;
       }
@@ -422,37 +430,14 @@ signal.on("show-video", () => {
       const percentage = Math.round(newVolume * 100);
       showTextIndicator(`${percentage}%`);
 
-      // Sync volume slider
-      // TODO Update this code, we already have a signal for this
-      if (volumeSlider) {
-        volumeSlider.valueAsNumber = newVolume * 100;
-      }
-
-      // Update volume icon
-      const icon = muteButton?.querySelector<HTMLElement>("i");
-      if (icon) {
-        icon.classList.remove(
-          "fa-volume-xmark",
-          "fa-volume-off",
-          "fa-volume-low",
-          "fa-volume-high"
-        );
-
-        if (newVolume === 0) {
-          icon.classList.add("fa-volume-off");
-        } else if (newVolume < 0.3) {
-          icon.classList.add("fa-volume-low");
-        } else {
-          icon.classList.add("fa-volume-high");
-        }
-      }
+      // Use existing signal for volume slider and icon updates
+      signal.emit("video-volume-change", { value: percentage });
     })
     .onMuteToggle((isMuted) => {
       // Show mute/unmute indicator
       showIndicator(isMuted ? muteIndicator : unmuteIndicator);
 
-      // Update volume icon
-      // TODO Update this code, we already have a signal for this
+      // Update volume icon directly since mute/unmute is already handled by keyboard controls
       const icon = muteButton?.querySelector<HTMLElement>("i");
       if (icon) {
         icon.classList.remove(
@@ -466,10 +451,12 @@ signal.on("show-video", () => {
           icon.classList.add("fa-volume-xmark");
         } else {
           const volume = videoManager.volume;
-          if (volume < 0.3) {
+          if (volume >= 0.5) {
+            icon.classList.add("fa-volume-high");
+          } else if (volume > 0) {
             icon.classList.add("fa-volume-low");
           } else {
-            icon.classList.add("fa-volume-high");
+            icon.classList.add("fa-volume-off");
           }
         }
       }
@@ -551,6 +538,9 @@ signal.on<{ value: number }>("video-volume-change", (detail) => {
   videoManager.unmute();
   videoManager.setVolume(value / 100);
 
+  // Update volume slider and trigger styling update
+  updateVolumeSlider(value);
+
   const icon = muteButton.querySelector<HTMLLIElement>("i");
   icon.classList.remove(
     "fa-volume-xmark",
@@ -572,7 +562,6 @@ signal.on<{ value: number }>("video-mute-toggle", (detail) => {
   const { value } = detail;
 
   const isMuted: boolean = videoManager.isMuted;
-  // videoManager.
 
   const icon = muteButton.querySelector<HTMLLIElement>("i");
   icon.classList.remove(
@@ -583,10 +572,20 @@ signal.on<{ value: number }>("video-mute-toggle", (detail) => {
   );
 
   if (isMuted) {
-    signal.emit("video-volume-change", {
-      value: volumeSlider.valueAsNumber,
-    });
+    // Currently muted, so unmute and restore volume
+    videoManager.unmute();
+    videoManager.setVolume(value / 100);
+    
+    // Update icon based on volume level
+    if (value >= 50) {
+      icon.classList.add("fa-volume-high");
+    } else if (value > 0) {
+      icon.classList.add("fa-volume-low");
+    } else {
+      icon.classList.add("fa-volume-off");
+    }
   } else {
+    // Currently unmuted, so mute
     videoManager.mute();
     icon.classList.add("fa-volume-xmark");
   }
