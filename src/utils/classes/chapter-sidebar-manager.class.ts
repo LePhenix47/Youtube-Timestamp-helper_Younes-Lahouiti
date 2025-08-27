@@ -369,7 +369,10 @@ class ChapterSideBarManager {
     const heading = chapter.element.querySelector<HTMLHeadingElement>(
       ".video-timestamps__item-title"
     );
-    if (heading) heading.textContent = chapter.title;
+    if (heading) {
+      heading.textContent = chapter.title;
+      this.signal.emit("timestamp-output-update");
+    }
   };
 
   private onStartInputChange = (chapter: Chapter, newStart: number): void => {
@@ -590,7 +593,7 @@ class ChapterSideBarManager {
     chaptersFromChunks: { id: string; start: number; end: number }[]
   ) => {
     let hasChanges = false;
-    
+
     // Only update chapters that have actually changed
     for (let i = 0; i < chaptersFromChunks.length; i++) {
       const { id, start, end } = chaptersFromChunks[i];
@@ -609,7 +612,7 @@ class ChapterSideBarManager {
         }
       }
     }
-    
+
     // Only emit if there were actual changes
     if (hasChanges) {
       this.signal.emit("timestamp-output-update");
