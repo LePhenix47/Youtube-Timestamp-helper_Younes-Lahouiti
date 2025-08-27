@@ -2,47 +2,66 @@
 
 @layer scrollbar {
     * {
-        --_scrollbar-track-bg: transparent;
+        --_scrollbar-bg: transparent;
 
-        --_scrollbar-bg: var(--scrollbar-track-bg-color);
+        --_scrollbar-track-bg: var(--scrollbar-track);
         --_scrollbar-border-radius: 100vmax;
-        --_scrollbar-width: 10px;
+
+        --_scrollbar-width: 5px;
+        --_scrollbar-height: auto;
         --_scrollbar-moz-width: thin;
+
         --_scrollbar-margin-block: 0px;
+        --_scrollbar-margin-inline: 0px;
 
-        --_scrollbar-thumb-border: 3px solid var(--bg-primary);
+        --_scrollbar-thumb-border: 2px solid var(--scrollbar-track);
+        --_scrollbar-thumb-border-radius: var(--_scrollbar-border-radius);
 
-        --_scrollbar-thumb-bg: var(--scrollbar-thumb-bg-color);
-        --_scrollbar-thumb-bg-hover: var(--scrollbar-thumb-bg-color);
-        --_scrollbar-thumb-bg-active: var(--scrollbar-thumb-bg-color);
+        --_scrollbar-thumb-bg: currentColor;
+        --_scrollbar-thumb-bg-hover: currentColor;
+        --_scrollbar-thumb-bg-active: currentColor;
+        --_scrollbar-thumb-bg-clip: border-box;
 
         &::-webkit-scrollbar {
-            background-color: var(--_scrollbar-bg);
-            border-radius: var(--_scrollbar-border-radius);
+            background: var(--_scrollbar-bg);
 
-            width: var(--_scrollbar-width);
-            margin-block: var(--_scrollbar-margin-block);
+            &:horizontal {
+                height: var(--_scrollbar-height);
+            }
+
+            &:vertical {
+                width: var(--_scrollbar-width);
+            }
         }
 
         &::-webkit-scrollbar-track {
-            margin-block: var(--_scrollbar-margin-block);
+            &:horizontal {
+                margin-inline: var(--_scrollbar-margin-inline);
+            }
 
-            background-color: var(--_scrollbar-track-bg);
+            &:vertical {
+                margin-block: var(--_scrollbar-margin-block);
+            }
+
+            background: var(--_scrollbar-track-bg);
+
+            border-radius: var(--_scrollbar-border-radius);
         }
 
         &::-webkit-scrollbar-thumb {
-            background-color: var(--_scrollbar-thumb-bg);
+            background: var(--_scrollbar-thumb-bg);
             border: var(--_scrollbar-thumb-border);
-            border-radius: var(--_scrollbar-border-radius);
+            border-radius: var(--_scrollbar-thumb-border-radius);
+
+            background-clip: var(--_scrollbar-thumb-bg-clip);
 
             &:hover {
-                background-color: var(--_scrollbar-thumb-bg-hover);
+                background: var(--_scrollbar-thumb-bg-hover);
             }
 
             &:active {
-                background-color: var(--_scrollbar-thumb-bg-active);
+                background: var(--_scrollbar-thumb-bg-active);
             }
-
         }
 
         &::-webkit-scrollbar-corner {
@@ -54,10 +73,15 @@
     }
 
     // FIX: Move the Firefox scrollbar styling inside this selector
-    @supports (scrollbar-color: var(--_scrollbar-thumb-bg) var(--_scrollbar-bg)) {
+    @supports (scrollbar-color: black white) and (not selector(::-webkit-scrollbar)) {
         * {
+            --_scrollbar-bg: rgba(0, 0, 0, 15%);
+            --_scrollbar-thumb-bg: blue;
+            --_scrollbar-thumb-bg-hover: var(--bg-secondary);
+            --_scrollbar-thumb-bg-active: var(--bg-secondary);
+
             scrollbar-width: var(--_scrollbar-moz-width);
-            scrollbar-color: var(--_scrollbar-thumb-bg) var(--_scrollbar-bg);
+            scrollbar-color: var(--_scrollbar-thumb-bg) var(--_scrollbar-track-bg);
         }
     }
 }
