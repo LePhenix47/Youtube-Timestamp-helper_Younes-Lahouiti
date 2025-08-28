@@ -447,25 +447,12 @@ signal.on("show-video", () => {
   deleteVideoButton?.classList.remove("hide");
 
   // Add click event to video for play/pause toggle
-  videoPlayer.addEventListener("click", async () => {
-    await videoManager.toggle();
-    const isNowPlaying = !videoManager.isPaused;
-
-    // Show appropriate indicator
-    showIndicator(isNowPlaying ? playIndicator : pauseIndicator);
+  videoPlayer.addEventListener("click", () => {
+    signal.emit("video-play-toggle");
   });
 
   // Initialize keyboard controls when video is active
-  keyboardControls = new YouTubeKeyboardControls(videoManager)
-    .onPlayPause((isPlaying) => {
-      // Show play/pause indicator
-      showIndicator(isPlaying ? playIndicator : pauseIndicator);
-
-      // Sync checkbox state via existing signal system
-      if (playButtonCheckbox) {
-        playButtonCheckbox.checked = isPlaying;
-      }
-    })
+  keyboardControls = new YouTubeKeyboardControls(videoManager, signal)
     .onSeek((direction, seconds) => {
       // Show appropriate skip indicator based on seek duration
       switch (seconds) {

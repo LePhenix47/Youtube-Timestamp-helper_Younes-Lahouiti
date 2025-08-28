@@ -10,6 +10,7 @@ type FrameStepCallback = (direction: "backward" | "forward") => void;
 class YouTubeKeyboardControls {
   private videoManager: VideoPlayerManager;
   private abortController = new AbortController();
+  private signal?: any; // Signal for emitting events
 
   // Callbacks
   private onPlayPauseCallback?: PlayPauseCallback;
@@ -19,8 +20,9 @@ class YouTubeKeyboardControls {
   private onJumpCallback?: JumpCallback;
   private onFrameStepCallback?: FrameStepCallback;
 
-  constructor(videoManager: VideoPlayerManager) {
+  constructor(videoManager: VideoPlayerManager, signal?: any) {
     this.videoManager = videoManager;
+    this.signal = signal;
     this.setupKeyboardListeners();
   }
 
@@ -135,16 +137,21 @@ class YouTubeKeyboardControls {
   };
 
   private togglePlayPause = async (): Promise<void> => {
-    const wasPlaying = !this.videoManager.isPaused;
-    
-    if (this.videoManager.isPaused) {
-      await this.videoManager.play();
+    // Use signal if available, otherwise fall back to direct control
+    if (this.signal) {
+      this.signal.emit("video-play-toggle");
     } else {
-      this.videoManager.pause();
+      const wasPlaying = !this.videoManager.isPaused;
+      
+      if (this.videoManager.isPaused) {
+        await this.videoManager.play();
+      } else {
+        this.videoManager.pause();
+      }
+      
+      // Call callback with the new playing state
+      this.onPlayPauseCallback?.(!wasPlaying);
     }
-    
-    // Call callback with the new playing state
-    this.onPlayPauseCallback?.(!wasPlaying);
   };
 
   private seekBackward = (seconds: number): void => {
