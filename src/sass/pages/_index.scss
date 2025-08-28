@@ -863,25 +863,36 @@
     }
 
     &__error {
-        color: red;
-        background-color: rgba(255, 0, 0, 0.1);
-        padding: 8px 12px;
-        border-radius: 5px;
-        border-left: 3px solid red;
+        --_info-color: #3b82f6;
+        
+        display: grid;
+        grid-template-columns: [icon-start] auto [icon-end text-start] 1fr [text-end];
+        column-gap: 10px;
+        align-items: start;
+        
+        color: var(--_info-color);
+        background-color: color-mix(in srgb, var(--_info-color) 12%, transparent);
+        border: 1px solid color-mix(in srgb, var(--_info-color) 40%, transparent);
+        
+        padding: 12px 16px;
+        border-radius: 8px;
         font-size: 14px;
+        line-height: 1.4;
 
-        span {
-            font-weight: 600;
+        i {
+            grid-column: icon;
+            font-size: 16px;
         }
 
-        &--not-enough,
-        &--too-many {
-            display: none;
-
-            &.show {
-                display: block;
+        > span {
+            grid-column: text;
+            
+            span {
+                font-weight: 600;
+                color: color-mix(in srgb, var(--_info-color) 80%, black);
             }
         }
+
     }
 
     // Delete video button (already styled, just positioning)

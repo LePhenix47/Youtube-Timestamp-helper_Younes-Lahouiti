@@ -122,6 +122,14 @@ const tooManyChaptersAmount = document.querySelector<HTMLSpanElement>(
   "[data-element=too-many-chapters-amount]"
 );
 
+const notEnoughChapters = document.querySelector<HTMLParagraphElement>(
+  "[data-element=not-enough-chapters]"
+);
+
+const tooManyChapters = document.querySelector<HTMLParagraphElement>(
+  "[data-element=too-many-chapters]"
+);
+
 const signal = new Signal();
 
 // Track if we have an active video to prevent accidental tab close
@@ -446,6 +454,10 @@ signal.on("show-video", () => {
   // Show delete button when video is active
   deleteVideoButton?.classList.remove("hide");
 
+  // Show info cards when video is active
+  notEnoughChapters?.classList.remove("hide");
+  tooManyChapters?.classList.remove("hide");
+
   // Add click event to video for play/pause toggle
   videoPlayer.addEventListener("click", () => {
     signal.emit("video-play-toggle");
@@ -540,6 +552,10 @@ signal.on("show-dropzone", () => {
 
   // Hide delete button when showing dropzone
   deleteVideoButton?.classList.add("hide");
+
+  // Hide info cards when showing dropzone
+  notEnoughChapters?.classList.add("hide");
+  tooManyChapters?.classList.add("hide");
 });
 
 signal.on<{ isHovering: boolean }>("dropzone-drag", (detail) => {
