@@ -797,8 +797,112 @@
 .video-timestamp-outputs {
     grid-column: full-width;
 
+    background-color: var(--ts-container-bg);
+    border-radius: 5px;
+    padding: 15px;
+    margin-top: 20px;
+
+    display: grid;
+    gap: 15px;
+
+    &__label {
+        display: grid;
+        grid-template-columns: max-content 1fr;
+        column-gap: 10px;
+        align-items: start;
+
+        font-weight: 500;
+    }
+
+    &__textarea {
+        background-color: var(--ts-input-bg);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 5px;
+        padding: 10px;
+
+        color: inherit;
+        font-family: 'Consolas', 'Courier New', monospace;
+        font-size: 12px;
+        line-height: 1.4;
+
+        resize: vertical;
+        min-height: 100px;
+
+        &:focus {
+            outline: 2px solid currentColor;
+            outline-offset: -2px;
+        }
+
+        &:read-only {
+            opacity: 0.8;
+            cursor: default;
+        }
+    }
+
+    &__copy-button {
+        @include center-flex;
+
+        background-color: green;
+        color: white;
+        border: none;
+        border-radius: 5px;
+
+        padding: 8px 16px;
+        font-size: 14px;
+        font-weight: 500;
+
+        cursor: pointer;
+        transition: background-color 150ms ease-in-out;
+
+        &:hover {
+            background-color: darkgreen;
+        }
+
+        justify-self: start;
+        width: max-content;
+    }
 
     &__error {
         color: red;
+        background-color: rgba(255, 0, 0, 0.1);
+        padding: 8px 12px;
+        border-radius: 5px;
+        border-left: 3px solid red;
+        font-size: 14px;
+
+        span {
+            font-weight: 600;
+        }
+
+        &--not-enough,
+        &--too-many {
+            display: none;
+
+            &.show {
+                display: block;
+            }
+        }
+    }
+
+    // Delete video button (already styled, just positioning)
+    .video-timestamps__remove {
+        justify-self: center;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        padding: 10px 20px;
+
+        transition:
+            background-color 150ms ease-in-out,
+            transform 150ms ease-in-out;
+
+        &:hover {
+            background-color: darkred;
+        }
+
+        &:active {
+            transform: translateY(1px);
+        }
     }
 }
