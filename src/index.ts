@@ -22,16 +22,16 @@ const getVideoDuration = (file: File): Promise<number> => {
     video.preload = "metadata";
 
     video.onloadedmetadata = () => {
-      window.URL.revokeObjectURL(video.src);
+      URL.revokeObjectURL(video.src);
       resolve(video.duration);
     };
 
     video.onerror = () => {
-      window.URL.revokeObjectURL(video.src);
+      URL.revokeObjectURL(video.src);
       reject(new Error("Failed to load video metadata"));
     };
 
-    video.src = window.URL.createObjectURL(file);
+    video.src = URL.createObjectURL(file);
   });
 };
 
@@ -449,6 +449,10 @@ signal.on("show-video", () => {
   // Add click event to video for play/pause toggle
   videoPlayer.addEventListener("click", async () => {
     await videoManager.toggle();
+    const isNowPlaying = !videoManager.isPaused;
+
+    // Show appropriate indicator
+    showIndicator(isNowPlaying ? playIndicator : pauseIndicator);
   });
 
   // Initialize keyboard controls when video is active
@@ -587,12 +591,17 @@ signal.on("video-play-toggle", async (detail) => {
 
     // Remove restart class to show normal play/pause icons
     playButton.classList.remove("video-ended");
+
+    // Show play indicator for restart
+    showIndicator(playIndicator);
   } else {
     // Normal play/pause toggle
     if (inputForPlayButton.checked) {
       await videoManager.play();
+      showIndicator(playIndicator);
     } else {
       videoManager.pause();
+      showIndicator(pauseIndicator);
     }
   }
 });
