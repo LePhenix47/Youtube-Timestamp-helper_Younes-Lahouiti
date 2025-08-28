@@ -250,12 +250,17 @@
         touch-action: none;
         user-select: none;
 
+        &:disabled {
+            display: none;
+        }
+
         &--start {
             --_stripe-color: yellow;
         }
 
         &--end {
             --_stripe-color: purple;
+            margin-left: auto;
         }
     }
 
@@ -533,18 +538,19 @@
         }
 
         // Hide restart icon by default
-        > .fa-rotate-right {
+        >.fa-rotate-right {
             display: none;
         }
 
         // When video has ended, show only restart icon
         &.video-ended {
-            > .fa-play,
-            > .fa-pause {
+
+            >.fa-play,
+            >.fa-pause {
                 display: none;
             }
 
-            > .fa-rotate-right {
+            >.fa-rotate-right {
                 display: block;
             }
         }
