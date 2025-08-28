@@ -24,17 +24,13 @@ export function bindVideoControls(
   const { playButton, volumeSlider, muteButton, fullscreenButton } = elements;
 
   playButton.addEventListener("click", (e) => {
+    e.preventDefault(); // Prevent default checkbox toggle
     e.stopPropagation();
 
     signal.emit("video-play-toggle");
   });
 
-  const inputPLayButton = playButton.querySelector("input[type=checkbox]");
-  inputPLayButton.addEventListener("change", (e) => {
-    e.stopPropagation();
-
-    signal.emit("video-play-toggle");
-  });
+  // Checkbox change handler removed - button click handles everything
 
   volumeSlider.addEventListener("input", (e: InputEvent) => {
     signal.emit("video-volume-change", {

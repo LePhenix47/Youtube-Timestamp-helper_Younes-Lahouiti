@@ -598,13 +598,21 @@ signal.on("video-play-toggle", async (detail) => {
     // Show play indicator for restart
     showIndicator(playIndicator);
   } else {
-    // Normal play/pause toggle
-    if (inputForPlayButton.checked) {
+    // Normal play/pause toggle - check actual video state, not checkbox
+    if (videoManager.isPaused) {
       await videoManager.play();
       showIndicator(playIndicator);
+      // Update checkbox to match
+      if (inputForPlayButton) {
+        inputForPlayButton.checked = true;
+      }
     } else {
       videoManager.pause();
       showIndicator(pauseIndicator);
+      // Update checkbox to match
+      if (inputForPlayButton) {
+        inputForPlayButton.checked = false;
+      }
     }
   }
 });

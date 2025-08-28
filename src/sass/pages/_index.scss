@@ -864,16 +864,16 @@
 
     &__error {
         --_info-color: #3b82f6;
-        
+
         display: grid;
         grid-template-columns: [icon-start] auto [icon-end text-start] 1fr [text-end];
         column-gap: 10px;
         align-items: start;
-        
+
         color: var(--_info-color);
         background-color: color-mix(in srgb, var(--_info-color) 12%, transparent);
         border: 1px solid color-mix(in srgb, var(--_info-color) 40%, transparent);
-        
+
         padding: 12px 16px;
         border-radius: 8px;
         font-size: 14px;
@@ -884,9 +884,9 @@
             font-size: 16px;
         }
 
-        > span {
+        >span {
             grid-column: text;
-            
+
             span {
                 font-weight: 600;
                 color: color-mix(in srgb, var(--_info-color) 80%, black);
