@@ -32,8 +32,7 @@
 
     &__container {
         @include center-flex-column;
-
-        min-height: 425px;
+        max-height: 100svh;
 
         justify-content: flex-start;
 
@@ -139,7 +138,7 @@
 
         &:hover .video__progress-bar-chunk:not(:hover),
         &:has(>.video__progress-frame.scrubbing) .video__progress-bar-chunk:not(:hover) {
-            --_new-pb-height: 5;
+            --_new-pb-height: 6;
             --_scale-y: calc(var(--_new-pb-height) / var(--_pb-height));
 
             scale: 1 var(--_scale-y);
@@ -385,7 +384,8 @@
 
         border-radius: 3px;
 
-        background-color: rgba(0, 0, 0, 0.5)
+        background-color: rgba(0, 0, 0, 0.5);
+        color: white;
     }
 
     &__video-indicator {
@@ -399,6 +399,7 @@
 
         --_size: 52px;
         background-color: rgba(0, 0, 0, 50%);
+        color: white;
         border-radius: 50%;
 
     }
@@ -423,6 +424,7 @@
 
         --_size: 110px;
         background-color: rgba(0, 0, 0, 50%);
+        color: white;
         border-radius: 50%;
 
         /* must be in % to work */
