@@ -736,7 +736,11 @@ const resetVideo = () => {
 
 // Add event listener to delete button
 deleteVideoButton?.addEventListener("click", () => {
-  if (confirm("Are you sure you want to remove this video and all chapters?")) {
+  const question: string =
+    "Are you sure you want to remove this video and all chapters ?";
+
+  const acceptedAnswer: boolean = confirm(question);
+  if (acceptedAnswer) {
     resetVideo();
   }
 });
