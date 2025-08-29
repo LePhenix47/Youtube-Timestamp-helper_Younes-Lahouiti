@@ -106,6 +106,7 @@ class ProgressBar {
         }
 
         timeStampControlsChapter.textContent = chapter.title;
+        timeStampControlsChapter.dataset.chapterId = chapter.id;
         title.textContent = chapter.title;
       }
     );

@@ -7,3 +7,25 @@
         opacity: 1;
     }
 }
+
+@keyframes chapter-highlight-overlay {
+    0% {
+        opacity: 0;
+        transform: scale(1);
+    }
+    
+    15% {
+        opacity: 0.6;
+        transform: scale(1.02);
+    }
+    
+    85% {
+        opacity: 0.6;
+        transform: scale(1.02);
+    }
+    
+    100% {
+        opacity: 0;
+        transform: scale(1);
+    }
+}

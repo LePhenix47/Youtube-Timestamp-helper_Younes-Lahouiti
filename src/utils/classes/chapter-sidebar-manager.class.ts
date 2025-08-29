@@ -228,6 +228,9 @@ class ChapterSideBarManager {
       startInputGroup: timestampGroup,
     };
 
+    // Set the chapter ID on the DOM element
+    element.dataset.chapterId = chapter.id;
+
     this.chapters.push(chapter);
     this.container.appendChild(chapter.element!);
     this.attachEventListeners(chapter);
@@ -537,7 +540,7 @@ class ChapterSideBarManager {
     );
     const timestampGroup = (chapterElement as any)._timestampGroup;
 
-    return {
+    const chapter: Chapter = {
       id: crypto.randomUUID(),
       title,
       start: 0,
@@ -545,6 +548,11 @@ class ChapterSideBarManager {
       element: chapterElement,
       startInputGroup: timestampGroup,
     };
+
+    // Set the chapter ID on the DOM element
+    chapterElement.dataset.chapterId = chapter.id;
+
+    return chapter;
   };
 
   public getChapters() {
@@ -578,6 +586,9 @@ class ChapterSideBarManager {
         element,
         startInputGroup: timestampGroup,
       };
+
+      // Set the chapter ID on the DOM element
+      element.dataset.chapterId = chapter.id;
 
       this.chapters.push(chapter);
       this.container.appendChild(chapter.element);

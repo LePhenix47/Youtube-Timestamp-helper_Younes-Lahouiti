@@ -693,6 +693,24 @@
         border-radius: 5px;
 
         counter-increment: timestamps;
+
+        &.chapter-highlighted {
+            position: relative;
+
+            &::after {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-color: #FFD700;
+                border-radius: inherit;
+                mix-blend-mode: color;
+                pointer-events: none;
+                animation: chapter-highlight-overlay 2s ease-out;
+            }
+        }
     }
 
     &__item-title {
