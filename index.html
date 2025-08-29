@@ -270,7 +270,7 @@
             </ul>
         </aside>
 
-        <section class="video-timestamp-outputs">
+        <section class="video-timestamp-outputs hide" data-element="video-timestamp-outputs">
             <label class="video-timestamp-outputs__label">Timestamp output:
                 <textarea name="" class="video-timestamp-outputs__textarea" data-element="timestamps-output" cols="30" rows="5" readonly></textarea>
             </label>
@@ -280,18 +280,18 @@
                 <button type="button" class="video-timestamp-outputs__import-button" data-element="import-timestamps-button">📥 Import</button>
             </div>
 
-            <p class="video-timestamp-outputs__error video-timestamp-outputs__error--not-enough hide"
+            <p class="video-timestamp-outputs__error video-timestamp-outputs__error--not-enough"
                 data-element="not-enough-chapters">
                 <i class="fa-solid fa-info-circle"></i>
                 <span>You must add at least <span data-element="not-enough-chapters-amount"></span> chapters</span>
             </p>
-            <p class="video-timestamp-outputs__error video-timestamp-outputs__error--too-many hide"
+            <p class="video-timestamp-outputs__error video-timestamp-outputs__error--too-many"
                 data-element="too-many-chapters">
                 <i class="fa-solid fa-info-circle"></i>
                 <span>You cannot add more than <span data-element="too-many-chapters-amount">×</span> chapters in this video</span>
             </p>
 
-            <button type="button" class="video-timestamps__remove hide">
+            <button type="button" class="video-timestamps__remove">
                 <i class="fa-solid fa-xmark video-timestamps__remove-icon" aria-hidden="true"></i>
                 <span class="video-timestamps__remove-text">
                     Delete current video

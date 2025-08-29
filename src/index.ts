@@ -107,6 +107,10 @@ const timestampsOutput = document.querySelector<HTMLTextAreaElement>(
   "[data-element=timestamps-output]"
 );
 
+const timestampsOutputSection = document.querySelector<HTMLElement>(
+  "[data-element=video-timestamp-outputs]"
+);
+
 const copyTimestampsButton = document.querySelector<HTMLButtonElement>(
   "[data-element=copy-timestamps-button]"
 );
@@ -442,6 +446,7 @@ signal.on("show-video", () => {
     videoIndicators,
     videoControls,
     timestampsSideBar,
+    timestampsOutputSection,
   ] as const;
 
   for (const element of uploadedVideoElements) {
@@ -451,13 +456,6 @@ signal.on("show-video", () => {
   // Add beforeunload protection now that we have an active video
   hasActiveVideo = true;
   window.addEventListener("beforeunload", beforeUnloadHandler);
-
-  // Show delete button when video is active
-  deleteVideoButton?.classList.remove("hide");
-
-  // Show info cards when video is active
-  notEnoughChapters?.classList.remove("hide");
-  tooManyChapters?.classList.remove("hide");
 
   // Add click event to video for play/pause toggle
   videoPlayer.addEventListener("click", () => {
@@ -545,18 +543,12 @@ signal.on("show-dropzone", () => {
     videoIndicators,
     videoControls,
     timestampsSideBar,
+    timestampsOutputSection,
   ] as const;
 
   for (const element of uploadedVideoElements) {
     element.classList.add("hide");
   }
-
-  // Hide delete button when showing dropzone
-  deleteVideoButton?.classList.add("hide");
-
-  // Hide info cards when showing dropzone
-  notEnoughChapters?.classList.add("hide");
-  tooManyChapters?.classList.add("hide");
 });
 
 signal.on<{ isHovering: boolean }>("dropzone-drag", (detail) => {
