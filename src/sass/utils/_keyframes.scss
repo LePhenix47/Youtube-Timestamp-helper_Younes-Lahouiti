@@ -13,19 +13,60 @@
         opacity: 0;
         transform: scale(1);
     }
-    
+
     15% {
         opacity: 0.6;
         transform: scale(1.02);
     }
-    
+
     85% {
         opacity: 0.6;
         transform: scale(1.02);
     }
-    
+
     100% {
         opacity: 0;
         transform: scale(1);
+    }
+}
+
+@keyframes timestamp-reset-shake {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    10%,
+    30%,
+    50%,
+    70%,
+    90% {
+        transform: translateX(-2px);
+    }
+
+    20%,
+    40%,
+    60%,
+    80% {
+        transform: translateX(2px);
+    }
+}
+
+@keyframes timestamp-reset-flash {
+    0% {
+        background-color: transparent;
+    }
+
+    25% {
+        background-color: rgba(239, 68, 68, 0.1);
+    }
+
+    75% {
+        background-color: rgba(239, 68, 68, 0.1);
+    }
+
+    100% {
+        background-color: transparent;
     }
 }

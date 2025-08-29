@@ -22,6 +22,7 @@ class TimestampInputGroup {
   private static readonly BLUR_DETECTION_DELAY = 10;
   private static readonly SECONDS_PER_MINUTE = 60;
   private static readonly SECONDS_PER_HOUR = 3_600;
+  private static readonly RESET_ANIMATION_DURATION = 600;
 
   private readonly container: HTMLElement;
   private readonly hoursInput?: TimestampUnitInput;
@@ -215,9 +216,10 @@ class TimestampInputGroup {
     if (this.validationCallback) {
       const isValid = this.validationCallback(finalValue);
       if (!isValid) {
-        // * Validation failed - revert to previous valid value
+        // * Validation failed - revert to previous valid value and show feedback
         this.setFromSeconds(this.previousValidValue);
         this.normalizeInputs();
+        this.showResetFeedback(finalValue);
       } else {
         // * Validation passed - update previous valid value
         this.previousValidValue = finalValue;
@@ -357,6 +359,30 @@ class TimestampInputGroup {
     } else {
       this.minutesInput.focus();
     }
+  };
+
+  private showResetFeedback = (rejectedValue: number): void => {
+    // Add visual feedback classes to all inputs in the group
+    const inputs = this.container.querySelectorAll<HTMLInputElement>(
+      "[data-element=chapter-start-input]"
+    );
+    
+    // Apply reset animation class
+    inputs.forEach(input => {
+      input.classList.add('timestamp-input--reset');
+      
+      // Remove the class after animation completes
+      setTimeout(() => {
+        input.classList.remove('timestamp-input--reset');
+      }, TimestampInputGroup.RESET_ANIMATION_DURATION);
+    });
+    
+    // Emit a signal for any external listeners
+    this.signal.emit("timestamp-reset", {
+      groupId: this.groupId,
+      rejectedValue,
+      resetToValue: this.previousValidValue
+    });
   };
 }
 

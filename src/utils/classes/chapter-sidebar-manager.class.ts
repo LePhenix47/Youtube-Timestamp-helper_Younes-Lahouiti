@@ -353,8 +353,14 @@ class ChapterSideBarManager {
       );
     }
 
-    // Set up timestamp input group change handler
+    // Set up timestamp input group handlers
     if (chapter.startInputGroup) {
+      // Set up validation callback for visual feedback
+      chapter.startInputGroup.onValidation((totalSeconds) => {
+        return this.validateStartChange(chapter.id, totalSeconds) && !Number.isNaN(totalSeconds);
+      });
+      
+      // Set up change handler for successful updates
       chapter.startInputGroup.onChange((totalSeconds) => {
         this.onStartInputChange(chapter, totalSeconds);
       });
@@ -380,23 +386,16 @@ class ChapterSideBarManager {
   };
 
   private onStartInputChange = (chapter: Chapter, newStart: number): void => {
-    if (
-      !this.validateStartChange(chapter.id, newStart) ||
-      Number.isNaN(newStart)
-    ) {
-      // Reset to previous value
-      if (chapter.startInputGroup) {
-        chapter.startInputGroup.setFromSeconds(chapter.start);
-      }
-      return;
-    }
+    // Validation is now handled by the TimestampInputGroup validation callback
+    // This method only gets called with valid values
 
     const index = this.findChapterIndex(chapter.id);
+    
+    // Update chapter start time
+    chapter.start = newStart;
+    
     const prev = this.chapters[index - 1];
     const next = this.chapters[index + 1];
-
-    // Update the current chapter's start
-    chapter.start = newStart;
 
     // Update neighbors if they exist
     if (prev) {
