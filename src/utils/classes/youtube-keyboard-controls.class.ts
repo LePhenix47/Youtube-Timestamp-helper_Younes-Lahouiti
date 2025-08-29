@@ -1,7 +1,10 @@
 import VideoPlayerManager from "./video-player.class";
 
 type PlayPauseCallback = (isPlaying: boolean) => void;
-type SeekCallback = (direction: "backward" | "forward", seconds: number) => void;
+type SeekCallback = (
+  direction: "backward" | "forward",
+  seconds: number
+) => void;
 type VolumeChangeCallback = (newVolume: number) => void;
 type MuteToggleCallback = (isMuted: boolean) => void;
 type JumpCallback = (percentage?: number) => void;
@@ -119,7 +122,7 @@ class YouTubeKeyboardControls {
       case "7":
       case "8":
       case "9":
-        this.jumpToPercentage(parseInt(key) * 10);
+        this.jumpToPercentage(Number(key) * 10);
         break;
 
       case "arrowup":
@@ -142,13 +145,13 @@ class YouTubeKeyboardControls {
       this.signal.emit("video-play-toggle");
     } else {
       const wasPlaying = !this.videoManager.isPaused;
-      
+
       if (this.videoManager.isPaused) {
         await this.videoManager.play();
       } else {
         this.videoManager.pause();
       }
-      
+
       // Call callback with the new playing state
       this.onPlayPauseCallback?.(!wasPlaying);
     }
@@ -158,7 +161,7 @@ class YouTubeKeyboardControls {
     const currentTime = this.videoManager.currentTime;
     const newTime = Math.max(0, currentTime - seconds);
     this.videoManager.seek(newTime);
-    
+
     // Call callback
     this.onSeekCallback?.("backward", seconds);
   };
@@ -168,7 +171,7 @@ class YouTubeKeyboardControls {
     const duration = this.videoManager.duration;
     const newTime = Math.min(duration, currentTime + seconds);
     this.videoManager.seek(newTime);
-    
+
     // Call callback
     this.onSeekCallback?.("forward", seconds);
   };
@@ -192,14 +195,14 @@ class YouTubeKeyboardControls {
     }
 
     this.videoManager.seek(newTime);
-    
+
     // Call callback
     this.onFrameStepCallback?.(direction === 1 ? "forward" : "backward");
   };
 
   private jumpToStart = (): void => {
     this.videoManager.seek(0);
-    
+
     // Call callback (0 percentage for start)
     this.onJumpCallback?.(0);
   };
@@ -208,7 +211,7 @@ class YouTubeKeyboardControls {
     const duration = this.videoManager.duration;
     const targetTime = (duration * percentage) / 100;
     this.videoManager.seek(targetTime);
-    
+
     // Call callback with percentage
     this.onJumpCallback?.(percentage);
   };
@@ -223,20 +226,20 @@ class YouTubeKeyboardControls {
     }
 
     this.videoManager.setVolume(newVolume);
-    
+
     // Call callback with new volume
     this.onVolumeChangeCallback?.(newVolume);
   };
 
   private toggleMute = (): void => {
     const willBeMuted = !this.videoManager.isMuted;
-    
+
     if (this.videoManager.isMuted) {
       this.videoManager.unmute();
     } else {
       this.videoManager.mute();
     }
-    
+
     // Call callback with new muted state
     this.onMuteToggleCallback?.(willBeMuted);
   };

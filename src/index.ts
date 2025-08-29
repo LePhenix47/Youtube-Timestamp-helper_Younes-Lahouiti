@@ -10,6 +10,7 @@ import ChapterSideBarManager, {
 } from "@utils/classes/chapter-sidebar-manager.class";
 import ProgressBar from "@utils/classes/progressbar.class";
 import YouTubeKeyboardControls from "@utils/classes/youtube-keyboard-controls.class";
+import { parseYouTubeTimestamps } from "@utils/helpers/youtube-timestamp-parser.utils";
 
 fixInputRangeBackground();
 
@@ -698,6 +699,15 @@ copyTimestampsButton?.addEventListener("click", () => {
   signal.emit("copy-timestamps");
 });
 
+// Import button functionality
+const importTimestampsButton = document.querySelector<HTMLButtonElement>(
+  "[data-element=import-timestamps-button]"
+);
+
+importTimestampsButton?.addEventListener("click", () => {
+  signal.emit("import-timestamps");
+});
+
 // Handle copy signal
 signal.on("copy-timestamps", async () => {
   const originalText: string = copyTimestampsButton.innerText;
@@ -707,6 +717,82 @@ signal.on("copy-timestamps", async () => {
   setTimeout(() => {
     copyTimestampsButton.textContent = originalText;
   }, 2_000);
+});
+
+// Handle import signal
+signal.on("import-timestamps", async () => {
+  try {
+    // Get clipboard content
+    const clipboardText = await navigator.clipboard.readText();
+    
+    if (!clipboardText.trim()) {
+      alert("Clipboard is empty. Please copy some YouTube timestamps first.");
+      return;
+    }
+
+    // Parse the timestamps
+    const videoDuration = videoManager?.duration;
+    const parseResult = parseYouTubeTimestamps(clipboardText, videoDuration);
+    
+    if (!parseResult.success) {
+      const errorMessage = "Failed to import timestamps:\n\n" + parseResult.errors!.join("\n");
+      alert(errorMessage);
+      return;
+    }
+
+    // Convert parsed chapters to the format expected by syncWithChunks
+    const chaptersForSync = parseResult.chapters!.map((chapter, index) => {
+      const nextChapter = parseResult.chapters![index + 1];
+      const endTime = nextChapter ? nextChapter.start : videoDuration || chapter.start + 60;
+      
+      return {
+        id: `chapter-${Date.now()}-${index}`, // Generate unique IDs
+        start: chapter.start,
+        end: endTime
+      };
+    });
+
+    // Import the chapters using the existing sync method
+    chapterSidebarManager.syncWithChunks(chaptersForSync);
+    
+    // Update chapter titles in both data and DOM
+    const importedChapters = chapterSidebarManager.getChapters();
+    const parsedChapters = parseResult.chapters!;
+    
+    for (let i = 0; i < Math.min(importedChapters.length, parsedChapters.length); i++) {
+      const chapter = importedChapters[i];
+      const newTitle = parsedChapters[i].title;
+      
+      // Update chapter data
+      chapter.title = newTitle;
+      
+      // Update DOM elements
+      const titleInput = chapter.element.querySelector<HTMLInputElement>('[data-element="chapter-title-input"]');
+      const titleHeading = chapter.element.querySelector<HTMLHeadingElement>('[data-element="chapter-heading"]');
+      
+      if (titleInput) titleInput.value = newTitle;
+      if (titleHeading) titleHeading.textContent = newTitle;
+    }
+    
+    // Force progress bar to sync with the new chapters
+    signal.emit("chapters-synced", { chapters: importedChapters });
+    
+    // Trigger timestamp output update
+    signal.emit("timestamp-output-update");
+    
+    // Show success feedback
+    const originalText = importTimestampsButton?.textContent || "";
+    if (importTimestampsButton) {
+      importTimestampsButton.textContent = "✅ Imported!";
+      setTimeout(() => {
+        importTimestampsButton.textContent = originalText;
+      }, 2000);
+    }
+    
+  } catch (error) {
+    console.error("Import failed:", error);
+    alert("Failed to read clipboard. Please make sure you have copied the timestamps and granted clipboard permissions.");
+  }
 });
 
 // Video reset/removal functionality

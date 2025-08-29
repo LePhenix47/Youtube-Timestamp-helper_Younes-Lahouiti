@@ -862,6 +862,36 @@
         width: max-content;
     }
 
+    &__import-button {
+        @include center-flex;
+
+        background-color: #2196F3;
+        color: white;
+        border: none;
+        border-radius: 5px;
+
+        padding: 8px 16px;
+        font-size: 14px;
+        font-weight: 500;
+
+        cursor: pointer;
+        transition: background-color 150ms ease-in-out;
+
+        &:hover {
+            background-color: #1976D2;
+        }
+
+        justify-self: start;
+        width: max-content;
+    }
+
+    // Button container for proper layout
+    &__buttons {
+        display: flex;
+        gap: 10px;
+        justify-self: start;
+    }
+
     &__error {
         --_info-color: #3b82f6;
 

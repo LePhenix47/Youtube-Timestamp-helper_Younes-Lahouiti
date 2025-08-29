@@ -81,6 +81,14 @@ class ProgressBar {
       }
     );
 
+    this.signal.on(
+      "chapters-synced", 
+      ({ chapters }: { chapters: Chapter[] }) => {
+        // Complete rebuild from imported/synced chapters
+        this.syncChunks(chapters);
+      }
+    );
+
     this.signal.on<{ chapter: Chapter | null }>(
       "chapter-for-frame",
       ({ chapter }) => {
