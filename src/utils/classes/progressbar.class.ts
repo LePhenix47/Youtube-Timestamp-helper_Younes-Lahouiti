@@ -28,8 +28,6 @@ class ProgressBar {
   private progressContainer: HTMLLIElement;
 
   private chunks: ProgressBarChunk[] = [];
-  private chunkMap: Map<string, ProgressBarChunk> = new Map();
-  private cachedChapterData: Map<string, {id: string; start: number; end: number}> = new Map();
   private progressBarManager: ProgressBarManager;
 
   private wasPaused: boolean;
@@ -121,104 +119,15 @@ class ProgressBar {
     );
   }
 
-  private preComputeDragLimits = (
-    id: string,
-    type: "start" | "end"
-  ) => {
-    const currentChunk = this.chunkMap.get(id);
-    if (!currentChunk) return;
-
-    const chunkIndex = this.chunks.indexOf(currentChunk);
-    const previousChunk = this.chunks[chunkIndex - 1];
-    const nextChunk = this.chunks[chunkIndex + 1];
-
-    // Pre-compute the valid min/max limits based on neighbors and constraints
-    let minTime: number;
-    let maxTime: number;
-
-    if (type === "start") {
-      // Start handle: min = previous end + MIN_LENGTH, max = current end - MIN_LENGTH  
-      minTime = previousChunk 
-        ? previousChunk.endTime + ChapterSideBarManager.CHAPTER_MIN_LENGTH
-        : 0;
-      maxTime = currentChunk.endTime - ChapterSideBarManager.CHAPTER_MIN_LENGTH;
-    } else { // type === "end"
-      // End handle: min = current start + MIN_LENGTH, max = next start - MIN_LENGTH
-      minTime = currentChunk.startTime + ChapterSideBarManager.CHAPTER_MIN_LENGTH;
-      maxTime = nextChunk 
-        ? nextChunk.startTime - ChapterSideBarManager.CHAPTER_MIN_LENGTH
-        : this.videoManager.duration;
-    }
-
-    // Set the pre-computed limits on the chunk for O(1) clamping
-    currentChunk.setDragLimits(minTime, maxTime, type);
-
-    // Set drag state on affected chunks for batched DOM updates
-    currentChunk.setDragState(true);
-    if (previousChunk) previousChunk.setDragState(true);
-    if (nextChunk) nextChunk.setDragState(true);
-  };
-
-  private handleOptimizedChunkDrag = (
-    id: string,
-    type: "start" | "end",
-    clampedTime: number
-  ) => {
-    const currentChunk = this.chunkMap.get(id);
-    if (!currentChunk) return;
-
-    // Use the array directly to find neighbors - still O(n) but only called once during drag setup
-    const chunkIndex = this.chunks.indexOf(currentChunk);
-    const previousChunk = this.chunks[chunkIndex - 1];
-    const nextChunk = this.chunks[chunkIndex + 1];
-
-    // Simply update boundaries with already-clamped time - no validation needed!
-    this.updateChunkBoundaries(
-      type,
-      currentChunk,
-      previousChunk,
-      nextChunk,
-      clampedTime
-    );
-
-    // Batch chunk updates to avoid excessive signal emissions
-    this.pendingChunkUpdates.add(id);
-    if (previousChunk) this.pendingChunkUpdates.add(previousChunk.id);
-    if (nextChunk) this.pendingChunkUpdates.add(nextChunk.id);
-
-    this.scheduleBatchedChunkUpdate();
-  };
-
-  private handleOptimizedChunkDragEnd = (
-    id: string,
-    type: "start" | "end", 
-    finalTime: number
-  ) => {
-    // Same as drag move but also clear drag states
-    this.handleOptimizedChunkDrag(id, type, finalTime);
-
-    const currentChunk = this.chunkMap.get(id);
-    if (!currentChunk) return;
-
-    const chunkIndex = this.chunks.indexOf(currentChunk);
-    const previousChunk = this.chunks[chunkIndex - 1];
-    const nextChunk = this.chunks[chunkIndex + 1];
-
-    // Clear drag state on affected chunks
-    currentChunk.setDragState(false);
-    if (previousChunk) previousChunk.setDragState(false);
-    if (nextChunk) nextChunk.setDragState(false);
-  };
-
   private handleChunkDrag = (
     id: string,
     type: "start" | "end",
     time: number
   ) => {
-    const currentChunk = this.chunkMap.get(id);
-    if (!currentChunk) return;
+    const chunkIndex = this.chunks.findIndex((c) => c.id === id);
+    if (chunkIndex === -1) return;
 
-    const chunkIndex = this.chunks.indexOf(currentChunk);
+    const currentChunk = this.chunks[chunkIndex];
     const previousChunk = this.chunks[chunkIndex - 1];
     const nextChunk = this.chunks[chunkIndex + 1];
 
@@ -320,8 +229,6 @@ class ProgressBar {
       chunk.element.remove();
     }
     this.chunks = [];
-    this.chunkMap.clear();
-    this.cachedChapterData.clear();
 
     const list = this.videoContainer.querySelector<HTMLUListElement>(
       '[data-element="video-progress-chunk-list"]'
@@ -342,42 +249,24 @@ class ProgressBar {
       );
 
       // attach drag signals
-      // Pre-compute drag limits when drag starts
       chunk.signal.on<{
         id: string;
         type: "start" | "end";
-      }>("chunk-drag-start", ({ id, type }) => {
-        this.preComputeDragLimits(id, type);
+        proposedTime: number;
+      }>("chunk-drag", ({ id, type, proposedTime }) => {
+        this.handleChunkDrag(id, type, proposedTime);
       });
 
-      // Handle optimized drag moves with pre-computed limits
-      chunk.signal.on<{
-        id: string;
-        type: "start" | "end";
-        clampedTime: number;
-      }>("chunk-drag-optimized", ({ id, type, clampedTime }) => {
-        this.handleOptimizedChunkDrag(id, type, clampedTime);
-      });
-
-      // Handle drag end to clear drag state  
+      // Handle drag end to clear drag state
       chunk.signal.on<{
         id: string;
         type: "start" | "end";
         finalTime: number;
       }>("chunk-drag-end", ({ id, type, finalTime }) => {
-        this.handleOptimizedChunkDragEnd(id, type, finalTime);
+        this.handleChunkDragEnd(id, type, finalTime);
       });
 
       this.chunks.push(chunk);
-      this.chunkMap.set(chunk.id, chunk);
-      
-      // Initialize cache with current data
-      this.cachedChapterData.set(chapter.id, {
-        id: chapter.id,
-        start: chapter.start,
-        end: chapter.end,
-      });
-      
       list.appendChild(chunk.element);
     }
 
@@ -387,7 +276,7 @@ class ProgressBar {
   };
 
   private updateChunk = (chapter: Chapter) => {
-    const chunk = this.chunkMap.get(chapter.id);
+    const chunk = this.chunks.find((c) => c.id === chapter.id);
     if (!chunk) return;
     chunk.updateStartTime(chapter.start);
     chunk.updateEndTime(chapter.end);
@@ -483,8 +372,6 @@ class ProgressBar {
       chunk.element.remove();
     }
     this.chunks = [];
-    this.chunkMap.clear();
-    this.cachedChapterData.clear();
 
     // Reset progress displays
     const cssProperties = [
@@ -668,33 +555,27 @@ class ProgressBar {
     if (this.chunkUpdateAnimationFrame) return;
 
     this.chunkUpdateAnimationFrame = requestAnimationFrame(() => {
-      // Only update cache for chunks that actually changed
-      const changedChapters: {id: string; start: number; end: number}[] = [];
-      let hasChanges = false;
+      // Only emit updates for chunks that actually changed
+      const changedChapters = Array.from(this.pendingChunkUpdates)
+        .map((id) => this.chunks.find((c) => c.id === id))
+        .filter(Boolean)
+        .map((c) => ({
+          id: c!.id,
+          start: c!.startTime,
+          end: c!.endTime,
+        }));
 
-      for (const chunkId of this.pendingChunkUpdates) {
-        const chunk = this.chunkMap.get(chunkId);
-        if (!chunk) continue;
-
-        const cached = this.cachedChapterData.get(chunkId);
-        const current = { id: chunk.id, start: chunk.startTime, end: chunk.endTime };
-        
-        // Only include if actually changed
-        if (!cached || cached.start !== current.start || cached.end !== current.end) {
-          this.cachedChapterData.set(chunkId, current);
-          changedChapters.push(current);
-          hasChanges = true;
-        }
-      }
-
-      if (hasChanges) {
+      if (changedChapters.length > 0) {
         this.signal.emit("frame-preview-updated", {
           time: this.videoManager.currentTime,
         });
 
-        // Emit ALL chapters from cache (no expensive map operation)
         this.signal.emit("chunk-chapters-updated", {
-          chapters: Array.from(this.cachedChapterData.values()),
+          chapters: this.chunks.map((c) => ({
+            id: c.id,
+            start: c.startTime,
+            end: c.endTime,
+          })),
         });
       }
 
