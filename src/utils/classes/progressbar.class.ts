@@ -110,6 +110,13 @@ class ProgressBar {
         title.textContent = chapter.title;
       }
     );
+
+    this.signal.on<{ chapterId: string; isLocked: boolean; chapters: Chapter[] }>(
+      "chapter-lock-changed",
+      ({ chapterId, isLocked, chapters }) => {
+        this.updateChunkLockStates(chapters);
+      }
+    );
   }
 
   private handleChunkDrag = (
@@ -575,6 +582,22 @@ class ProgressBar {
       this.pendingChunkUpdates.clear();
       this.chunkUpdateAnimationFrame = null;
     });
+  };
+
+  private updateChunkLockStates = (chapters: Chapter[]): void => {
+    for (let i = 0; i < this.chunks.length; i++) {
+      const chunk = this.chunks[i];
+      const chapter = chapters.find(c => c.id === chunk.id);
+      
+      if (!chapter) continue;
+
+      // Update start lock state (this chapter's lock affects its own start handle)
+      chunk.setStartLocked(chapter.isLocked || false);
+
+      // Update end lock state (next chapter's lock affects this chapter's end handle)
+      const nextChapter = chapters[i + 1];
+      chunk.setEndLocked(nextChapter?.isLocked || false);
+    }
   };
 }
 

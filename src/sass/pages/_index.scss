@@ -256,6 +256,9 @@
             display: none;
         }
 
+        // Additional styling for locked drag handles could go here
+        // Currently they're hidden when disabled, which is the desired behavior
+
         &--start {
             --_stripe-color: yellow;
         }
@@ -685,14 +688,29 @@
         column-gap: 20px;
         row-gap: 10px;
 
-        width: 100%;
-
         padding: 10px;
 
         background-color: var(--ts-item-bg);
         border-radius: 5px;
 
         counter-increment: timestamps;
+        --_border-thickness: 3px;
+        border-left: var(--_border-thickness) solid transparent;
+        width: calc(100% - var(--_border-thickness));
+
+        &.chapter-locked {
+            opacity: 0.8;
+            border-left: var(--_border-thickness) solid #FF6B35;
+
+            .video-timestamps__lock-icon {
+                color: #FF6B35;
+            }
+
+            .video-timestamps__remove {
+                opacity: 0.5;
+                cursor: not-allowed;
+            }
+        }
 
         &.chapter-highlighted {
             position: relative;
@@ -715,12 +733,69 @@
         }
     }
 
-    &__item-title {
+    &__header {
         grid-column: full-width;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+    }
+
+    &__item-title {
+        margin: 0;
 
         &::before {
             content: "Chapter " counter(timestamps) ": ";
         }
+    }
+
+    &__lock-toggle {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+        font-size: 12px;
+        opacity: 0.7;
+        transition: opacity 150ms ease-in-out;
+
+        &:hover {
+            opacity: 1;
+        }
+    }
+
+    &__lock-checkbox {
+        appearance: none;
+        width: 14px;
+        height: 14px;
+        border: 1px solid currentColor;
+        border-radius: 2px;
+        position: relative;
+        cursor: pointer;
+
+        &:checked {
+            background-color: #FF6B35;
+            border-color: #FF6B35;
+
+            &::after {
+                content: '✓';
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                translate: -50% -50%;
+                color: white;
+                font-size: 10px;
+                line-height: 1;
+            }
+        }
+    }
+
+    &__lock-icon {
+        font-size: 12px;
+        transition: color 150ms ease-in-out;
+    }
+
+    &__lock-text {
+        font-weight: 500;
     }
 
     &__img {
@@ -772,6 +847,7 @@
         border-radius: 100vmax;
 
         background-color: var(--ts-input-bg);
+        color: currentColor;
 
         &--start {
             --_min-chars: 3;
@@ -782,7 +858,10 @@
 
             &:read-only {
                 opacity: 60%;
-                cursor: not-allowed
+
+                background-color: rgba(112, 112, 112, 0.1);
+                color: rgba(255, 255, 255, 0.7);
+                cursor: not-allowed;
             }
         }
     }
@@ -956,14 +1035,14 @@
 
         transition:
             background-color 150ms ease-in-out,
-            transform 150ms ease-in-out;
+            translate 150ms ease-in-out;
 
         &:hover {
             background-color: darkred;
         }
 
         &:active {
-            transform: translateY(1px);
+            translate: 0% 1px;
         }
     }
 }

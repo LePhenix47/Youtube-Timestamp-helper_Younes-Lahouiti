@@ -9,6 +9,7 @@ export type Chapter = {
   end: number;
   element: HTMLElement; // DOM node reference
   startInputGroup?: TimestampInputGroup;
+  isLocked?: boolean;
 };
 
 class ChapterSideBarManager {
@@ -74,7 +75,19 @@ class ChapterSideBarManager {
 
     this.template.innerHTML = /* html */ `
        <li class="video-timestamps__item" data-element="chapter">
-      <h3 class="video-timestamps__item-title" data-element="chapter-heading">Intro</h3>
+      <div class="video-timestamps__header">
+        <h3 class="video-timestamps__item-title" data-element="chapter-heading">Intro</h3>
+        <label class="video-timestamps__lock-toggle">
+          <input 
+            type="checkbox" 
+            class="video-timestamps__lock-checkbox" 
+            data-element="chapter-lock-checkbox"
+          />
+          <i class="fa-solid fa-lock video-timestamps__lock-icon"></i>
+          <span class="video-timestamps__lock-text">Lock</span>
+        </label>
+      </div>
+      
       <img src="" 
       class="video-timestamps__img"
       alt=""
@@ -226,6 +239,7 @@ class ChapterSideBarManager {
       end: this.videoDuration,
       element,
       startInputGroup: timestampGroup,
+      isLocked: false,
     };
 
     // Set the chapter ID on the DOM element
@@ -346,6 +360,9 @@ class ChapterSideBarManager {
     const deleteButton = chapter.element.querySelector<HTMLButtonElement>(
       '[data-element="chapter-delete"]'
     );
+    const lockCheckbox = chapter.element.querySelector<HTMLInputElement>(
+      '[data-element="chapter-lock-checkbox"]'
+    );
 
     if (titleInput) {
       titleInput.addEventListener("input", (event) =>
@@ -357,9 +374,12 @@ class ChapterSideBarManager {
     if (chapter.startInputGroup) {
       // Set up validation callback for visual feedback
       chapter.startInputGroup.onValidation((totalSeconds) => {
-        return this.validateStartChange(chapter.id, totalSeconds) && !Number.isNaN(totalSeconds);
+        return (
+          this.validateStartChange(chapter.id, totalSeconds) &&
+          !Number.isNaN(totalSeconds)
+        );
       });
-      
+
       // Set up change handler for successful updates
       chapter.startInputGroup.onChange((totalSeconds) => {
         this.onStartInputChange(chapter, totalSeconds);
@@ -368,6 +388,12 @@ class ChapterSideBarManager {
 
     if (deleteButton) {
       deleteButton.addEventListener("click", () => this.onDeleteClick(chapter));
+    }
+
+    if (lockCheckbox) {
+      lockCheckbox.addEventListener("change", (event) =>
+        this.onLockToggle(chapter, event)
+      );
     }
   };
 
@@ -390,10 +416,10 @@ class ChapterSideBarManager {
     // This method only gets called with valid values
 
     const index = this.findChapterIndex(chapter.id);
-    
+
     // Update chapter start time
     chapter.start = newStart;
-    
+
     const prev = this.chapters[index - 1];
     const next = this.chapters[index + 1];
 
@@ -423,13 +449,65 @@ class ChapterSideBarManager {
     this.removeChapter(chapter.id);
   };
 
+  private onLockToggle = (chapter: Chapter, event: Event): void => {
+    const checkbox = event.target as HTMLInputElement;
+    chapter.isLocked = checkbox.checked;
+
+    this.updateChapterLockState(chapter);
+    this.updateAllChapterLockStates(); // Update all chapters since this affects neighbors
+
+    // Emit signal to update progress bar drag handles
+    this.signal.emit("chapter-lock-changed", {
+      chapterId: chapter.id,
+      isLocked: chapter.isLocked,
+      chapters: this.chapters,
+    });
+
+    console.log(
+      `Chapter "${chapter.title}" ${chapter.isLocked ? "locked" : "unlocked"}`
+    );
+  };
+
+  private updateChapterLockState = (chapter: Chapter): void => {
+    const deleteButton = chapter.element.querySelector<HTMLButtonElement>(
+      '[data-element="chapter-delete"]'
+    );
+
+    if (deleteButton) {
+      deleteButton.disabled = chapter.isLocked || false;
+    }
+
+    // Update start input group
+    if (chapter.startInputGroup) {
+      chapter.startInputGroup.setReadonly(chapter.isLocked || false);
+    }
+
+    chapter.element.classList.toggle("chapter-locked", chapter.isLocked);
+  };
+
+  private updateAllChapterLockStates = (): void => {
+    // Update all chapters to respect neighboring locks
+    for (let i = 0; i < this.chapters.length; i++) {
+      this.updateChapterLockState(this.chapters[i]);
+    }
+  };
+
   private validateStartChange = (
     chapterId: string,
     newStart: number
   ): boolean => {
     const index = this.findChapterIndex(chapterId);
-
     const chapter = this.chapters[index];
+
+    // If this chapter is locked, prevent changes
+    if (chapter.isLocked) {
+      console.error(
+        "Cannot change start time of locked chapter:",
+        chapter.title
+      );
+      return false;
+    }
+
     const prev = this.chapters[index - 1];
     const next = this.chapters[index + 1];
 
@@ -489,6 +567,13 @@ class ChapterSideBarManager {
     }
 
     const chapter = this.chapters[index];
+
+    // Check if chapter is locked
+    if (chapter.isLocked) {
+      console.warn(`Cannot delete locked chapter: "${chapter.title}"`);
+      return;
+    }
+
     const prev = this.chapters[index - 1];
     const next = this.chapters[index + 1];
 
@@ -546,6 +631,7 @@ class ChapterSideBarManager {
       end: 0,
       element: chapterElement,
       startInputGroup: timestampGroup,
+      isLocked: false,
     };
 
     // Set the chapter ID on the DOM element
@@ -584,6 +670,7 @@ class ChapterSideBarManager {
         end,
         element,
         startInputGroup: timestampGroup,
+        isLocked: false,
       };
 
       // Set the chapter ID on the DOM element
@@ -633,13 +720,13 @@ class ChapterSideBarManager {
   public reset = (): void => {
     // Clear DOM
     this.container.innerHTML = "";
-    
+
     // Clear chapters array
     this.chapters = [];
-    
+
     // Reset video duration
     this.videoDuration = NaN;
-    
+
     console.log("ChapterSideBarManager reset");
   };
 }

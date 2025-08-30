@@ -37,6 +37,8 @@ class ProgressBarChunk {
   private readonly RECT_CACHE_DURATION = 100; // Cache for 100ms
   private isDragging = false;
   private animationFrameId: number | null = null;
+  private isStartLocked = false;
+  private isEndLocked = false;
 
   constructor(
     id: string,
@@ -114,14 +116,37 @@ class ProgressBarChunk {
     )!;
 
     // Set disabled state and data attributes for event delegation
-    startHandle.disabled = this.isFirst;
-    endHandle.disabled = this.isLast;
+    this.updateDragHandleStates();
     
     // Add data attributes to identify chunk and handle type
     startHandle.dataset.chunkId = this.id;
     startHandle.dataset.dragType = "start";
     endHandle.dataset.chunkId = this.id;
     endHandle.dataset.dragType = "end";
+  };
+
+  private updateDragHandleStates = () => {
+    const startHandle = this.element.querySelector<HTMLButtonElement>(
+      "[data-element=drag-slide-start]"
+    )!;
+    const endHandle = this.element.querySelector<HTMLButtonElement>(
+      "[data-element=drag-slide-end]"
+    )!;
+
+    // Default disabled state based on position
+    startHandle.disabled = this.isFirst || this.isStartLocked;
+    endHandle.disabled = this.isLast || this.isEndLocked;
+  };
+
+  // Public methods to update lock states
+  public setStartLocked = (locked: boolean): void => {
+    this.isStartLocked = locked;
+    this.updateDragHandleStates();
+  };
+
+  public setEndLocked = (locked: boolean): void => {
+    this.isEndLocked = locked;
+    this.updateDragHandleStates();
   };
 
   public beginDrag = (e: PointerEvent, type: "start" | "end") => {
