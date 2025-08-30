@@ -24,6 +24,8 @@ class ChapterSideBarManager {
   }
 
   private chapters: Chapter[] = [];
+  private chapterMap: Map<string, { chapter: Chapter; index: number }> =
+    new Map();
 
   private container: HTMLElement;
   private template: HTMLTemplateElement;
@@ -246,6 +248,10 @@ class ChapterSideBarManager {
     element.dataset.chapterId = chapter.id;
 
     this.chapters.push(chapter);
+    this.chapterMap.set(chapter.id, {
+      chapter,
+      index: this.chapters.length - 1,
+    });
     this.container.appendChild(chapter.element!);
     this.attachEventListeners(chapter);
     this.normalizeChapterInputs();
@@ -316,6 +322,10 @@ class ChapterSideBarManager {
 
     // * Add the new chapter
     this.chapters.push(newChapter);
+    this.chapterMap.set(newChapter.id, {
+      chapter: newChapter,
+      index: this.chapters.length - 1,
+    });
     this.container.appendChild(newChapter.element);
     this.updateChapterDOM(newChapter);
     this.attachEventListeners(newChapter);
@@ -579,9 +589,13 @@ class ChapterSideBarManager {
 
     this.adjustNeighborsOnDelete(prev, next);
 
-    // * Remove from DOM and array
+    // * Remove from DOM, array, and map
     chapter.element.remove();
     this.chapters.splice(index, 1);
+    this.chapterMap.delete(chapterId);
+
+    // Rebuild map indices since array indices changed after splice
+    this.rebuildChapterMapIndices();
     this.normalizeChapterInputs();
 
     this.signal.emit("chapter-deleted", {
@@ -677,6 +691,10 @@ class ChapterSideBarManager {
       element.dataset.chapterId = chapter.id;
 
       this.chapters.push(chapter);
+      this.chapterMap.set(chapter.id, {
+        chapter,
+        index: this.chapters.length - 1,
+      });
       this.container.appendChild(chapter.element);
       this.attachEventListeners(chapter);
     }
@@ -692,22 +710,25 @@ class ChapterSideBarManager {
   ) => {
     let hasChanges = false;
 
-    // Only update chapters that have actually changed
+    // Only update chapters that have actually changed - O(1) Map lookup instead of O(n) array.find()
     for (let i = 0; i < chaptersFromChunks.length; i++) {
       const { id, start, end } = chaptersFromChunks[i];
-      const existingChapter = this.chapters.find((c) => c.id === id);
+      const chapterData = this.chapterMap.get(id);
 
-      if (existingChapter) {
-        // Check if values have actually changed to avoid unnecessary updates
-        const startChanged = Math.abs(existingChapter.start - start) > 0.01;
-        const endChanged = Math.abs(existingChapter.end - end) > 0.01;
+      if (!chapterData) {
+        continue;
+      }
 
-        if (startChanged || endChanged) {
-          existingChapter.start = start;
-          existingChapter.end = end;
-          this.updateChapterDOM(existingChapter);
-          hasChanges = true;
-        }
+      const existingChapter = chapterData.chapter;
+      // Check if values have actually changed to avoid unnecessary updates
+      const startChanged = Math.abs(existingChapter.start - start) > 0.01;
+      const endChanged = Math.abs(existingChapter.end - end) > 0.01;
+
+      if (startChanged || endChanged) {
+        existingChapter.start = start;
+        existingChapter.end = end;
+        this.updateChapterDOM(existingChapter);
+        hasChanges = true;
       }
     }
 
@@ -717,12 +738,21 @@ class ChapterSideBarManager {
     }
   };
 
+  private rebuildChapterMapIndices = (): void => {
+    this.chapterMap.clear();
+    for (let i = 0; i < this.chapters.length; i++) {
+      const chapter = this.chapters[i];
+      this.chapterMap.set(chapter.id, { chapter, index: i });
+    }
+  };
+
   public reset = (): void => {
     // Clear DOM
     this.container.innerHTML = "";
 
-    // Clear chapters array
+    // Clear chapters array and map
     this.chapters = [];
+    this.chapterMap.clear();
 
     // Reset video duration
     this.videoDuration = NaN;

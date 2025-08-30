@@ -1,25 +1,5 @@
 import Signal from "./signal.class";
 
-// Throttle utility for performance optimization
-function throttle<T extends (...args: any[]) => void>(func: T, delay: number): T {
-  let timeoutId: number | null = null;
-  let lastExecTime = 0;
-  return ((...args: any[]) => {
-    const currentTime = Date.now();
-    if (currentTime - lastExecTime > delay) {
-      func(...args);
-      lastExecTime = currentTime;
-    } else {
-      if (timeoutId) clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => {
-        func(...args);
-        lastExecTime = Date.now();
-        timeoutId = null;
-      }, delay - (currentTime - lastExecTime));
-    }
-  }) as T;
-}
-
 class ProgressBarChunk {
   public element: HTMLLIElement;
   public readonly signal = new Signal();
@@ -32,13 +12,18 @@ class ProgressBarChunk {
   private videoDuration: number;
   private isFirst: boolean;
   private isLast: boolean;
-  private cachedRect: DOMRect | null = null;
-  private rectCacheTime = 0;
-  private readonly RECT_CACHE_DURATION = 100; // Cache for 100ms
+  private containerLeft: number = 0;
   private isDragging = false;
   private animationFrameId: number | null = null;
   private isStartLocked = false;
   private isEndLocked = false;
+  
+  // Pre-computed drag limits for performance
+  private dragLimits: {
+    minTime: number;
+    maxTime: number;
+    type: "start" | "end";
+  } | null = null;
 
   constructor(
     id: string,
@@ -149,6 +134,14 @@ class ProgressBarChunk {
     this.updateDragHandleStates();
   };
 
+  public setDragLimits = (minTime: number, maxTime: number, type: "start" | "end"): void => {
+    this.dragLimits = { minTime, maxTime, type };
+  };
+
+  public clearDragLimits = (): void => {
+    this.dragLimits = null;
+  };
+
   public beginDrag = (e: PointerEvent, type: "start" | "end") => {
     e.preventDefault();
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
@@ -156,33 +149,49 @@ class ProgressBarChunk {
     // Set dragging state to enable batched DOM updates
     this.isDragging = true;
 
-    // Cache the rect at the start of drag to avoid repeated getBoundingClientRect calls
-    this.updateCachedRect();
+    // Capture container left position ONCE at drag start - no more getBoundingClientRect during drag!
+    this.containerLeft = this.element.parentElement!.getBoundingClientRect().left;
+    
+    // Emit drag start event for pre-computing limits
+    this.signal.emit("chunk-drag-start", {
+      id: this.id,
+      type,
+    });
 
-    // Throttle the drag events to 60fps (16ms)
-    const throttledOnMove = throttle((ev: PointerEvent) => {
-      const proposedTime = this.computeTimeFromPointer(ev.pageX);
-      this.signal.emit("chunk-drag", {
+    // Direct drag event handler with pre-computed limits for O(1) performance
+    const onMove = (ev: PointerEvent) => {
+      const rawTime = this.computeTimeFromPointer(ev.pageX);
+      
+      // O(1) clamping using pre-computed limits
+      const clampedTime = this.dragLimits 
+        ? Math.floor(Math.max(this.dragLimits.minTime, Math.min(this.dragLimits.maxTime, rawTime)))
+        : Math.floor(rawTime);
+      
+      this.signal.emit("chunk-drag-optimized", {
         id: this.id,
         type,
-        proposedTime,
+        clampedTime,
       });
-    }, 16);
+    };
 
     const onUp = (ev: PointerEvent) => {
       (e.target as HTMLElement).releasePointerCapture(ev.pointerId);
-      document.removeEventListener("pointermove", throttledOnMove);
+      document.removeEventListener("pointermove", onMove);
       document.removeEventListener("pointerup", onUp);
 
       // End dragging state
       this.isDragging = false;
       
-      // Final position update
-      const finalTime = this.computeTimeFromPointer(ev.pageX);
+      // Final position update with clamping
+      const rawTime = this.computeTimeFromPointer(ev.pageX);
+      const finalTime = this.dragLimits 
+        ? Math.floor(Math.max(this.dragLimits.minTime, Math.min(this.dragLimits.maxTime, rawTime)))
+        : Math.floor(rawTime);
+      
       this.signal.emit("chunk-drag-end", { id: this.id, type, finalTime });
       
-      // Clear the cached rect after drag ends
-      this.cachedRect = null;
+      // Clear the drag limits after drag ends (containerLeft can stay cached until next drag)
+      this.clearDragLimits();
       
       // Force immediate DOM update after drag
       if (this.animationFrameId) {
@@ -192,29 +201,17 @@ class ProgressBarChunk {
       this.updateChunkDOM();
     };
 
-    document.addEventListener("pointermove", throttledOnMove);
+    document.addEventListener("pointermove", onMove);
     document.addEventListener("pointerup", onUp);
   };
 
-  private updateCachedRect = (): void => {
-    const now = Date.now();
-    if (!this.cachedRect || (now - this.rectCacheTime) > this.RECT_CACHE_DURATION) {
-      this.cachedRect = this.element.parentElement!.getBoundingClientRect();
-      this.rectCacheTime = now;
-    }
-  };
-
   private computeTimeFromPointer = (pageX: number): number => {
-    // Use cached rect if available, otherwise get fresh rect
-    let rect = this.cachedRect;
-    if (!rect) {
-      this.updateCachedRect();
-      rect = this.cachedRect!;
-    }
-    
-    const offsetX = pageX - rect.left;
-    const clamped = Math.max(0, Math.min(offsetX, rect.width));
-    return (clamped / rect.width) * this.videoDuration;
+    // Super fast: no getBoundingClientRect(), just cached left + offsetWidth
+    const container = this.element.parentElement!;
+    const offsetX = pageX - this.containerLeft;
+    const width = container.offsetWidth;
+    const clamped = Math.max(0, Math.min(offsetX, width));
+    return (clamped / width) * this.videoDuration;
   };
 
   /** ------------------------

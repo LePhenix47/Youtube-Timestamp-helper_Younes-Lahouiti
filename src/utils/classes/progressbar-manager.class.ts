@@ -9,7 +9,10 @@ type ScrubCallbacks = Partial<{
 }>;
 
 // Throttle utility for performance optimization
-function throttle<T extends (...args: any[]) => void>(func: T, delay: number): T {
+function throttle<T extends (...args: any[]) => void>(
+  func: T,
+  delay: number
+): T {
   let timeoutId: number | null = null;
   let lastExecTime = 0;
   return ((...args: any[]) => {
@@ -35,9 +38,7 @@ class ProgressBarManager {
   public isScrubbing: boolean = false;
   private duration: number;
   private readonly abortController = new AbortController();
-  private cachedRect: DOMRect | null = null;
-  private rectCacheTime = 0;
-  private readonly RECT_CACHE_DURATION = 100; // Cache for 100ms
+  private containerLeft: number = 0;
   private throttledHoverMove: ((e: PointerEvent) => void) | null = null;
   private throttledPointerMove: ((e: PointerEvent) => void) | null = null;
 
@@ -99,6 +100,8 @@ class ProgressBarManager {
   // --- Handlers ---
 
   private handleHoverEnter = (e: PointerEvent): void => {
+    // Capture container left for hover operations too
+    this.containerLeft = this.progressContainer.getBoundingClientRect().left;
     const time = this.computeTimeFromClick(e.pageX);
     this.callbacks.onHoverEnter?.(time);
   };
@@ -123,6 +126,8 @@ class ProgressBarManager {
     }
 
     this.isScrubbing = true;
+    // Capture container left ONCE at scrub start - no more getBoundingClientRect during scrub!
+    this.containerLeft = this.progressContainer.getBoundingClientRect().left;
     const time = this.computeTimeFromClick(e.pageX);
     this.callbacks.onScrubStart?.(time);
   };
@@ -157,20 +162,12 @@ class ProgressBarManager {
   };
 
   // --- Helpers ---
-  private updateCachedRect = (): void => {
-    const now = Date.now();
-    if (!this.cachedRect || (now - this.rectCacheTime) > this.RECT_CACHE_DURATION) {
-      this.cachedRect = this.progressContainer.getBoundingClientRect();
-      this.rectCacheTime = now;
-    }
-  };
-
   private computeTimeFromClick = (pageX: number): number => {
-    this.updateCachedRect();
-    const rect = this.cachedRect!;
-    const offsetX = pageX - rect.left;
-    const clamped = Math.max(0, Math.min(offsetX, rect.width));
-    return (clamped / rect.width) * this.duration;
+    // Super fast: no getBoundingClientRect(), just cached left + offsetWidth
+    const offsetX = pageX - this.containerLeft;
+    const width = this.progressContainer.offsetWidth;
+    const clamped = Math.max(0, Math.min(offsetX, width));
+    return (clamped / width) * this.duration;
   };
 }
 
