@@ -675,6 +675,16 @@ signal.on("timestamp-output-update", () => {
   timestampsOutput.value = youtubeTimestamps;
 });
 
+// Connect chapter sidebar manager signals to global signal
+chapterSidebarManager.signal.on<{
+  chapterId: string;
+  callback: (currentTime: number) => void;
+}>("request-current-time", ({ callback }) => {
+  if (videoManager) {
+    callback(videoManager.currentTime);
+  }
+});
+
 // Copy button functionality
 const copyToClipboard = async (text: string): Promise<boolean> => {
   try {

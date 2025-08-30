@@ -106,7 +106,16 @@ class ChapterSideBarManager {
 
         <label class="video-timestamps__label">
           Start:
-          <div data-element="chapter-start-input-container" class="video-timestamps__input-container"></div>
+          <div data-element="chapter-start-input-container" class="video-timestamps__input-container">
+            <button 
+              type="button" 
+              class="video-timestamps__set-current-time square" 
+              data-element="chapter-set-current-time"
+              title="Set to current video time"
+            >
+              📹
+            </button>
+          </div>
         </label>
 
         <label class="video-timestamps__label">
@@ -363,6 +372,10 @@ class ChapterSideBarManager {
     const lockCheckbox = chapter.element.querySelector<HTMLInputElement>(
       '[data-element="chapter-lock-checkbox"]'
     );
+    const setCurrentTimeButton =
+      chapter.element.querySelector<HTMLButtonElement>(
+        '[data-element="chapter-set-current-time"]'
+      );
 
     if (titleInput) {
       titleInput.addEventListener("input", (event) =>
@@ -393,6 +406,12 @@ class ChapterSideBarManager {
     if (lockCheckbox) {
       lockCheckbox.addEventListener("change", (event) =>
         this.onLockToggle(chapter, event)
+      );
+    }
+
+    if (setCurrentTimeButton) {
+      setCurrentTimeButton.addEventListener("click", () =>
+        this.onSetCurrentTimeClick(chapter)
       );
     }
   };
@@ -468,13 +487,78 @@ class ChapterSideBarManager {
     );
   };
 
+  private onSetCurrentTimeClick = (chapter: Chapter): void => {
+    // Don't allow if chapter is locked
+    if (chapter.isLocked) {
+      console.warn(`Cannot set time for locked chapter: "${chapter.title}"`);
+      return;
+    }
+
+    // Emit signal to request current video time
+    this.signal.emit("request-current-time", {
+      chapterId: chapter.id,
+      callback: (currentTime: number) => {
+        this.setChapterStartTime(chapter, currentTime);
+      },
+    });
+  };
+
+  private setChapterStartTime = (
+    chapter: Chapter,
+    newStartTime: number
+  ): void => {
+    // Find chapter index and neighbors
+    const index = this.chapters.indexOf(chapter);
+    const previousChapter = this.chapters[index - 1];
+
+    // Validate the new start time
+    const minStartTime = previousChapter ? previousChapter.start : 0;
+    const maxStartTime = chapter.end - ChapterSideBarManager.CHAPTER_MIN_LENGTH;
+
+    if (newStartTime < minStartTime || newStartTime > maxStartTime) {
+      console.warn(
+        `Cannot set chapter "${chapter.title}" start time to ${newStartTime}s. Must be between ${minStartTime}s and ${maxStartTime}s`
+      );
+      return;
+    }
+
+    // Update chapter start time
+    chapter.start = newStartTime;
+
+    // Update previous chapter's end time to match
+    if (previousChapter) {
+      previousChapter.end = newStartTime;
+      this.updateChapterDOM(previousChapter);
+      this.signal.emit("chapter-updated", { chapter: previousChapter });
+    }
+
+    // Update current chapter
+    this.updateChapterDOM(chapter);
+    this.signal.emit("chapter-updated", { chapter });
+
+    // Update timestamp output
+    this.signal.emit("timestamp-output-update");
+
+    console.log(
+      `Set chapter "${chapter.title}" start time to ${newStartTime}s`
+    );
+  };
+
   private updateChapterLockState = (chapter: Chapter): void => {
     const deleteButton = chapter.element.querySelector<HTMLButtonElement>(
       '[data-element="chapter-delete"]'
     );
+    const setCurrentTimeButton =
+      chapter.element.querySelector<HTMLButtonElement>(
+        '[data-element="chapter-set-current-time"]'
+      );
 
     if (deleteButton) {
       deleteButton.disabled = chapter.isLocked || false;
+    }
+
+    if (setCurrentTimeButton) {
+      setCurrentTimeButton.disabled = chapter.isLocked || false;
     }
 
     // Update start input group

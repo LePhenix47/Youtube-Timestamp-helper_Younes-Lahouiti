@@ -733,6 +733,12 @@
         }
     }
 
+    &__set-current-time {
+        order: 1;
+        border-radius: 50%;
+        background-color: var(--ts-input-bg)
+    }
+
     &__header {
         grid-column: full-width;
         display: flex;
