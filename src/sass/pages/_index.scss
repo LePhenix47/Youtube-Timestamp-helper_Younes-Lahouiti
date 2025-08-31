@@ -10,6 +10,18 @@
     padding-block: 30px;
 
     overflow-x: clip;
+
+    @include tablet-only {
+        @include center-flex-column(20px);
+        align-items: stretch;
+    }
+
+    @include mobile-only {
+        @include center-flex-column(15px);
+        align-items: stretch;
+        padding-inline: 10px;
+        padding-block: 20px;
+    }
 }
 
 @view-transition {
@@ -47,6 +59,11 @@
         // &:has(.video__progress-frame.scrubbing) .video-indicators__bg-img {
         //     display: block !important;
         // }
+
+        @include mobile-only {
+            max-width: 100%;
+            overflow: hidden;
+        }
     }
 
     &__no-video {
@@ -328,6 +345,10 @@
             visibility: visible;
             opacity: 1;
         }
+
+        @include mobile-only {
+            --_frame-width: min(180px, 90vw);
+        }
     }
 
     &__progress-frame-img {
@@ -526,6 +547,11 @@
     padding-inline: 10px;
     padding-bottom: 5px;
 
+    @include mobile-only {
+        gap: 12px;
+        padding-inline: 8px;
+    }
+
     &__video-play {
         @include center-flex;
 
@@ -614,6 +640,11 @@
 
         --_range-bg: rgba(255, 255, 255, 0.25);
         --_progress-bg: white;
+
+        @include mobile-only {
+            width: 50px;
+            margin-left: 8px;
+        }
     }
 
     &__timestamp-info {
@@ -645,6 +676,11 @@
     padding: 5px;
 
     z-index: 1;
+
+    @include mobile-only {
+        max-width: 100%;
+        overflow-x: hidden;
+    }
 
     &__title {
         display: flex;
@@ -888,6 +924,11 @@
                 background-color: rgba(112, 112, 112, 0.1);
                 color: rgba(255, 255, 255, 0.7);
                 cursor: not-allowed;
+            }
+
+            @include mobile-only {
+                --_min-chars: 2.5;
+                min-width: 60px;
             }
         }
     }
