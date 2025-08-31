@@ -141,7 +141,7 @@
 
         &:hover .video__progress-bar-chunk:not(:hover),
         &:has(>.video__progress-frame.scrubbing) .video__progress-bar-chunk:not(:hover) {
-            --_new-pb-height: 6;
+            --_new-pb-height: 7;
             --_scale-y: calc(var(--_new-pb-height) / var(--_pb-height));
 
             scale: 1 var(--_scale-y);
@@ -193,7 +193,7 @@
 
         &:hover,
         &.hover-overlap {
-            --_new-pb-height: 9;
+            --_new-pb-height: 12;
             --_scale-y: calc(var(--_new-pb-height) / var(--_pb-height));
 
             scale: 1 var(--_scale-y);

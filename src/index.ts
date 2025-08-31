@@ -119,6 +119,10 @@ const autoScrollCheckbox = document.querySelector<HTMLInputElement>(
   "[data-element=auto-scroll-checkbox]"
 );
 
+const lockAllCheckbox = document.querySelector<HTMLInputElement>(
+  "[data-element=lock-all-checkbox]"
+);
+
 const deleteVideoButton = document.querySelector<HTMLButtonElement>(
   ".video-timestamps__remove"
 );
@@ -714,6 +718,59 @@ importTimestampsButton?.addEventListener("click", () => {
   signal.emit("import-timestamps");
 });
 
+// Toggle all chapter locks functionality
+const updateLockAllCheckboxState = () => {
+  if (!lockAllCheckbox) return;
+
+  const chapters = chapterSidebarManager.getChapters();
+  if (chapters.length === 0) return;
+
+  const lockedChapters = chapters.filter((chapter) => chapter.isLocked);
+  const allLocked = lockedChapters.length === chapters.length;
+  const someLocked = lockedChapters.length > 0;
+
+  lockAllCheckbox.checked = allLocked;
+  lockAllCheckbox.indeterminate = someLocked && !allLocked;
+};
+
+lockAllCheckbox.addEventListener("change", () => {
+  const shouldLockAll = lockAllCheckbox.checked;
+  const chapters = chapterSidebarManager.getChapters();
+
+  if (chapters.length === 0) return;
+
+  // Toggle all individual chapter lock checkboxes
+  for (const chapter of chapters) {
+    const lockCheckbox = chapter.element.querySelector<HTMLInputElement>(
+      '[data-element="chapter-lock-checkbox"]'
+    );
+
+    if (!lockCheckbox || lockCheckbox.checked === shouldLockAll) continue;
+
+    lockCheckbox.checked = shouldLockAll;
+    // Trigger the change event to update the chapter lock state
+    lockCheckbox.dispatchEvent(new Event("change"));
+  }
+});
+
+// Listen for individual chapter lock changes to update master checkbox
+signal.on("chapter-lock-changed", () => {
+  updateLockAllCheckboxState();
+});
+
+// Listen for chapter additions/deletions to update master checkbox
+signal.on("chapter-added", () => {
+  updateLockAllCheckboxState();
+});
+
+signal.on("chapter-deleted", () => {
+  updateLockAllCheckboxState();
+});
+
+// Listen for chapters synced (import) to update master checkbox
+signal.on("chapters-synced", () => {
+  updateLockAllCheckboxState();
+});
 
 // Handle copy signal
 signal.on("copy-timestamps", async () => {
