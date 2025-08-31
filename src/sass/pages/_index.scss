@@ -731,6 +731,26 @@
                 pointer-events: none;
             }
         }
+
+        &.chapter-auto-scrolled {
+            position: relative;
+
+            &::after {
+                content: '';
+                position: absolute;
+                inset: 0;
+
+                background-color: #4A90E2;
+
+                border-radius: inherit;
+
+                mix-blend-mode: color;
+
+                animation: chapter-highlight-overlay 2s ease-out;
+
+                pointer-events: none;
+            }
+        }
     }
 
     &__set-current-time {

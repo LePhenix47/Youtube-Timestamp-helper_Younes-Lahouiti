@@ -115,6 +115,10 @@ const copyTimestampsButton = document.querySelector<HTMLButtonElement>(
   "[data-element=copy-timestamps-button]"
 );
 
+const autoScrollCheckbox = document.querySelector<HTMLInputElement>(
+  "[data-element=auto-scroll-checkbox]"
+);
+
 const deleteVideoButton = document.querySelector<HTMLButtonElement>(
   ".video-timestamps__remove"
 );
@@ -710,6 +714,7 @@ importTimestampsButton?.addEventListener("click", () => {
   signal.emit("import-timestamps");
 });
 
+
 // Handle copy signal
 signal.on("copy-timestamps", async () => {
   const originalText: string = copyTimestampsButton.innerText;
@@ -806,6 +811,50 @@ signal.on("import-timestamps", async () => {
     alert(
       "Failed to read clipboard. Please make sure you have copied the timestamps and granted clipboard permissions."
     );
+  }
+});
+
+// Auto-scroll to current chapter functionality
+let lastAutoScrolledChapterId: string | null = null;
+
+signal.on<{ chapter: Chapter | null }>("chapter-for-frame", ({ chapter }) => {
+  // Only scroll if checkbox is enabled and we have a chapter
+  if (!autoScrollCheckbox?.checked || !chapter) {
+    lastAutoScrolledChapterId = null;
+    return;
+  }
+
+  // Only scroll if chapter has actually changed to prevent excessive scrolling
+  if (lastAutoScrolledChapterId === chapter.id) {
+    return;
+  }
+
+  lastAutoScrolledChapterId = chapter.id;
+
+  // Find the chapter element in the sidebar using the chapter ID
+  const chapterElements =
+    timestampsSideBar?.querySelectorAll<HTMLElement>("[data-chapter-id]");
+  if (!chapterElements) return;
+
+  for (const chapterElement of chapterElements) {
+    if (chapterElement.dataset.chapterId !== chapter.id) {
+      continue;
+    }
+
+    // Scroll to the chapter with smooth behavior, centered to avoid sticky header
+    chapterElement.scrollIntoView({ behavior: "smooth", block: "center" });
+
+    // Add highlight class for auto-scroll (blue color, same animation as manual click)
+    chapterElement.classList.add("chapter-auto-scrolled");
+    chapterElement.addEventListener(
+      "animationend",
+      () => {
+        chapterElement.classList.remove("chapter-auto-scrolled");
+      },
+      { once: true }
+    );
+
+    break;
   }
 });
 
