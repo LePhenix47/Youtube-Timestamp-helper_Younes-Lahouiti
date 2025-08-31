@@ -1,4 +1,4 @@
-name: Deploy Chess project to GitHub Pages
+name: Deploy YouTube Timestamp Helper PWA to GitHub Pages
 on:
   push:
     branches:
@@ -23,8 +23,43 @@ jobs:
       - name: Install dependencies
         run: bun install
 
-      - name: Build site
+      - name: Type check
+        run: bun run tsc --noEmit
+
+      - name: Build PWA
         run: bun run build
+
+      - name: Validate PWA manifest
+        run: |
+          if [ ! -f "./dist/manifest.webmanifest" ]; then
+            echo "❌ PWA manifest not found!"
+            exit 1
+          fi
+          echo "✅ PWA manifest found"
+          
+          # Validate manifest JSON structure
+          if ! node -e "JSON.parse(require('fs').readFileSync('./dist/manifest.webmanifest', 'utf8'))"; then
+            echo "❌ Invalid manifest JSON"
+            exit 1
+          fi
+          echo "✅ PWA manifest JSON is valid"
+
+      - name: Validate PWA icons
+        run: |
+          # Check if icon files exist
+          if [ ! -f "./dist/img/png/yt-helper-192x192.png" ]; then
+            echo "❌ 192x192 icon not found!"
+            exit 1
+          fi
+          if [ ! -f "./dist/img/png/yt-helper-512x512.png" ]; then
+            echo "❌ 512x512 icon not found!"
+            exit 1
+          fi
+          echo "✅ PWA icons found"
+          
+          # Check icon dimensions (requires ImageMagick)
+          # sudo apt-get update && sudo apt-get install -y imagemagick
+          echo "🔍 Icon validation complete"
 
       - name: Upload pages artifact
         uses: actions/upload-pages-artifact@v3

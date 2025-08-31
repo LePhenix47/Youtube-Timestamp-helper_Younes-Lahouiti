@@ -1,36 +1,54 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
 # dependencies
 package-lock.json
 /node_modules
 /.pnp
 .pnp.js
-
-# git
-/.git
+# Note: bun.lock should be committed for reproducible builds
 
 # testing
 /coverage
 
+# production builds
+/dist
+/dev-dist
+
 # misc
 .DS_Store
 *.pem
-.vscode
 
-# debug
+# debug logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+bun-debug.log*
 
 # local env files
+.env
 .env*.local
 
-# VSCode
-.vscode
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
 
 # typescript
 *.tsbuildinfo
 next-env.d.ts
 
-# built app
-/dist
+# PWA
+# Note: sw.js and manifest files should be committed
+# Only ignore generated service worker assets if needed
+workbox-*.js.map
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
