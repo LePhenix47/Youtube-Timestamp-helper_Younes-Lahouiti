@@ -541,6 +541,7 @@
 
 .video-options {
     display: flex;
+    width: 100%;
 
     gap: 20px;
 
@@ -661,6 +662,23 @@
 
     &__timestamp-chapter {
         color: inherit;
+    }
+
+    &__settings-button {
+        @include center-flex;
+        background: none;
+        border: none;
+        color: inherit;
+        font-size: 16px;
+        margin-left: auto;
+
+        &:hover {
+            opacity: 0.8;
+        }
+
+        @include mobile-only {
+            font-size: 14px;
+        }
     }
 }
 
@@ -1112,4 +1130,258 @@
             translate: 0% 1px;
         }
     }
+}
+
+.video-settings-popover {
+    // Clean YouTube-style popover
+    background-color: rgba(28, 28, 28, 0.98);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 8px 0;
+    min-width: 280px;
+    max-width: 400px;
+    box-shadow: 0 4px 32px rgba(0, 0, 0, 0.28);
+
+    // Proper anchor positioning - top right of settings button
+    position-anchor: --video-settings-button;
+    top: anchor(top);
+    left: anchor(right);
+    margin-top: -8px;
+
+    translate: -100% -100%;
+
+    &__item {
+        display: flex;
+        align-items: center;
+        padding: 8px 16px;
+        cursor: pointer;
+        transition: background-color 120ms ease-out;
+        min-height: 48px;
+        gap: 16px;
+
+        &:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        &:focus {
+            outline: none;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+    }
+
+    &__icon {
+        width: 24px;
+        font-size: 16px;
+        opacity: 0.8;
+        flex-shrink: 0;
+        text-align: center;
+    }
+
+    &__label {
+        flex: 1;
+        font-size: 14px;
+        font-weight: 400;
+        color: #fff;
+        line-height: 20px;
+    }
+
+    &__value {
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.7);
+        flex-shrink: 0;
+    }
+
+    &__toggle {
+        appearance: none;
+        --_track-size: 30px;
+        --_thumb-size: 18px;
+        width: var(--_track-size);
+        height: 12px;
+        background-color: rgba(255, 255, 255, 0.3);
+        border-radius: 6px;
+        position: relative;
+        cursor: pointer;
+        transition: all 150ms ease-out;
+        flex-shrink: 0;
+
+        &::before {
+            content: '';
+            position: absolute;
+            width: var(--_thumb-size);
+            height: var(--_thumb-size);
+            background-color: #fff;
+            border-radius: 50%;
+            top: 50%;
+            left: -2px;
+            transform: translateY(-50%);
+            transition: all 150ms ease-out;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        &:checked {
+            background-color: #065fd4;
+
+            &::before {
+                left: calc(100% - var(--_thumb-size));
+            }
+        }
+
+        &:hover {
+            background-color: rgba(255, 255, 255, 0.4);
+
+            &:checked {
+                background-color: #4285f4;
+            }
+        }
+    }
+
+    // Mobile responsive
+    @include mobile-only {
+        min-width: 240px;
+        margin-inline-start: -16px;
+
+        &__item {
+            padding: 6px 12px;
+            min-height: 44px;
+            gap: 12px;
+        }
+
+        &__icon {
+            width: 20px;
+            font-size: 14px;
+        }
+
+        &__label,
+        &__value {
+            font-size: 13px;
+        }
+    }
+
+    // Fallback for browsers without anchor positioning
+    @supports not (anchor-name: --test) {
+        position: absolute;
+        bottom: anchor(bottom, 0);
+        right: anchor(left, 0);
+        transform: none;
+        margin-bottom: 8px;
+        margin-right: -8px;
+    }
+
+    &__title {
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 12px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    &__options {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    &__option {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background-color 150ms ease-in-out;
+        border: none;
+        background: none;
+        color: inherit;
+        font-family: inherit;
+        text-align: left;
+        width: 100%;
+
+        &:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        &--button {
+            justify-content: space-between;
+        }
+    }
+
+    &__checkbox {
+        appearance: none;
+        width: 18px;
+        height: 18px;
+        border: 2px solid rgba(255, 255, 255, 0.6);
+        border-radius: 3px;
+        position: relative;
+        cursor: pointer;
+        transition: all 150ms ease-in-out;
+
+        &:checked {
+            background-color: var(--yt-color, #ff0033);
+            border-color: var(--yt-color, #ff0033);
+
+            &::after {
+                content: '✓';
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                color: white;
+                font-size: 12px;
+                font-weight: bold;
+            }
+        }
+
+        &:hover {
+            border-color: white;
+        }
+    }
+
+    &__label {
+        flex: 1;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    &__icon {
+        font-size: 14px;
+        opacity: 0.8;
+        flex-shrink: 0;
+    }
+
+    &__speed-value {
+        font-size: 13px;
+        color: var(--yt-color, #ff0033);
+        font-weight: 600;
+        min-width: 25px;
+        text-align: center;
+    }
+
+    // Responsive
+    @include mobile-only {
+        min-width: 200px;
+        padding: 12px;
+
+        &__title {
+            font-size: 15px;
+        }
+
+        &__label {
+            font-size: 13px;
+        }
+
+        &__checkbox {
+            width: 16px;
+            height: 16px;
+
+            &::after {
+                font-size: 10px;
+            }
+        }
+    }
+}
+
+// Anchor name for the settings button
+#video-settings-button {
+    anchor-name: --video-settings-button;
 }

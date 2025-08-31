@@ -6,8 +6,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <meta name="description" content="Create YouTube video timestamps effortlessly. Upload videos, add chapters, and export YouTube-ready timestamps with our easy-to-use tool." />
-    <meta name="keywords" content="youtube, timestamps, chapters, video editing, content creation, youtube helper, video chapters" />
+    <meta name="description"
+        content="Create YouTube video timestamps effortlessly. Upload videos, add chapters, and export YouTube-ready timestamps with our easy-to-use tool." />
+    <meta name="keywords"
+        content="youtube, timestamps, chapters, video editing, content creation, youtube helper, video chapters" />
     <meta name="author" content="Younes Lahouiti" />
     <meta name="robots" content="index, follow" />
     <meta name="theme-color" content="#ff0000" />
@@ -16,7 +18,8 @@
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="YouTube Timestamp Helper" />
     <meta property="og:title" content="YouTube Timestamp Helper - Create Video Chapters Easily" />
-    <meta property="og:description" content="Create YouTube video timestamps effortlessly. Upload videos, add chapters, and export YouTube-ready timestamps with our easy-to-use tool." />
+    <meta property="og:description"
+        content="Create YouTube video timestamps effortlessly. Upload videos, add chapters, and export YouTube-ready timestamps with our easy-to-use tool." />
     <meta property="og:image" content="./public/img/png/yt-helper-og-icon.png" />
     <meta property="og:image:alt" content="YouTube Timestamp Helper - Video chapter creation tool" />
     <meta property="og:image:width" content="512" />
@@ -27,7 +30,8 @@
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="YouTube Timestamp Helper - Create Video Chapters Easily" />
-    <meta name="twitter:description" content="Create YouTube video timestamps effortlessly. Upload videos, add chapters, and export YouTube-ready timestamps with our easy-to-use tool." />
+    <meta name="twitter:description"
+        content="Create YouTube video timestamps effortlessly. Upload videos, add chapters, and export YouTube-ready timestamps with our easy-to-use tool." />
     <meta name="twitter:image" content="./public/img/png/yt-helper-og-icon.png" />
     <meta name="twitter:image:alt" content="YouTube Timestamp Helper - Video chapter creation tool" />
     <meta name="twitter:creator" content="@younes_lahouiti" />
@@ -67,7 +71,7 @@
     <header class="header" data-element="header">
         <!-- SVG filter for the video (ambient mode) -->
 
-        <h1 class="header__title" title="Title">Youtube Timestamp helper</h1>
+        <h1 class="header__title" title="Title">Youtube Timestamp helper dfds</h1>
     </header>
 
     <main class="index" data-element="index">
@@ -262,9 +266,47 @@
                         <button type="button" class="video-options__timestamp-chapter"
                             data-element="timestamp-chapter">Intro</button>
                     </p>
+
+                    <button type="button" class="video-options__settings-button square" id="video-settings-button"
+                        popovertarget="video-settings-popover" data-element="video-settings-button">
+                        <i class="fa-solid fa-gear"></i>
+                    </button>
                 </li>
             </menu>
 
+            <!-- Video Settings Popover -->
+            <menu id="video-settings-popover" popover="auto" anchor="video-settings-button"
+                class="video-settings-popover">
+
+                <!-- Auto Replay Toggle -->
+                <li class="video-settings-popover__item" role="menuitemcheckbox" aria-checked="false" tabindex="0">
+                    <i class="fa-solid fa-repeat video-settings-popover__icon"></i>
+                    <span class="video-settings-popover__label">Auto replay</span>
+                    <input type="checkbox" class="video-settings-popover__toggle" data-element="auto-replay-toggle" />
+                </li>
+
+                <!-- Hide Controls Toggle -->
+                <li class="video-settings-popover__item" role="menuitemcheckbox" aria-checked="false" tabindex="0">
+                    <i class="fa-solid fa-eye-slash video-settings-popover__icon"></i>
+                    <span class="video-settings-popover__label">Hide controls on play</span>
+                    <input type="checkbox" class="video-settings-popover__toggle" data-element="hide-controls-toggle" />
+                </li>
+
+                <!-- Ambient Mode Toggle -->
+                <li class="video-settings-popover__item" role="menuitemcheckbox" aria-checked="false" tabindex="0">
+                    <i class="fa-solid fa-palette video-settings-popover__icon"></i>
+                    <span class="video-settings-popover__label">Ambient mode</span>
+                    <input type="checkbox" class="video-settings-popover__toggle" data-element="ambient-mode-toggle" />
+                </li>
+
+                <!-- Video Speed Button -->
+                <li class="video-settings-popover__item" role="menuitem" tabindex="0" data-element="video-speed-button">
+                    <i class="fa-solid fa-gauge-high video-settings-popover__icon"></i>
+                    <span class="video-settings-popover__label">Playback speed</span>
+                    <span class="video-settings-popover__value" data-element="speed-display">Normal</span>
+                </li>
+
+            </menu>
 
             <label class="video__no-video" data-element="upload-video-container">
 
@@ -298,22 +340,27 @@
 
         <section class="video-timestamp-outputs hide" data-element="video-timestamp-outputs">
             <label class="video-timestamp-outputs__label">Timestamp output:
-                <textarea name="" class="video-timestamp-outputs__textarea" data-element="timestamps-output" cols="30" rows="5" readonly></textarea>
+                <textarea name="" class="video-timestamp-outputs__textarea" data-element="timestamps-output" cols="30"
+                    rows="5" readonly></textarea>
             </label>
 
             <div class="video-timestamp-outputs__buttons">
-                <button type="button" class="video-timestamp-outputs__copy-button" data-element="copy-timestamps-button">📋 Copy</button>
-                <button type="button" class="video-timestamp-outputs__import-button" data-element="import-timestamps-button">📥 Import</button>
+                <button type="button" class="video-timestamp-outputs__copy-button"
+                    data-element="copy-timestamps-button">📋 Copy</button>
+                <button type="button" class="video-timestamp-outputs__import-button"
+                    data-element="import-timestamps-button">📥 Import</button>
             </div>
 
             <label class="video-timestamp-outputs__auto-scroll-toggle">
-                <input type="checkbox" class="video-timestamp-outputs__auto-scroll-checkbox" data-element="auto-scroll-checkbox" />
+                <input type="checkbox" class="video-timestamp-outputs__auto-scroll-checkbox"
+                    data-element="auto-scroll-checkbox" />
                 <i class="fa-solid fa-eye"></i>
                 <span>Auto-scroll to current chapter</span>
             </label>
 
             <label class="video-timestamp-outputs__lock-all-toggle">
-                <input type="checkbox" class="video-timestamp-outputs__lock-all-checkbox" data-element="lock-all-checkbox" />
+                <input type="checkbox" class="video-timestamp-outputs__lock-all-checkbox"
+                    data-element="lock-all-checkbox" />
                 <i class="fa-solid fa-lock"></i>
                 <span>Lock all chapters</span>
             </label>
@@ -326,7 +373,8 @@
             <p class="video-timestamp-outputs__error video-timestamp-outputs__error--too-many"
                 data-element="too-many-chapters">
                 <i class="fa-solid fa-info-circle"></i>
-                <span>You cannot add more than <span data-element="too-many-chapters-amount">×</span> chapters in this video</span>
+                <span>You cannot add more than <span data-element="too-many-chapters-amount">×</span> chapters in this
+                    video</span>
             </p>
 
             <button type="button" class="video-timestamps__remove">
