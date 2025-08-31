@@ -2,7 +2,7 @@ import Signal from "./signal.class";
 
 // Throttle utility for performance optimization
 function throttle<T extends (...args: any[]) => void>(func: T, delay: number): T {
-  let timeoutId: number | null = null;
+  let timeoutId: ReturnType<typeof setTimeout> | null = null;
   let lastExecTime = 0;
   return ((...args: any[]) => {
     const currentTime = Date.now();

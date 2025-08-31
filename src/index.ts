@@ -275,7 +275,7 @@ const showSkipIndicator = (element: HTMLElement | null): void => {
 };
 
 // Track timeout for percentage text indicator
-let textIndicatorTimeout: number | null = null;
+let textIndicatorTimeout: ReturnType<typeof setTimeout> | null = null;
 
 const showTextIndicator = (text: string, duration = 1_000): void => {
   if (!indicatorPercentageText) return;
