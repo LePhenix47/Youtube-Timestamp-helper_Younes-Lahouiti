@@ -33,7 +33,6 @@
 
 .video {
     object-fit: contain;
-    filter: url(#blur-and-scale);
 
     width: 100%;
     height: auto;
@@ -1612,4 +1611,10 @@
             font-size: 12px;
         }
     }
+}
+
+// Ambient mode - apply blur filter when ambient mode toggle is checked
+.video__container:has([data-element="ambient-mode-toggle"]:checked) .video {
+    filter: url(#blur-and-scale);
+    transition: filter 300ms ease;
 }
