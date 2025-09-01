@@ -71,7 +71,7 @@
     <header class="header" data-element="header">
         <!-- SVG filter for the video (ambient mode) -->
 
-        <h1 class="header__title" title="Title">Youtube Timestamp helper dfds</h1>
+        <h1 class="header__title" title="Title">Youtube Timestamp helper</h1>
     </header>
 
     <main class="index" data-element="index">
@@ -278,42 +278,115 @@
             <menu id="video-settings-popover" popover="auto" anchor="video-settings-button"
                 class="video-settings-popover">
 
-                <!-- Auto Replay Toggle -->
-                <li role="menuitemcheckbox" tabindex="0">
-                    <label class="video-settings-popover__item">
-                        <i class="fa-solid fa-repeat video-settings-popover__icon"></i>
-                        <span class="video-settings-popover__label">Auto replay</span>
-                        <input type="checkbox" class="video-settings-popover__toggle"
-                            data-element="auto-replay-toggle" />
-                    </label>
-                </li>
+                <div class="video-settings-carousel" data-element="video-settings-carousel">
 
-                <!-- Hide Controls Toggle -->
-                <li role="menuitemcheckbox" tabindex="0">
-                    <label class="video-settings-popover__item">
-                        <i class="fa-solid fa-eye-slash video-settings-popover__icon"></i>
-                        <span class="video-settings-popover__label">Hide controls on play</span>
-                        <input type="checkbox" class="video-settings-popover__toggle"
-                            data-element="hide-controls-toggle" />
-                    </label>
-                </li>
+                    <!-- Main Settings Section -->
+                    <ul class="video-settings-section video-settings-section--main video-settings-section--active"
+                        data-section="main">
 
-                <!-- Ambient Mode Toggle -->
-                <li role="menuitemcheckbox" tabindex="0">
-                    <label class="video-settings-popover__item">
-                        <i class="fa-solid fa-palette video-settings-popover__icon"></i>
-                        <span class="video-settings-popover__label">Ambient mode</span>
-                        <input type="checkbox" class="video-settings-popover__toggle"
-                            data-element="ambient-mode-toggle" />
-                    </label>
-                </li>
+                        <!-- Auto Replay Toggle -->
+                        <li role="menuitemcheckbox" tabindex="0">
+                            <label class="video-settings-popover__item">
+                                <i class="fa-solid fa-repeat video-settings-popover__icon"></i>
+                                <span class="video-settings-popover__label">Auto replay</span>
+                                <input type="checkbox" class="video-settings-popover__toggle"
+                                    data-element="auto-replay-toggle" />
+                            </label>
+                        </li>
 
-                <!-- Video Speed Button -->
-                <li class="video-settings-popover__item" role="menuitem" tabindex="0" data-element="video-speed-button">
-                    <i class="fa-solid fa-gauge-high video-settings-popover__icon"></i>
-                    <span class="video-settings-popover__label">Playback speed</span>
-                    <span class="video-settings-popover__value" data-element="speed-display">Normal</span>
-                </li>
+                        <!-- Hide Controls Toggle -->
+                        <li role="menuitemcheckbox" tabindex="0">
+                            <label class="video-settings-popover__item">
+                                <i class="fa-solid fa-eye-slash video-settings-popover__icon"></i>
+                                <span class="video-settings-popover__label">Hide controls on play</span>
+                                <input type="checkbox" class="video-settings-popover__toggle"
+                                    data-element="hide-controls-toggle" />
+                            </label>
+                        </li>
+
+                        <!-- Ambient Mode Toggle -->
+                        <li role="menuitemcheckbox" tabindex="0">
+                            <label class="video-settings-popover__item">
+                                <i class="fa-solid fa-palette video-settings-popover__icon"></i>
+                                <span class="video-settings-popover__label">Ambient mode</span>
+                                <input type="checkbox" class="video-settings-popover__toggle"
+                                    data-element="ambient-mode-toggle" />
+                            </label>
+                        </li>
+
+                        <!-- Video Speed Button (triggers carousel to speed section) -->
+                        <li role="menuitem" tabindex="0" data-element="video-speed-button">
+                            <button type="button" class="video-settings-popover__item">
+                                <i class="fa-solid fa-gauge-high video-settings-popover__icon"></i>
+                                <span class="video-settings-popover__label">Playback speed</span>
+                                <span class="video-settings-popover__value" data-element="speed-display">Normal</span>
+                            </button>
+                        </li>
+
+                    </ul>
+
+                    <!-- Speed Settings Section -->
+                    <form class="video-settings-section video-settings-section--speed" data-section="speed">
+
+                        <div class="speed-controls">
+                            <div class="speed-controls__header">
+                                <button type="button" class="speed-controls__back" data-element="speed-back-button">
+                                    <i class="fa-solid fa-arrow-left"></i>
+                                </button>
+                                <span class="speed-controls__title">Playback Speed</span>
+                            </div>
+                            
+                            <div class="speed-controls__display">
+                                <span class="speed-controls__current" data-element="speed-current-display">1.00x</span>
+                            </div>
+
+                            <div class="speed-controls__adjustment">
+                                <button type="button"
+                                    class="square speed-controls__button speed-controls__button--minus"
+                                    data-element="speed-minus">
+                                    <i class="fa-solid fa-minus"></i>
+                                </button>
+
+                                <label class="speed-controls__slider-container">
+                                    <input type="range" class="speed-controls__slider"
+                                        data-range-style="overflowing-thumb" min="0" max="100" step="0.05" value="50"
+                                        data-element="speed-range-slider" />
+                                </label>
+
+                                <button type="button" class="square speed-controls__button speed-controls__button--plus"
+                                    data-element="speed-plus">
+                                    <i class="fa-solid fa-plus"></i>
+                                </button>
+                            </div>
+
+                            <div class="speed-controls__presets">
+                                <label class="speed-controls__preset">
+                                    <input type="radio" class="hide" name="speed-preset" value="25" data-speed="25" />
+                                    <span>0.25x</span>
+                                </label>
+                                <label class="speed-controls__preset">
+                                    <input type="radio" class="hide" name="speed-preset" value="50" data-speed="50" />
+                                    <span>0.5x</span>
+                                </label>
+                                <label class="speed-controls__preset">
+                                    <input type="radio" class="hide" name="speed-preset" value="100" data-speed="100"
+                                        checked />
+                                    <span>1x</span>
+                                </label>
+                                <label class="speed-controls__preset">
+                                    <input type="radio" class="hide" name="speed-preset" value="150" data-speed="150" />
+                                    <span>1.5x</span>
+                                </label>
+                                <label class="speed-controls__preset">
+                                    <input type="radio" class="hide" name="speed-preset" value="200" data-speed="200" />
+                                    <span>2x</span>
+                                </label>
+                            </div>
+                        </div>
+
+                    </form>
+
+                </div>
 
             </menu>
 

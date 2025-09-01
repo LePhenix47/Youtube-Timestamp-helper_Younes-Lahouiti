@@ -1148,10 +1148,12 @@
     color: white;
     border: none;
     border-radius: 12px;
-    padding: 8px 0;
+    padding: 8px;
     min-width: 280px;
     max-width: 400px;
     box-shadow: 0 4px 32px rgba(0, 0, 0, 0.28);
+
+    overflow-x: clip;
 
     // Proper anchor positioning - top right of settings button
     position-anchor: --video-settings-button;
@@ -1164,6 +1166,8 @@
     &__item {
         display: flex;
         align-items: center;
+        width: 100%;
+
         padding: 8px 16px;
         cursor: pointer;
         transition: background-color 120ms ease-out;
@@ -1396,4 +1400,199 @@
 // Anchor name for the settings button
 #video-settings-button {
     anchor-name: --video-settings-button;
+}
+
+// Video Settings Carousel
+.video-settings-carousel {
+    display: flex;
+    overflow: hidden;
+    width: 200%;
+    height: var(--_carousel-height, auto);
+    transition: height 300ms ease-in-out, translate 300ms ease-in-out;
+
+}
+
+.video-settings-section {
+    flex: 0 0 50%; // Each section takes exactly half the container width
+    width: 50%;
+
+    // Remove default list styling
+    list-style: none;
+    margin: 0;
+    padding: 0;
+
+    // Main settings section styles (inherits existing popover item styles)
+    &--main {
+        // Uses existing .video-settings-popover__item styles
+    }
+
+    // Speed settings section styles  
+    &--speed {
+        padding: 8px 0;
+    }
+}
+
+// Speed Controls (First Slide)
+.speed-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+
+    &__header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 0;
+    }
+
+    &__back {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.1);
+        border: none;
+        color: white;
+        cursor: pointer;
+        transition: background-color 150ms ease;
+        
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        
+        &:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        i {
+            font-size: 14px;
+        }
+    }
+
+    &__title {
+        font-size: 16px;
+        font-weight: 600;
+        color: white;
+        flex: 1;
+    }
+
+    &__display {
+        text-align: center;
+        padding: 8px 0;
+    }
+
+    &__current {
+        font-size: 24px;
+        font-weight: 600;
+        color: #fff;
+    }
+
+    &__adjustment {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    &__button {
+        --_size: 25px;
+
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.1);
+
+        color: white;
+        cursor: pointer;
+        transition: background-color 150ms ease;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        &:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        &:active {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        i {
+            font-size: 12px;
+        }
+    }
+
+    &__slider-container {
+        flex: 1;
+    }
+
+    &__slider {
+        width: 100%;
+
+        --_progress-bg: white;
+    }
+
+    &__presets {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        margin-top: 8px;
+    }
+
+    &__preset {
+        flex: 1;
+        padding: 5px 8px;
+        border-radius: 6px;
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        cursor: pointer;
+        transition: all 150ms ease;
+        font-size: 13px;
+
+        @include center-flex;
+
+        &:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+    }
+}
+
+// Speed Advanced (Second Slide - Example)
+.speed-advanced {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+
+    &__title {
+        font-size: 16px;
+        font-weight: 600;
+        color: white;
+        margin: 0;
+    }
+
+    &__description {
+        font-size: 13px;
+        color: rgba(255, 255, 255, 0.8);
+        margin: 0;
+    }
+
+    &__back {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 10px 16px;
+        border-radius: 6px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        cursor: pointer;
+        transition: background-color 150ms ease;
+
+        &:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        i {
+            font-size: 12px;
+        }
+    }
 }

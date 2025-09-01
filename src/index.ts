@@ -10,6 +10,7 @@ import ChapterSideBarManager, {
 } from "@utils/classes/chapter-sidebar-manager.class";
 import ProgressBar from "@utils/classes/progressbar.class";
 import YouTubeKeyboardControls from "@utils/classes/youtube-keyboard-controls.class";
+import VideoSettingsCarousel from "@utils/classes/video-settings-carousel.class";
 import { parseYouTubeTimestamps } from "@utils/helpers/youtube-timestamp-parser.utils";
 
 fixInputRangeBackground();
@@ -314,6 +315,26 @@ const allSkipIndicators = [
   frameForwardIndicator,
 ].filter(Boolean); // Remove any null/undefined elements
 
+// Video Settings Carousel DOM elements
+const videoSettingsCarousel = document.querySelector<HTMLDivElement>(
+  "[data-element=video-settings-carousel]"
+);
+
+const videoSettingsMainSection = document.querySelector<HTMLUListElement>(
+  "[data-section=main]"
+);
+
+const videoSettingsSpeedSection = document.querySelector<HTMLFormElement>(
+  "[data-section=speed]"
+);
+
+const videoSpeedButton = document.querySelector<HTMLLIElement>(
+  "[data-element=video-speed-button]"
+);
+
+// Initialize Video Settings Carousel
+let settingsCarousel: VideoSettingsCarousel | null = null;
+
 const chapterSidebarManager = new ChapterSideBarManager(timestampsList);
 
 timeStampAddChapterButton.addEventListener("click", () => {
@@ -375,6 +396,17 @@ fileDropManager
   });
 
 const videoManager = new VideoPlayerManager(videoPlayer);
+
+// Initialize Video Settings Carousel with video manager
+if (videoSettingsCarousel && videoSettingsMainSection && videoSettingsSpeedSection && videoSpeedButton) {
+  settingsCarousel = new VideoSettingsCarousel(
+    videoSettingsCarousel,
+    videoSettingsMainSection,
+    videoSettingsSpeedSection,
+    videoSpeedButton,
+    videoManager
+  );
+}
 
 videoManager
   .onMetadata((duration, width, height) => {
