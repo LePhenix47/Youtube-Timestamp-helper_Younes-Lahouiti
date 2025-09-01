@@ -1153,7 +1153,7 @@
     max-width: 400px;
     box-shadow: 0 4px 32px rgba(0, 0, 0, 0.28);
 
-    overflow-x: clip;
+    overflow: hidden;
 
     // Proper anchor positioning - top right of settings button
     position-anchor: --video-settings-button;
@@ -1173,6 +1173,8 @@
         transition: background-color 120ms ease-out;
         min-height: 48px;
         gap: 16px;
+
+        color: white;
 
         user-select: none;
 
@@ -1200,6 +1202,7 @@
         font-weight: 400;
         color: #fff;
         line-height: 20px;
+        text-align: left;
     }
 
     &__value {
@@ -1404,22 +1407,36 @@
 
 // Video Settings Carousel
 .video-settings-carousel {
-    display: flex;
-    overflow: hidden;
-    width: 200%;
+    position: relative;
     height: var(--_carousel-height, auto);
-    transition: height 300ms ease-in-out, translate 300ms ease-in-out;
+    transition: height 300ms ease-in-out;
 
+    // Container query support for responsive behavior
+    container-type: inline-size;
 }
 
 .video-settings-section {
-    flex: 0 0 50%; // Each section takes exactly half the container width
-    width: 50%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+
+    // Smooth transitions
+    opacity: 1;
+    transform: translateX(0);
+    transition: opacity 300ms ease-in-out, transform 300ms ease-in-out;
 
     // Remove default list styling
     list-style: none;
     margin: 0;
     padding: 0;
+
+    // Hidden state - slide right and fade out
+    &:not(&--active) {
+        opacity: 0;
+        transform: translateX(100%);
+        pointer-events: none; // Prevent interaction with hidden sections
+    }
 
     // Main settings section styles (inherits existing popover item styles)
     &--main {
@@ -1454,15 +1471,15 @@
         color: white;
         cursor: pointer;
         transition: background-color 150ms ease;
-        
+
         display: flex;
         align-items: center;
         justify-content: center;
-        
+
         &:hover {
             background: rgba(255, 255, 255, 0.2);
         }
-        
+
         i {
             font-size: 14px;
         }

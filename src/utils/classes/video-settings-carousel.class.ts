@@ -5,7 +5,6 @@ type CarouselSection = "main" | "speed";
 
 interface CarouselElements {
   carousel: HTMLDivElement;
-  sectionsContainer: HTMLDivElement;
   mainSection: HTMLUListElement;
   speedSection: HTMLFormElement;
   speedButton: HTMLLIElement;
@@ -43,13 +42,10 @@ class VideoSettingsCarousel {
     speedButton: HTMLLIElement,
     videoManager?: VideoPlayerManager
   ) {
-    // Get the sections container and popover
-    const sectionsContainer = carousel;
     const popover = carousel.closest("[popover]") as HTMLMenuElement;
 
     this.elements = {
       carousel,
-      sectionsContainer,
       mainSection,
       speedSection,
       speedButton,
@@ -171,6 +167,19 @@ class VideoSettingsCarousel {
   private setInitialState = (): void => {
     // Set initial height
     this.updateCarouselHeight();
+    
+    // Update speed display in main section
+    this.updateMainSpeedDisplay();
+  };
+
+  private updateMainSpeedDisplay = (): void => {
+    const mainSpeedDisplay = this.elements.mainSection.querySelector<HTMLSpanElement>(
+      "[data-element=speed-display]"
+    );
+    if (!mainSpeedDisplay) return;
+    
+    // Show speed as "Normal" for 1x, otherwise show actual value
+    mainSpeedDisplay.textContent = this.currentSpeed === 1.0 ? "Normal" : `${this.currentSpeed.toFixed(2)}x`;
   };
 
   public navigateToSection = (section: CarouselSection): void => {
@@ -179,8 +188,8 @@ class VideoSettingsCarousel {
     const previousSection = this.currentSection;
     this.currentSection = section;
 
-    // Translate the container to show the correct section
-    this.updateContainerTranslate();
+    // Update section visibility using CSS classes
+    this.updateSectionVisibility();
 
     // Update carousel height
     this.updateCarouselHeight();
@@ -192,14 +201,19 @@ class VideoSettingsCarousel {
     });
   };
 
-  private updateContainerTranslate = (): void => {
-    const translateX = this.currentSection === "main" ? "0%" : "-50%";
-    this.elements.sectionsContainer.style.translate = `${translateX} 0`;
+  private updateSectionVisibility = (): void => {
+    // Remove active class from all sections
+    this.elements.mainSection.classList.remove("video-settings-section--active");
+    this.elements.speedSection.classList.remove("video-settings-section--active");
+    
+    // Add active class to current section
+    const activeSection = this.getSectionElement(this.currentSection);
+    activeSection.classList.add("video-settings-section--active");
   };
 
   private resetToMain = (): void => {
     this.currentSection = "main";
-    this.updateContainerTranslate();
+    this.updateSectionVisibility();
     this.updateCarouselHeight();
   };
 
@@ -279,6 +293,7 @@ class VideoSettingsCarousel {
 
     // Update UI
     this.updateSpeedDisplay();
+    this.updateMainSpeedDisplay();
     this.updateRangeSlider();
     this.updatePresetSelection();
 
@@ -297,6 +312,7 @@ class VideoSettingsCarousel {
 
     // Update UI (but NOT the range slider to prevent infinite loop)
     this.updateSpeedDisplay();
+    this.updateMainSpeedDisplay();
     this.updatePresetSelection();
 
     // Emit speed change event
