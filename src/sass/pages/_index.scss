@@ -50,8 +50,8 @@
         position: relative;
         border-radius: 8px;
 
-        // ? If the video is playing and we're not hovering the video → hide the controls
-        &:not(:hover):has(>.video__controls .video-options__play-input-toggle:checked)>.video__controls {
+        // ? If the video is playing and we're not hovering the video → hide the controls (when toggle is enabled)
+        &.hide-controls-on-play:not(:hover):has(>.video__controls .video-options__play-input-toggle:checked)>.video__controls {
             opacity: 0;
         }
 
@@ -159,8 +159,8 @@
         touch-action: none;
         user-select: none;
 
-        &:hover .video__progress-bar-chunk:not(:hover),
-        &:has(>.video__progress-frame.scrubbing) .video__progress-bar-chunk:not(:hover) {
+        &:hover .video__progress-bar-chunk:not(:hover):not(.hover-overlap),
+        &:has(>.video__progress-frame.scrubbing) .video__progress-bar-chunk:not(:hover):not(.hover-overlap) {
             --_new-pb-height: 7;
             --_scale-y: calc(var(--_new-pb-height) / var(--_pb-height));
 

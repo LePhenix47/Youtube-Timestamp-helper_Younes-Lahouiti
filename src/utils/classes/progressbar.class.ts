@@ -26,6 +26,7 @@ class ProgressBar {
 
   private framePreview: HTMLElement;
   private progressContainer: HTMLLIElement;
+  private progressThumb: HTMLElement;
 
   private chunks: ProgressBarChunk[] = [];
   private progressBarManager: ProgressBarManager;
@@ -82,7 +83,7 @@ class ProgressBar {
     );
 
     this.signal.on(
-      "chapters-synced", 
+      "chapters-synced",
       ({ chapters }: { chapters: Chapter[] }) => {
         // Complete rebuild from imported/synced chapters
         this.syncChunks(chapters);
@@ -111,12 +112,13 @@ class ProgressBar {
       }
     );
 
-    this.signal.on<{ chapterId: string; isLocked: boolean; chapters: Chapter[] }>(
-      "chapter-lock-changed",
-      ({ chapterId, isLocked, chapters }) => {
-        this.updateChunkLockStates(chapters);
-      }
-    );
+    this.signal.on<{
+      chapterId: string;
+      isLocked: boolean;
+      chapters: Chapter[];
+    }>("chapter-lock-changed", ({ chapterId, isLocked, chapters }) => {
+      this.updateChunkLockStates(chapters);
+    });
   }
 
   private handleChunkDrag = (
@@ -292,6 +294,10 @@ class ProgressBar {
       "[data-element=video-progress]"
     );
 
+    this.progressThumb = this.videoContainer.querySelector<HTMLElement>(
+      "[data-element=video-progress-thumb]"
+    );
+
     this.progressBarManager = new ProgressBarManager(
       this.videoContainer,
       this.videoManager.duration
@@ -376,11 +382,11 @@ class ProgressBar {
     // Reset progress displays
     const cssProperties = [
       "--_video-duration-secs",
-      "--_current-video-progress-secs", 
+      "--_current-video-progress-secs",
       "--_buffer-end-secs",
-      "--_current-video-hover-secs"
+      "--_current-video-hover-secs",
     ];
-    
+
     for (const property of cssProperties) {
       this.progressContainer?.style.setProperty(property, "0");
     }
@@ -451,6 +457,11 @@ class ProgressBar {
 
     this.updateThumbPosition(time);
     this.updateFramePreview(time);
+
+    this.framePreview.classList.add("scrubbing");
+
+    // Add scrub-chunk-overlap class to thumb and hover-overlap to current chunk
+    this.updateScrubState(time, true);
   };
 
   public onDragMove = (time: number): void => {
@@ -462,6 +473,11 @@ class ProgressBar {
     this.pendingAnimationFrame = requestAnimationFrame(() => {
       this.videoManager.seek(time);
       this.updateThumbPosition(time);
+      this.updateFramePreview(time);
+
+      // Update scrubbing state for current position
+      this.updateScrubState(time, true);
+
       this.pendingAnimationFrame = null;
     });
 
@@ -477,12 +493,37 @@ class ProgressBar {
 
     this.framePreview.classList.remove("scrubbing");
 
+    // Remove scrubbing classes when drag ends
+    this.updateScrubState(time, false);
+
     if (this.wasPaused) {
       return;
     }
 
     // ? If video was playing before, resume playback
     this.videoManager.play();
+  };
+
+  // --- Scrub State Management ---
+  private updateScrubState = (time: number, isScrubbing: boolean): void => {
+    if (isScrubbing) {
+      // Add scrub-chunk-overlap class to thumb
+      this.progressThumb.classList.add("scrub-chunk-overlap");
+
+      // Find which chunk the thumb is currently over and add hover-overlap
+      for (const chunk of this.chunks) {
+        const isOverChunk = time >= chunk.startTime && time <= chunk.endTime;
+        chunk.element.classList.toggle("hover-overlap", isOverChunk);
+      }
+    } else {
+      // Remove scrub-chunk-overlap from thumb
+      this.progressThumb.classList.remove("scrub-chunk-overlap");
+
+      // Remove hover-overlap from all chunks
+      for (const chunk of this.chunks) {
+        chunk.element.classList.remove("hover-overlap");
+      }
+    }
   };
 
   // --- UI updates ---
@@ -587,8 +628,8 @@ class ProgressBar {
   private updateChunkLockStates = (chapters: Chapter[]): void => {
     for (let i = 0; i < this.chunks.length; i++) {
       const chunk = this.chunks[i];
-      const chapter = chapters.find(c => c.id === chunk.id);
-      
+      const chapter = chapters.find((c) => c.id === chunk.id);
+
       if (!chapter) continue;
 
       // Update start lock state (this chapter's lock affects its own start handle)

@@ -117,6 +117,11 @@ class ProgressBarManager {
   private handlePointerDown = (e: PointerEvent): void => {
     const target = e.target as HTMLElement;
 
+    // Only allow left mouse button (button 0) on desktop
+    if (e.pointerType === "mouse" && e.button !== 0) {
+      return;
+    }
+
     // Ignore drag-handle buttons (future trimming/clip editing)
     if (target.closest(".video__progress-drag-slide")) {
       return;

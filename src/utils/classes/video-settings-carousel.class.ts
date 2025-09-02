@@ -26,6 +26,7 @@ class VideoSettingsCarousel {
   private currentSpeed: number = 1.0;
   public signal: Signal;
   private videoManager: VideoPlayerManager | null = null;
+  private isHoveringSpeedSlider: boolean = false;
 
   // Speed control constants
   private static readonly MIN_SPEED = 0.25;
@@ -34,6 +35,7 @@ class VideoSettingsCarousel {
     VideoSettingsCarousel.MAX_SPEED - VideoSettingsCarousel.MIN_SPEED; // 1.75
   private static readonly SLIDER_MIN = 0;
   private static readonly SLIDER_MAX = 100;
+  private static readonly SCROLL_SPEED_DELTA = 0.01;
 
   constructor(
     carousel: HTMLDivElement,
@@ -133,6 +135,29 @@ class VideoSettingsCarousel {
         this.setSpeed(speed);
       });
     }
+
+    // Track hover state for scroll wheel functionality
+    this.speedControls.rangeSlider.addEventListener("mouseenter", () => {
+      this.isHoveringSpeedSlider = true;
+    });
+
+    this.speedControls.rangeSlider.addEventListener("mouseleave", () => {
+      this.isHoveringSpeedSlider = false;
+    });
+
+    // Scroll wheel support on desktop - adjust speed per scroll (only when hovering)
+    this.speedControls.rangeSlider.addEventListener("wheel", (e) => {
+      if (!this.isHoveringSpeedSlider) return;
+      
+      e.preventDefault(); // Prevent page scrolling
+
+      // Normalize wheel direction and apply speed delta
+      const { SCROLL_SPEED_DELTA } = VideoSettingsCarousel;
+      const scrollDirection = Math.sign(e.deltaY); // -1 for up, 1 for down, 0 for no movement
+      const delta = -scrollDirection * SCROLL_SPEED_DELTA; // Invert: scroll up = increase speed
+      
+      this.adjustSpeed(delta);
+    }, { passive: false });
   };
 
   private setupEventListeners = (): void => {
@@ -162,6 +187,18 @@ class VideoSettingsCarousel {
     this.signal.on("navigate-back", () => {
       this.navigateToSection("main");
     });
+
+    // Auto replay toggle handler
+    const autoReplayToggle = document.querySelector<HTMLInputElement>(
+      "[data-element=auto-replay-toggle]"
+    );
+    autoReplayToggle?.addEventListener("change", this.handleAutoReplayToggle);
+
+    // Hide controls toggle handler
+    const hideControlsToggle = document.querySelector<HTMLInputElement>(
+      "[data-element=hide-controls-toggle]"
+    );
+    hideControlsToggle?.addEventListener("change", this.handleHideControlsToggle);
   };
 
   private setInitialState = (): void => {
@@ -335,6 +372,16 @@ class VideoSettingsCarousel {
       "--_slider-progress",
       `${sliderValue}%`
     );
+
+    // Fix for Chromium: Update --_webkit-progression-width for overflowing-thumb style
+    if (this.speedControls.rangeSlider.dataset.rangeStyle === "overflowing-thumb") {
+      const { min, max, valueAsNumber } = this.speedControls.rangeSlider;
+      const percentage = Math.floor((valueAsNumber / Number(max)) * 100);
+      this.speedControls.rangeSlider.style.setProperty(
+        "--_webkit-progression-width", 
+        `${percentage}%`
+      );
+    }
   };
 
   private updatePresetSelection = (): void => {
@@ -347,6 +394,53 @@ class VideoSettingsCarousel {
       const input = this.speedControls.presetInputs[i];
       const inputValue = Number(input.value);
       input.checked = inputValue === presetValue;
+    }
+  };
+
+  // Toggle handler methods
+  private handleAutoReplayToggle = (e: Event): void => {
+    const checkbox = e.target as HTMLInputElement;
+    const isEnabled = checkbox.checked;
+    
+    if (!this.videoManager) return;
+    
+    if (isEnabled) {
+      // Set auto replay callback on video end
+      this.videoManager.onEnded(this.handleVideoEnded);
+    } else {
+      // Remove auto replay callback
+      this.videoManager.onEnded(() => {});
+    }
+    
+    // Emit event for other components
+    this.signal.emit("auto-replay-changed", { enabled: isEnabled });
+  };
+
+  private handleHideControlsToggle = (e: Event): void => {
+    const checkbox = e.target as HTMLInputElement;
+    const isEnabled = checkbox.checked;
+    
+    // Find the video container
+    const videoContainer = document.querySelector<HTMLElement>(".video__container");
+    if (!videoContainer) return;
+    
+    if (isEnabled) {
+      // Add CSS class to enable hide-on-play behavior
+      videoContainer.classList.add("hide-controls-on-play");
+    } else {
+      // Remove CSS class to disable hide-on-play behavior
+      videoContainer.classList.remove("hide-controls-on-play");
+    }
+    
+    // Emit event for other components
+    this.signal.emit("hide-controls-changed", { enabled: isEnabled });
+  };
+
+  private handleVideoEnded = (): void => {
+    // Auto replay functionality - restart the video
+    if (this.videoManager) {
+      this.videoManager.seek(0);
+      this.videoManager.play();
     }
   };
 
