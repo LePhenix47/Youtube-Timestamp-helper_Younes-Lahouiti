@@ -12,6 +12,7 @@ import ProgressBar from "@utils/classes/progressbar.class";
 import YouTubeKeyboardControls from "@utils/classes/youtube-keyboard-controls.class";
 import VideoSettingsCarousel from "@utils/classes/video-settings-carousel.class";
 import { parseYouTubeTimestamps } from "@utils/helpers/youtube-timestamp-parser.utils";
+import { validateVideoUrl, UrlFile } from "@utils/helpers/url.utils";
 
 fixInputRangeBackground();
 
@@ -51,6 +52,10 @@ const uploadVideoSpinner = document.querySelector<HTMLSpanElement>(
 
 const uploadVideoIcon = document.querySelector<HTMLElement>(
   "[data-element=upload-video-icon]"
+);
+
+const urlInputContainer = document.querySelector<HTMLLabelElement>(
+  "[data-element=upload-video-url-container]"
 );
 
 const videoContainer = document.querySelector<HTMLElement>(
@@ -382,6 +387,64 @@ fileDropManager
     uploadVideoSpinner?.classList.add("hide");
     uploadVideoIcon?.classList.remove("hide");
     signal.emit("video-upload", { file, eventType });
+  })
+  .onUrlUpload(async (url: string, eventType: string) => {
+    // Show spinner during URL validation
+    uploadVideoSpinner?.classList.remove("hide");
+    uploadVideoIcon?.classList.add("hide");
+
+    try {
+      const validationResult = await validateVideoUrl(url);
+      
+      if (!validationResult.success) {
+        // Hide spinner and show icon on validation error
+        uploadVideoSpinner?.classList.add("hide");
+        uploadVideoIcon?.classList.remove("hide");
+        
+        // Create a dummy file for error handling consistency
+        const dummyFile = new UrlFile(url);
+        signal.emit("video-upload-error", { 
+          file: dummyFile, 
+          errorMessage: validationResult.error || "URL validation failed", 
+          eventType 
+        });
+        return;
+      }
+
+      // Check duration requirement
+      if (validationResult.duration && validationResult.duration < ChapterSideBarManager.MIN_VIDEO_DURATION) {
+        uploadVideoSpinner?.classList.add("hide");
+        uploadVideoIcon?.classList.remove("hide");
+        
+        const dummyFile = new UrlFile(url, validationResult.duration);
+        signal.emit("video-upload-error", { 
+          file: dummyFile, 
+          errorMessage: "Video duration is too short, YouTube chapters do not work for videos that short.", 
+          eventType 
+        });
+        return;
+      }
+
+      // Success - create UrlFile and emit upload event
+      const urlFile = new UrlFile(url, validationResult.duration);
+      
+      // Hide spinner and show icon on successful validation
+      uploadVideoSpinner?.classList.add("hide");
+      uploadVideoIcon?.classList.remove("hide");
+      
+      signal.emit("video-upload", { file: urlFile, eventType });
+    } catch (error) {
+      // Hide spinner and show icon on error
+      uploadVideoSpinner?.classList.add("hide");
+      uploadVideoIcon?.classList.remove("hide");
+      
+      const dummyFile = new UrlFile(url);
+      signal.emit("video-upload-error", { 
+        file: dummyFile, 
+        errorMessage: "Failed to validate URL. Please check the URL and try again.", 
+        eventType 
+      });
+    }
   });
 
 fileDropManager
@@ -480,6 +543,7 @@ let keyboardControls: YouTubeKeyboardControls | null = null;
 signal.on("show-video", () => {
   videoDropZone.classList.remove("drag-hover");
   videoDropZone.classList.add("hide");
+  urlInputContainer?.classList.add("hide");
 
   const uploadedVideoElements = [
     videoPlayer,
@@ -577,6 +641,7 @@ signal.on("show-video", () => {
 signal.on("show-dropzone", () => {
   videoDropZone.classList.remove("drag-hover");
   videoDropZone.classList.remove("hide");
+  urlInputContainer?.classList.remove("hide");
 
   const uploadedVideoElements = [
     videoPlayer,
@@ -605,7 +670,12 @@ signal.on<{ file: File; eventType: string }>("video-upload", (detail) => {
 
   signal.emit("show-video");
 
-  videoManager.loadSource(file);
+  // Handle URL files by using their URL, otherwise use the file object
+  if (file instanceof UrlFile) {
+    videoManager.loadSource(file.url);
+  } else {
+    videoManager.loadSource(file);
+  }
 });
 
 signal.on<{ file: File; errorMessage: string; eventType: string }>(

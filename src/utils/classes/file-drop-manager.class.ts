@@ -8,18 +8,22 @@ type FileUploadErrorCallback = (
 ) => void;
 type DragCallback = (event: Event) => void;
 type DropCallback = (file: File, event: DragEvent) => void;
+type UrlUploadCallback = (url: string, eventType: Event["type"]) => void;
 
 class FileDropManager {
   private dropZone: HTMLElement;
   private fileInput: HTMLInputElement;
+  private urlInput?: HTMLInputElement;
   private fileValidation?: FileValidationFn;
   private onFileUploadCallback?: FileUploadCallback;
+  private onUrlUploadCallback?: UrlUploadCallback;
   private onFileUploadErrorCallback?: FileUploadErrorCallback;
   private onDragEnterCallback?: DragCallback;
   private onDragLeaveCallback?: DragCallback;
   private onDropCallback?: DropCallback;
   private onDragOverCallback?: DragCallback; // New property for onDragOver callback
   private abortController: AbortController = new AbortController();
+  private urlButton: HTMLButtonElement;
 
   constructor(dropZone: HTMLElement, fileInput: HTMLInputElement) {
     if (!(dropZone instanceof HTMLElement)) {
@@ -33,6 +37,16 @@ class FileDropManager {
     }
     this.dropZone = dropZone;
     this.fileInput = fileInput;
+
+    // Find URL input and button in the same parent container as dropZone
+    const container = dropZone.parentElement;
+    this.urlInput = container?.querySelector<HTMLInputElement>(
+      '[data-element="upload-video-url-input"]'
+    )!;
+    this.urlButton = container?.querySelector<HTMLButtonElement>(
+      '[data-element="upload-video-url-button"]'
+    )!;
+
     this.setupEvents();
   }
 
@@ -43,6 +57,11 @@ class FileDropManager {
 
   public onFileUpload = (fn: FileUploadCallback): this => {
     this.onFileUploadCallback = fn;
+    return this;
+  };
+
+  public onUrlUpload = (fn: UrlUploadCallback): this => {
+    this.onUrlUploadCallback = fn;
     return this;
   };
 
@@ -91,18 +110,49 @@ class FileDropManager {
         const { activeElement } = document;
         const isFocusedOnDifferentInput: boolean =
           activeElement !== this.fileInput &&
+          activeElement !== this.urlInput &&
           ["input", "textarea"].includes(activeElement?.tagName.toLowerCase());
         if (isFocusedOnDifferentInput) return;
+
         const items: DataTransferItemList = event.clipboardData?.items;
         if (!items) return;
-        const file: File = items[0].getAsFile();
-        if (!file) {
+
+        // Check for files first
+        const file: File = items[0]?.getAsFile();
+        if (file) {
+          this.handleFile(file, event.type);
           return;
         }
-        this.handleFile(file, event.type);
+
+        // Allow normal paste behavior for URL input without auto-execution
       },
       { signal }
     );
+
+    // Handle URL button click
+    if (this.urlButton) {
+      this.urlButton.addEventListener(
+        "click",
+        () => {
+          this.handleUrlInput("click");
+        },
+        { signal }
+      );
+    }
+
+    // Handle Enter key on URL input as shortcut
+    if (this.urlInput) {
+      this.urlInput.addEventListener(
+        "keydown",
+        (event: KeyboardEvent) => {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            this.handleUrlInput("keydown");
+          }
+        },
+        { signal }
+      );
+    }
 
     this.dropZone.addEventListener(
       "dragenter",
@@ -149,7 +199,9 @@ class FileDropManager {
       return;
     }
     try {
-      const validationResult: FileValidationResult = await this.fileValidation(file);
+      const validationResult: FileValidationResult = await this.fileValidation(
+        file
+      );
       if (validationResult) {
         console.error("File validation error:", validationResult);
         this.onFileUploadErrorCallback?.(file, validationResult, eventType);
@@ -160,6 +212,25 @@ class FileDropManager {
       console.error("File validation error:", error);
       this.onFileUploadErrorCallback?.(file, "Validation failed", eventType);
     }
+  };
+
+  private handleUrlInput = (eventType: string): void => {
+    if (!this.urlInput || !this.urlInput.value.trim()) return;
+
+    const url = this.urlInput.value.trim();
+
+    // Basic URL validation
+    try {
+      new URL(url);
+    } catch {
+      return; // Invalid URL, don't process
+    }
+
+    // Clear the input after processing
+    this.urlInput.value = "";
+
+    // Call the URL upload callback
+    this.onUrlUploadCallback?.(url, eventType);
   };
 
   public destroy = (): void => {
