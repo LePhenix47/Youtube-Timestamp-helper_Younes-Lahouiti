@@ -149,6 +149,9 @@ class ProgressBarChunk {
     this.updateDragHandleStates();
   };
 
+  // FIXME: Drag performance could be optimized
+  // Current: Emits "chunk-drag" signal on every move + throttles DOM updates
+  // Better: Pre-calculate constraints on dragStart, validate bounds locally, emit less frequently
   public beginDrag = (e: PointerEvent, type: "start" | "end") => {
     e.preventDefault();
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
@@ -158,6 +161,9 @@ class ProgressBarChunk {
 
     // Cache the rect at the start of drag to avoid repeated getBoundingClientRect calls
     this.updateCachedRect();
+
+    // TODO: Pre-calculate drag constraints here instead of on every move event
+    // (min/max bounds, sibling chunk positions, etc.)
 
     // Throttle the drag events to 60fps (16ms)
     const throttledOnMove = throttle((ev: PointerEvent) => {

@@ -23,6 +23,8 @@ class ChapterSideBarManager {
     );
   }
 
+  // TODO: Use Map<string, Chapter> instead of array for O(1) chapter lookups by ID
+  // Currently using array with .find()/.findIndex() which is O(n) - inefficient for large chapter counts
   private chapters: Chapter[] = [];
 
   private container: HTMLElement;

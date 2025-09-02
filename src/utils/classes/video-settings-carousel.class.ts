@@ -262,6 +262,9 @@ class VideoSettingsCarousel {
       : this.elements.speedSection;
   };
 
+  // FIXME: Expensive DOM cloning on every section switch
+  // Current: Creates full DOM clone, appends to body, measures, removes
+  // Better: Pre-calculate section heights on init, or use ResizeObserver
   private updateCarouselHeight = (): void => {
     const activeSection = this.getSectionElement(this.currentSection);
 

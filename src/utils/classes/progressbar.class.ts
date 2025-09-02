@@ -121,6 +121,9 @@ class ProgressBar {
     });
   }
 
+  // FIXME: Heavy operations on every drag move - should optimize
+  // Current: findIndex + calculateClampedTime + updateChunkBoundaries on every mouse move
+  // Better: Cache chunk references and constraints on drag start, validate locally
   private handleChunkDrag = (
     id: string,
     type: "start" | "end",
@@ -138,6 +141,7 @@ class ProgressBar {
     if (previousChunk) previousChunk.setDragState(true);
     if (nextChunk) nextChunk.setDragState(true);
 
+    // TODO: Move this calculation to drag start and cache the constraints
     let clampedTime = this.calculateClampedTime(
       time,
       type,
@@ -542,6 +546,9 @@ class ProgressBar {
     );
   };
 
+  // FIXME: Thumbnail extraction is expensive and called frequently
+  // Current: Extracts video frame on every hover/scrub move (debounced to 150ms)
+  // Better: Pre-generate thumbnail sprite sheet or use smaller time intervals for caching
   public updateFramePreview = async (time: number): Promise<void> => {
     // Skip if time hasn't changed significantly (within 0.1 seconds)
     if (Math.abs(time - this.lastThumbnailTime) < 0.1) {
@@ -596,7 +603,8 @@ class ProgressBar {
     if (this.chunkUpdateAnimationFrame) return;
 
     this.chunkUpdateAnimationFrame = requestAnimationFrame(() => {
-      // Only emit updates for chunks that actually changed
+      // TODO: Optimize chunk lookup - using Array.find() in map is O(n²)
+      // Better: Use Map<id, chunk> or pass chunk reference directly in pendingChunkUpdates
       const changedChapters = Array.from(this.pendingChunkUpdates)
         .map((id) => this.chunks.find((c) => c.id === id))
         .filter(Boolean)
