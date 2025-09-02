@@ -1562,6 +1562,11 @@
         transition: all 150ms ease;
         font-size: 13px;
 
+        &:has(input:checked) {
+            background: white;
+            color: black;
+        }
+
         @include center-flex;
 
         &:hover {
