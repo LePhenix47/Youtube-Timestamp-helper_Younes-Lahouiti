@@ -91,10 +91,27 @@
 
             --_border-color: var(--color-primary);
         }
+
+        &.upload-error {
+            background-color: rgba(255, 0, 0, 10%);
+            border-style: solid;
+            --_border-color: #ff4444;
+        }
+
+        &.shake-animation {
+            animation: shake 500ms ease-in-out;
+        }
     }
 
     &__no-video-icon {
         font-size: 64px;
+    }
+
+    &__no-video-text {
+        &.error-text {
+            color: #ff4444;
+            font-weight: 500;
+        }
     }
 
     &__no-video-spinner {

@@ -681,7 +681,33 @@ signal.on<{ file: File; eventType: string }>("video-upload", (detail) => {
 signal.on<{ file: File; errorMessage: string; eventType: string }>(
   "video-upload-error",
   (detail) => {
+    const { errorMessage } = detail;
+    
+    // Remove drag hover state
     videoDropZone.classList.remove("drag-hover");
+    
+    // Add error state styling
+    videoDropZone.classList.add("upload-error");
+    
+    // Update the dropzone text to show the error
+    const dropzoneText = videoDropZone.querySelector('.video__no-video-text');
+    if (dropzoneText) {
+      dropzoneText.textContent = errorMessage;
+      dropzoneText.classList.add('error-text');
+    }
+    
+    // Add shake animation
+    videoDropZone.classList.add('shake-animation');
+    
+    // Reset after 4 seconds
+    setTimeout(() => {
+      videoDropZone.classList.remove("upload-error", "shake-animation");
+      
+      if (dropzoneText) {
+        dropzoneText.textContent = 'Upload a video';
+        dropzoneText.classList.remove('error-text');
+      }
+    }, 4000);
   }
 );
 
